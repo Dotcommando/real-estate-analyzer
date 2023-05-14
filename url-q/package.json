@@ -1,0 +1,16 @@
+{
+  "name": "url-q",
+  "version": "1.0.0",
+  "description": "",
+  "author": "Mikhail Filchushkin <webestet@gmail.com>",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "start-rabbit": "docker-compose up -d",
+    "stop-rabbit": "docker-compose down",
+    "clear-rabbit": "node clear-queue.js"
+  },
+  "dependencies": {
+    "amqplib": "0.10.3"
+  }
+}
