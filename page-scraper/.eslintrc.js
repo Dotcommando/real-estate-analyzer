@@ -133,6 +133,7 @@ module.exports = {
       { blankLine: 'always', prev: [ 'case', 'default' ], next: '*' },
       { blankLine: 'always', prev: '*', next: [ 'continue', 'break', 'return' ]},
     ],
-    'import/newline-after-import': [ 'error', { 'count': 2 }]
+    'import/newline-after-import': [ 'error', { 'count': 2 }],
+    'no-multi-spaces': [ 'error', { ignoreEOLComments: true }],
   },
 };
