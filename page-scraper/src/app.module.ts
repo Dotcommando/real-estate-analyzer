@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
+import { AppController } from './app.controller';
 import { ServiceName } from './constants';
 
 
@@ -27,5 +28,6 @@ import { ServiceName } from './constants';
       },
     ]),
   ],
+  controllers: [ AppController ],
 })
 export class AppModule {}
