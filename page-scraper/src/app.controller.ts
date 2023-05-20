@@ -2,6 +2,7 @@ import { Controller } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 
 import { Messages } from './constants';
+import { dateInHumanReadableFormat } from './utils';
 
 
 @Controller()
@@ -17,9 +18,7 @@ export class AppController {
     const channel = context?.getChannelRef();
     const originalMsg = context?.getMessage();
 
-    console.log('Message received!');
-    console.log(`Pattern: ${context.getPattern()}`);
-    console.log(`Data: ${data}`);
+    console.log(`${dateInHumanReadableFormat(new Date())}, data: ${data}, typeof data: ${typeof data}`);
 
     channel.ack(originalMsg);
   }
