@@ -1,9 +1,11 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 import { AppController } from './app.controller';
 import { ServiceName } from './constants';
+import { AppService, ParseService } from './services';
 
 
 @Module({
@@ -23,11 +25,16 @@ import { ServiceName } from './constants';
             durable: true,
           },
           prefetchCount: 1,
-          noAck: false,
+          noAck: true,
         },
       },
     ]),
+    HttpModule.register({
+      timeout: parseInt(process.env.HTTP_GET_TIMEOUT),
+      maxRedirects: parseInt(process.env.MAX_REDIRECTS),
+    }),
   ],
+  providers: [ AppService, ParseService ],
   controllers: [ AppController ],
 })
 export class AppModule {}
