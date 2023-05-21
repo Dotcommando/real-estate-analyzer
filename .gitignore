@@ -50,3 +50,5 @@ lerna-debug.log*
 /vendors/db/replica-set.key
 
 .DS_Store
+
+mock-server/assets/**/*.html
