@@ -2,44 +2,43 @@ import { Controller } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 
 import { Messages } from './constants';
-import { AppService } from './services';
-import { dateInHumanReadableFormat } from './utils';
+import { AppService, ParseService } from './services';
 
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
+    private readonly parseService: ParseService,
   ) {
   }
 
   @EventPattern(Messages.TEST)
   public async healthCheck(
     @Payload() data: string,
-    @Ctx() context: RmqContext,
+    // @Ctx() context: RmqContext,
   ) {
-    const channel = context?.getChannelRef();
-    const originalMsg = context?.getMessage();
+    // const channel = context?.getChannelRef();
+    // const originalMsg = context?.getMessage();
 
-    console.log(`${dateInHumanReadableFormat(new Date())}, data: ${data}, typeof data: ${typeof data}`);
+    console.log(`data: ${data.length < 30 ? data : data.substring(0, 22) + ' ... ' + data.substring(data.length - 3)}, typeof data: ${typeof data}`);
 
-    if (typeof data === 'string') {
-      const pageResult = await this.appService.getPage(data);
-
-      console.log(pageResult);
-    }
-
-    channel.ack(originalMsg);
+    // channel.ack(originalMsg);
   }
 
   @EventPattern(Messages.PARSE_URL)
   public async getPageData(
-    @Payload() data: string,
+    @Payload() url: string,
   ) {
     try {
-      const pageResult: string = await this.appService.getPage(data);
+      const pageResult: string = await this.appService.getPage(url);
 
-      console.log(pageResult);
+      if (typeof url === 'string') {
+        const pageResult = await this.appService.getPage(url);
+        const pageData = this.parseService.parsePage(pageResult, url);
+
+        // console.log(pageResult);
+      }
 
       return pageResult;
     } catch (e) {
