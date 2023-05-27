@@ -11,7 +11,11 @@ const getMultipleLetter = (letter: string, multiplier: number): string => {
   return result;
 };
 
-export function parseDate(dateToParse: string, format = 'DD.MM.YYYY'): Date {
+export function parseDate(
+  dateToParse: string,
+  format = 'DD.MM.YYYY',
+  fillRestFromCurrentDate = false,
+): Date {
   if (!dateToParse || typeof dateToParse !== 'string') {
     throw new Error(`Wrong format of the date to parse: ${dateToParse}.`);
   }
@@ -41,21 +45,51 @@ export function parseDate(dateToParse: string, format = 'DD.MM.YYYY'): Date {
 
   const today = new Date();
 
-  resultDateString += values['YYYY'] || '20' + values['YY'] || today.getFullYear();
+  resultDateString += values['YYYY']
+    ? values['YYYY']
+    : values['YY']
+      ? '20' + values['YY']
+      : today.getFullYear();
   resultDateString += '-';
-  resultDateString += values['MM'] || ('0' + values['M']).slice(-2) || ('0' + (today.getMonth() + 1)).slice(-2);
+  resultDateString += values['MM']
+    ? values['MM']
+    : values['M']
+      ? ('0' + values['M']).slice(-2)
+      : fillRestFromCurrentDate
+        ? ('0' + String(today.getMonth() + 1)).slice(-2)
+        : '01';
   resultDateString += '-';
-  resultDateString += values['DD'] || ('0' + values['D']).slice(-2) || ('0' + today.getDate()).slice(-2);
+  resultDateString += values['DD']
+    ? values['DD']
+    : values['D']
+      ? ('0' + values['D']).slice(-2)
+      : fillRestFromCurrentDate
+        ? ('0' + String(today.getDate())).slice(-2)
+        : '01';
   resultDateString += 'T';
-  resultDateString += values['HH'] || ('0' + values['H']).slice(-2) || ('0' + today.getHours()).slice(-2);
+  resultDateString += values['HH']
+    ? values['HH']
+    : values['H']
+      ? ('0' + values['H']).slice(-2)
+      : fillRestFromCurrentDate
+        ? ('0' + String(today.getHours())).slice(-2)
+        : '00';
   resultDateString += ':';
-  resultDateString += values['mm'] || ('0' + values['m']).slice(-2) || ('0' + today.getMinutes()).slice(-2);
+  resultDateString += values['mm']
+    ? values['mm']
+    : values['m']
+      ? ('0' + values['m']).slice(-2)
+      : fillRestFromCurrentDate
+        ? ('0' + String(today.getMinutes())).slice(-2)
+        : '00';
   resultDateString += ':';
   resultDateString += values['ss']
     ? values['ss']
     : values['s']
       ? ('0' + values['s']).slice(-2)
-      : ('0' + today.getSeconds()).slice(-2);
+      : fillRestFromCurrentDate
+        ? ('0' + String(today.getSeconds())).slice(-2)
+        : '00';
   resultDateString += '.';
   resultDateString += values['SSS']
     ? values['SSS']
@@ -63,8 +97,10 @@ export function parseDate(dateToParse: string, format = 'DD.MM.YYYY'): Date {
       ? ('0' + values['SS']).slice(-2)
       : values['SSS']
         ? ('00' + values['SSS']).slice(-3)
-        : today.getMilliseconds();
-  resultDateString += values['Z'] || timeoffsetToHumanReadableFormat(today.getTimezoneOffset());
+        : fillRestFromCurrentDate
+          ? String(today.getMilliseconds())
+          : '000';
+  resultDateString += values['Z'] ?? timeoffsetToHumanReadableFormat(today.getTimezoneOffset());
 
   return new Date(resultDateString);
 }

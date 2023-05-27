@@ -17,7 +17,8 @@ async function publishToQueue() {
 
     for (let i = 0; i < 3; i++) {
         setTimeout(() => {
-            const pattern = 'test';
+            // const pattern = 'test';
+            const pattern = 'parse_url';
             const data = mockUrls[i];
 
             channel.sendToQueue(
