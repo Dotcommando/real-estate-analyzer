@@ -1,11 +1,14 @@
 import { HttpModule } from '@nestjs/axios';
+import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+
+import * as redisStore from 'cache-manager-ioredis';
 
 import { AppController } from './app.controller';
 import { ServiceName } from './constants';
-import { AppService, ParseService } from './services';
+import { AppService, DelayService, ParseService } from './services';
 
 
 @Module({
@@ -29,12 +32,23 @@ import { AppService, ParseService } from './services';
         },
       },
     ]),
+    CacheModule.registerAsync({
+      imports: [ ConfigModule ],
+      inject: [ ConfigService ],
+      useFactory: async (configService: ConfigService) => ({
+        store: redisStore,
+        host: configService.get('REDIS_HOST'),
+        port: configService.get('REDIS_PORT'),
+        ttl: configService.get('CACHE_TTL'),
+        max: configService.get('CACHE_MAX_ITEMS'),
+      }),
+    }),
     HttpModule.register({
       timeout: parseInt(process.env.HTTP_GET_TIMEOUT),
       maxRedirects: parseInt(process.env.MAX_REDIRECTS),
     }),
   ],
-  providers: [ AppService, ParseService ],
+  providers: [ AppService, ParseService, DelayService ],
   controllers: [ AppController ],
 })
 export class AppModule {}

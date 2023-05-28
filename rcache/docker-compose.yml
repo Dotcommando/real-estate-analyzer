@@ -1,0 +1,17 @@
+version: "3"
+services:
+  RCache:
+    image: redis:latest
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - .:/data
+    env_file:
+      - .env
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+      - REDIS_HOSTS=local:RCache:6379
+    ports:
+      - "${REDIS_COMMANDER_PORT}:8081"

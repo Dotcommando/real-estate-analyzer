@@ -19,8 +19,8 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
 
     this.resultData = {
       title: this.$('#ad-title').text().trim(),
-      // description: this.$('.announcement-description .js-description').text().trim(),
-      description: this.$('.announcement-description .js-description').text().trim().substring(0, 30) + '...',
+      description: this.$('.announcement-description .js-description').text().trim(),
+      // description: this.$('.announcement-description .js-description').text().trim().substring(0, 30) + '...',
       url,
       publish_date: this.getPublishDate(),
       // publish_date_human_readable: dateInHumanReadableFormat(new Date(this.getPublishDate())),
@@ -31,8 +31,6 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
       ad_id: this.$('.number-announcement span[itemprop=sku]').text().trim(),
       ...(this.getCharacteristics('.announcement-characteristics .chars-column')),
     };
-
-    console.dir(this.resultData);
   }
 
   private getPublishDate(): number {
@@ -102,5 +100,9 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
     } catch (e) {
       return {};
     }
+  }
+
+  public getPageData(): Partial<T> {
+    return this.resultData;
   }
 }

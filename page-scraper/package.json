@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@nestjs/axios": "2.0.0",
+    "@nestjs/cache-manager": "1.0.0",
     "@nestjs/common": "9.4.0",
     "@nestjs/config": "2.3.2",
     "@nestjs/core": "9.4.0",
@@ -23,6 +24,8 @@
     "amqp-connection-manager": "4.1.13",
     "amqplib": "0.10.3",
     "axios": "1.4.0",
+    "cache-manager": "5.2.1",
+    "cache-manager-ioredis": "2.1.0",
     "cheerio": "^1.0.0-rc.12",
     "dashify": "2.0.0",
     "fast-levenshtein": "3.0.0",

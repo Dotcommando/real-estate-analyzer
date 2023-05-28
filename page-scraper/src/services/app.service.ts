@@ -11,7 +11,7 @@ export class AppService {
   ) {
   }
 
-  async getPage(pageUrl: string): Promise<string | null> {
+  public async getPage(pageUrl: string): Promise<string | null> {
     try {
       const pageDataResponse: AxiosResponse = await this.httpService.axiosRef
         .get(pageUrl);

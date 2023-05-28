@@ -49,6 +49,8 @@ lerna-debug.log*
 /users/db/replica-set.key
 /vendors/db/replica-set.key
 
-.DS_Store
-
+# Templates of mocked Bazaraki pages
 mock-server/assets/**/*.html
+
+# Redis service files
+**/*.rdb

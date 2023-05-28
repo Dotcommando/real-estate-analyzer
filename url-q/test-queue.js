@@ -27,7 +27,8 @@ async function publishToQueue() {
                 { persistent: false },
             );
             console.log(`Message sent, pattern: ${pattern}, data: ${data}`);
-        }, i * 3000);
+        // }, i * 3000);
+        }, 0);
     }
 
     setTimeout(() => connection.close(), 10000);

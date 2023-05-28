@@ -1,15 +1,22 @@
-import { Controller } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Controller, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 
+import { Cache } from 'cache-manager';
+
 import { Messages } from './constants';
-import { AppService, ParseService } from './services';
+import { AppService, DelayService, ParseService } from './services';
 
 
 @Controller()
 export class AppController {
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly appService: AppService,
     private readonly parseService: ParseService,
+    private readonly configService: ConfigService,
+    private readonly delayService: DelayService,
   ) {
   }
 
@@ -17,7 +24,7 @@ export class AppController {
   public async healthCheck(
     @Payload() data: string,
     // @Ctx() context: RmqContext,
-  ) {
+  ): Promise<void> {
     // const channel = context?.getChannelRef();
     // const originalMsg = context?.getMessage();
 
@@ -31,16 +38,27 @@ export class AppController {
     @Payload() url: string,
   ) {
     try {
-      const pageResult: string = await this.appService.getPage(url);
+      let pageData = await this.cacheManager.get(url);
 
-      if (typeof url === 'string') {
+      if (!pageData) {
+        console.log(' ');
+        console.log('No data found in the cache. Doing a request');
+
+        await this.delayService.delayRequest();
+
         const pageResult = await this.appService.getPage(url);
-        const pageData = this.parseService.parsePage(pageResult, url);
 
-        // console.log(pageResult);
+        pageData = await this.parseService.parsePage(pageResult, url);
+
+        await this.cacheManager.set(url, pageData, parseInt(this.configService.get('RCACHE_TTL')));
+      } else {
+        console.log(' ');
+        console.log('Data found in the cache');
       }
 
-      return pageResult;
+      console.log(pageData);
+
+      return pageData;
     } catch (e) {
       return null;
     }
