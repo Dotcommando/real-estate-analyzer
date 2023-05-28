@@ -1,0 +1,15 @@
+version: '3.1'
+
+services:
+
+  bazaraki-data-storage:
+    image: mongo
+    command: [ "--bind_ip", "0.0.0.0", "--replSet", "rs0", "--keyFile", "/mng/keyfile.key", "--port", "${MONGO_PORT}" ]
+    restart: always
+    env_file: .env
+    container_name: bazaraki-data-storage-mongo-rs
+    volumes:
+      - "./mongodb/replica-set.key:/mng/keyfile.key"
+    hostname: localhost
+    ports:
+      - "${MONGO_PORT}:${MONGO_PORT}"

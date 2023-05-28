@@ -1,0 +1,20 @@
+{
+  "name": "data-storage",
+  "version": "1.0.0",
+  "description": "",
+  "author": "Mikhail Filchushkin <webestet@gmail.com>",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "generate:key": "openssl rand -base64 756 > ./mongodb/replica-set.key && chmod 400 ./mongodb/replica-set.key",
+    "db:up": "docker-compose up -d bazaraki-data-storage",
+    "rs:init": "node -r dotenv/config replica-set.init.js dotenv_config_path=./.env",
+    "rs:conf": "node -r dotenv/config replica-set.conf.js dotenv_config_path=./.env",
+    "db:stop": "docker-compose stop bazaraki-data-storage",
+    "db:rm": "docker-compose stop bazaraki-data-storage && docker-compose rm -fs bazaraki-data-storage"
+  },
+  "dependencies": {
+    "dotenv": "16.0.3",
+    "exec-sh": "0.4.0"
+  }
+}

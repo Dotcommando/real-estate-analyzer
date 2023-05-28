@@ -54,3 +54,6 @@ mock-server/assets/**/*.html
 
 # Redis service files
 **/*.rdb
+
+# Private key for replica set
+/data-storage/mongodb/replica-set.key
