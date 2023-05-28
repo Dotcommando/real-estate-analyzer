@@ -3,12 +3,13 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { MongooseModule } from '@nestjs/mongoose';
 
 import * as redisStore from 'cache-manager-ioredis';
 
 import { AppController } from './app.controller';
 import { ServiceName } from './constants';
-import { AppService, DelayService, ParseService } from './services';
+import { AppService, DelayService, MongoConfigService, ParseService } from './services';
 
 
 @Module({
@@ -42,6 +43,11 @@ import { AppService, DelayService, ParseService } from './services';
         ttl: configService.get('CACHE_TTL'),
         max: configService.get('CACHE_MAX_ITEMS'),
       }),
+    }),
+    MongooseModule.forRootAsync({
+      imports: [ ConfigModule ],
+      useClass: MongoConfigService,
+      inject: [ ConfigService ],
     }),
     HttpModule.register({
       timeout: parseInt(process.env.HTTP_GET_TIMEOUT),
