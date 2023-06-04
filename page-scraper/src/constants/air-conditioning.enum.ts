@@ -3,3 +3,5 @@ export enum AirConditioning {
   Partly = 'Partly',
   No = 'No',
 }
+
+export const AirConditioningArray = Object.values(AirConditioning);

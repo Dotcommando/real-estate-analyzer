@@ -4,3 +4,5 @@ export enum Furnishing {
   Unfurnished = 'Unfurnished',
   AppliancesOnly = 'Appliances οnly',
 }
+
+export const FurnishingArray = Object.values(Furnishing);

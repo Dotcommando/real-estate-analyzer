@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { BazarakiAdPageScraperClass } from '../class';
+import { BazarakiAdPageScraperClass } from '../classes';
 import { IRealEstate } from '../types';
 
 

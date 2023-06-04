@@ -1,6 +1,11 @@
 import { IRealEstate } from './real-estate';
 
+import { Condition, EnergyEfficiency } from '../constants';
+
 
 export interface IRentProperty extends IRealEstate {
-  pets: boolean;
+  condition: Condition;
+  'energy-efficiency': EnergyEfficiency;
+  included?: string[];
+  'construction-year'?: string;
 }
