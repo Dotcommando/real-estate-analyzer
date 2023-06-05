@@ -13,12 +13,13 @@ import {
   RentApartmentsFlatsSchema,
   RentCommercialSchema,
   RentHousesSchema,
+  RentPlotsSchema,
   SaleApartmentsFlatsSchema,
   SaleCommercialSchema,
   SaleHousesSchema,
   SalePlotsSchema,
 } from './schemas';
-import { AppService, DelayService, MongoConfigService, ParseService } from './services';
+import { AppService, DbAccessService, DelayService, MongoConfigService, ParseService } from './services';
 
 
 @Module({
@@ -58,59 +59,59 @@ import { AppService, DelayService, MongoConfigService, ParseService } from './se
       useClass: MongoConfigService,
       inject: [ ConfigService ],
     }),
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: 'RentApartmentsFlats',
-        schema: RentApartmentsFlatsSchema,
+        useFactory: () => RentApartmentsFlatsSchema,
         collection: 'rentapartmentsflats',
       },
     ]),
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: 'RentCommercial',
-        schema: RentCommercialSchema,
+        useFactory: () => RentCommercialSchema,
         collection: 'rentcommercial',
       },
     ]),
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: 'RentHouses',
-        schema: RentHousesSchema,
+        useFactory: () => RentHousesSchema,
         collection: 'renthouses',
       },
     ]),
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
-        name: 'RentHouses',
-        schema: RentHousesSchema,
-        collection: 'renthouses',
+        name: 'RentPlots',
+        useFactory: () => RentPlotsSchema,
+        collection: 'rentplots',
       },
     ]),
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: 'SaleApartmentsFlats',
-        schema: SaleApartmentsFlatsSchema,
+        useFactory: () => SaleApartmentsFlatsSchema,
         collection: 'saleapartmentsflats',
       },
     ]),
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: 'SaleCommercial',
-        schema: SaleCommercialSchema,
+        useFactory: () => SaleCommercialSchema,
         collection: 'salecommercial',
       },
     ]),
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: 'SaleHouses',
-        schema: SaleHousesSchema,
+        useFactory: () => SaleHousesSchema,
         collection: 'salehouses',
       },
     ]),
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: 'SalePlots',
-        schema: SalePlotsSchema,
+        useFactory: () => SalePlotsSchema,
         collection: 'saleplots',
       },
     ]),
@@ -119,7 +120,7 @@ import { AppService, DelayService, MongoConfigService, ParseService } from './se
       maxRedirects: parseInt(process.env.MAX_REDIRECTS),
     }),
   ],
-  providers: [ AppService, ParseService, DelayService ],
+  providers: [ AppService, ParseService, DelayService, DbAccessService ],
   controllers: [ AppController ],
 })
 export class AppModule {}

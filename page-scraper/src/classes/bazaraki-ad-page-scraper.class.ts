@@ -10,6 +10,7 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
   private pageContent: string;
   private $: Root;
   private resultData: Partial<T>;
+  private category: string;
 
   constructor(pageContent: string, url: string) {
     this.pageContent = pageContent;
@@ -29,8 +30,11 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
       currency: this.$('.announcement-price__cost meta[itemprop=priceCurrency]').attr('content'),
       price: parseInt(this.$('.announcement-price__cost meta[itemprop=price]').attr('content')),
       ad_id: this.$('.number-announcement span[itemprop=sku]').text().trim(),
+      'square-meter-price': parseFloat(this.$('.announcement-price__per-meter').text().trim().replace('/m²', '').replace(/[^\d\\.]/g, '')),
       ...(this.getCharacteristics('.announcement-characteristics .chars-column')),
     };
+
+    this.category = this.$('.breadcrumbs > li:last-child > a').attr('href');
   }
 
   private getPublishDate(): number {
@@ -102,7 +106,7 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
     }
   }
 
-  public getPageData(): Partial<T> {
-    return this.resultData;
+  public getPageData(): [ Partial<T>, string ] {
+    return [ this.resultData, this.category ];
   }
 }

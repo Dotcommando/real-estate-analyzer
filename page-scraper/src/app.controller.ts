@@ -6,7 +6,8 @@ import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { Cache } from 'cache-manager';
 
 import { Messages } from './constants';
-import { AppService, DelayService, ParseService } from './services';
+import { AppService, DbAccessService, DelayService, ParseService } from './services';
+import { IRealEstate } from './types';
 
 
 @Controller()
@@ -16,6 +17,7 @@ export class AppController {
     private readonly appService: AppService,
     private readonly parseService: ParseService,
     private readonly configService: ConfigService,
+    private readonly dbAccessService: DbAccessService,
     private readonly delayService: DelayService,
   ) {
   }
@@ -38,25 +40,23 @@ export class AppController {
     @Payload() url: string,
   ) {
     try {
-      let pageData = await this.cacheManager.get(url);
+      const fromCache = await this.cacheManager.get(url);
+      let pageData: Partial<IRealEstate>;
+      let category: string;
 
-      if (!pageData) {
-        console.log(' ');
-        console.log('No data found in the cache. Doing a request');
-
+      if (!fromCache) {
         await this.delayService.delayRequest();
 
         const pageResult = await this.appService.getPage(url);
 
-        pageData = await this.parseService.parsePage(pageResult, url);
+        [ pageData, category ] = await this.parseService.parsePage(pageResult, url);
 
-        await this.cacheManager.set(url, pageData, parseInt(this.configService.get('RCACHE_TTL')));
+        await this.cacheManager.set(url, [ pageData, category ], parseInt(this.configService.get('RCACHE_TTL')));
       } else {
-        console.log(' ');
-        console.log('Data found in the cache');
+        [ pageData, category ] = fromCache as [ Partial<IRealEstate>, string ];
       }
 
-      console.log(pageData);
+      const savedDocument = this.dbAccessService.saveNewAnnouncement(category, pageData);
 
       return pageData;
     } catch (e) {
