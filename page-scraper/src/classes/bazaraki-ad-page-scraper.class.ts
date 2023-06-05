@@ -19,32 +19,92 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
     const [ city, district ] = this.getCityDistrict();
 
     this.resultData = {
-      title: this.$('#ad-title').text().trim(),
-      description: this.$('.announcement-description .js-description').text().trim(),
+      title: this.getTitle(),
+      description: this.getDescription(),
       // description: this.$('.announcement-description .js-description').text().trim().substring(0, 30) + '...',
       url,
       publish_date: this.getPublishDate(),
       // publish_date_human_readable: dateInHumanReadableFormat(new Date(this.getPublishDate())),
       city,
       district,
-      currency: this.$('.announcement-price__cost meta[itemprop=priceCurrency]').attr('content'),
-      price: parseInt(this.$('.announcement-price__cost meta[itemprop=price]').attr('content')),
-      ad_id: this.$('.number-announcement span[itemprop=sku]').text().trim(),
-      'square-meter-price': parseFloat(this.$('.announcement-price__per-meter').text().trim().replace('/m²', '').replace(/[^\d\\.]/g, '')),
+      currency: this.getCurrency(),
+      price: this.getPrice(),
+      ad_id: this.getAdId(),
+      'square-meter-price': this.getSquareMeterPrice(),
       ...(this.getCharacteristics('.announcement-characteristics .chars-column')),
     };
 
     this.category = this.$('.breadcrumbs > li:last-child > a').attr('href');
   }
 
-  private getPublishDate(): number {
-    const textDate = this.$('.announcement__details .date-meta').text()
-      .trim()
-      .replace(/[P|p]osted:\s*/, '')
-      .replace(/[Y|y]esterday/, dateInHumanReadableFormat(getRoundYesterday(), 'DD.MM.YYYY'))
-      .replace(/[T|t]oday/, dateInHumanReadableFormat(roundDate(new Date()), 'DD.MM.YYYY'));
+  private getTitle(): string {
+    try {
+      return this.$('#ad-title').text().trim();
+    } catch (e) {
+      return '';
+    }
+  }
 
-    return parseDate(textDate, 'DD.MM.YYYY HH:mm').getTime();
+  private getDescription(): string {
+    try {
+      return this.$('.announcement-description .js-description').text().trim();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  private getSquareMeterPrice(): number {
+    try {
+      const sqMeterPrice = parseFloat(this.$('.announcement-price__per-meter').text().trim().replace(/[^\d.]/g, ''));
+
+      return isNaN(sqMeterPrice)
+        ? 0
+        : sqMeterPrice;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  private getPublishDate(): number {
+    try {
+      const textDate = this.$('.announcement__details .date-meta').text()
+        .trim()
+        .replace(/[P|p]osted:\s*/, '')
+        .replace(/[Y|y]esterday/, dateInHumanReadableFormat(getRoundYesterday(), 'DD.MM.YYYY'))
+        .replace(/[T|t]oday/, dateInHumanReadableFormat(roundDate(new Date()), 'DD.MM.YYYY'));
+
+      return parseDate(textDate, 'DD.MM.YYYY HH:mm').getTime();
+    } catch (e) {
+      return roundDate(new Date()).getTime();
+    }
+  }
+
+  private getCurrency(): string {
+    try {
+      return this.$('.announcement-price__cost meta[itemprop=priceCurrency]').attr('content');
+    } catch (e) {
+      return 'EUR';
+    }
+  }
+
+  private getPrice(): number {
+    try {
+      const price = parseInt(this.$('.announcement-price__cost meta[itemprop=price]').attr('content'));
+
+      return isNaN(price)
+        ? 0
+        : price;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  private getAdId(): string {
+    try {
+      return this.$('.number-announcement span[itemprop=sku]').text().trim();
+    } catch (e) {
+      return '';
+    }
   }
 
   private getCityDistrict(): [ string, string? ] {

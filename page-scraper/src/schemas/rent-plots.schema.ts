@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
-import { PlotTypeArray, Share, ShareArray } from '../constants';
+import { OnlineViewing, OnlineViewingArray, PlotTypeArray, Share, ShareArray } from '../constants';
 import { IRentPlots } from '../types/real-estate-to-rent';
 import { roundDate } from '../utils';
 
@@ -42,10 +42,14 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
       type: String,
       required: [ true, 'Original id is required' ],
     },
-    'online-viewing': Schema.Types.Boolean,
+    'online-viewing': {
+      type: String,
+      enum: OnlineViewingArray,
+      default: OnlineViewing.No,
+    },
     'postal-code': {
       type: String,
-      required: [ true, 'Postal code is required' ],
+      default: '',
     },
     'reference-number': String,
     'registration-number': String,

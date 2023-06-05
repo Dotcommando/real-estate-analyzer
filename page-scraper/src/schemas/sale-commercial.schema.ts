@@ -1,7 +1,15 @@
 import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
-import { CommercialTypeArray, Condition, ConditionArray, EnergyEfficiency, EnergyEfficiencyArray } from '../constants';
+import {
+  CommercialTypeArray,
+  Condition,
+  ConditionArray,
+  EnergyEfficiency,
+  EnergyEfficiencyArray,
+  OnlineViewing,
+  OnlineViewingArray,
+} from '../constants';
 import { ISaleCommercial } from '../types/real-estate-for-sale';
 import { roundDate } from '../utils';
 
@@ -42,10 +50,14 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
       type: String,
       required: [ true, 'Original id is required' ],
     },
-    'online-viewing': Schema.Types.Boolean,
+    'online-viewing': {
+      type: String,
+      enum: OnlineViewingArray,
+      default: OnlineViewing.No,
+    },
     'postal-code': {
       type: String,
-      required: [ true, 'Postal code is required' ],
+      default: '',
     },
     'reference-number': String,
     'registration-number': String,

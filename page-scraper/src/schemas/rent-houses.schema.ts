@@ -9,6 +9,8 @@ import {
   EnergyEfficiencyArray,
   FurnishingArray,
   HousesTypeArray,
+  OnlineViewing,
+  OnlineViewingArray,
   ParkingArray,
   PetsArray,
 } from '../constants';
@@ -52,10 +54,14 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
       type: String,
       required: [ true, 'Original id is required' ],
     },
-    'online-viewing': Schema.Types.Boolean,
+    'online-viewing': {
+      type: String,
+      enum: OnlineViewingArray,
+      default: OnlineViewing.No,
+    },
     'postal-code': {
       type: String,
-      required: [ true, 'Postal code is required' ],
+      default: '',
     },
     'reference-number': String,
     'registration-number': String,

@@ -2,6 +2,8 @@ import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
 import {
+  OnlineViewing,
+  OnlineViewingArray,
   PlotTypeArray,
   ShareArray,
 } from '../constants';
@@ -45,10 +47,14 @@ export const SalePlotsSchema = new Schema<ISalePlotsDoc, Model<ISalePlotsDoc>>(
       type: String,
       required: [ true, 'Ad id is required' ],
     },
-    'online-viewing': Schema.Types.Boolean,
+    'online-viewing': {
+      type: String,
+      enum: OnlineViewingArray,
+      default: OnlineViewing.No,
+    },
     'postal-code': {
       type: String,
-      required: [ true, 'Postal code is required' ],
+      default: '',
     },
     'reference-number': String,
     'registration-number': Number,

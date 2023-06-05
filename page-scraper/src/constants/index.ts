@@ -7,6 +7,7 @@ export * from './furnishing.enum';
 export * from './houses-type.enum';
 export * from './messages.enum';
 export * from './mode.enum';
+export * from './online-viewing.enum';
 export * from './parking.enum';
 export * from './pets.enum';
 export * from './plot-type.enum';

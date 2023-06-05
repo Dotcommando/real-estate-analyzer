@@ -33,20 +33,19 @@ export class DbAccessService {
 
     if (existingAnnouncement) {
       const roundedDate = roundDate(new Date());
+      const roundedDateAsString = roundedDate.toISOString();
 
-      if (!existingAnnouncement.active_dates.includes(roundedDate)) {
+      if (
+        !existingAnnouncement.active_dates
+          .map(date => date.toISOString()).includes(roundedDateAsString)
+      ) {
         existingAnnouncement.active_dates.push(roundedDate);
         await existingAnnouncement.save();
       }
 
       return existingAnnouncement;
     } else {
-      const newAnnouncement = new Model({
-        ...announcementData,
-        'square-meter-price': announcementData['square-meter-price']
-          ? announcementData['square-meter-price']
-          : Math.round(announcementData['price'] * 100) / 100
-      });
+      const newAnnouncement = new Model(announcementData);
 
       newAnnouncement.active_dates = [ roundDate(new Date()) ];
       await newAnnouncement.save();
@@ -69,8 +68,12 @@ export class DbAccessService {
     }
 
     const roundedDate = roundDate(new Date(activeDate));
+    const roundedDateAsString = roundedDate.toISOString();
 
-    if (!existingAnnouncement.active_dates.includes(roundedDate)) {
+    if (
+      !existingAnnouncement.active_dates
+        .map(date => date.toISOString()).includes(roundedDateAsString)
+    ) {
       existingAnnouncement.active_dates.push(roundedDate);
       await existingAnnouncement.save();
     }

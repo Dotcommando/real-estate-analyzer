@@ -7,6 +7,8 @@ import {
   ConditionArray,
   EnergyEfficiency,
   EnergyEfficiencyArray,
+  OnlineViewing,
+  OnlineViewingArray,
 } from '../constants';
 import { IRentCommercial } from '../types/real-estate-to-rent';
 import { roundDate } from '../utils';
@@ -48,10 +50,14 @@ export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCo
       type: String,
       required: [ true, 'Original id is required' ],
     },
-    'online-viewing': Schema.Types.Boolean,
+    'online-viewing': {
+      type: String,
+      enum: OnlineViewingArray,
+      default: OnlineViewing.No,
+    },
     'postal-code': {
       type: String,
-      required: [ true, 'Postal code is required' ],
+      default: '',
     },
     'reference-number': String,
     'registration-number': String,

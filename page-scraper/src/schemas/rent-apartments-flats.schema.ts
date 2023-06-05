@@ -12,7 +12,10 @@ import {
   EnergyEfficiencyArray,
   Furnishing,
   FurnishingArray,
-  ParkingArray, Pets,
+  OnlineViewing,
+  OnlineViewingArray,
+  ParkingArray,
+  Pets,
   PetsArray,
 } from '../constants';
 import { IRentApartmentsFlats } from '../types/real-estate-to-rent';
@@ -55,10 +58,14 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
       type: String,
       required: [ true, 'Original id is required' ],
     },
-    'online-viewing': Schema.Types.Boolean,
+    'online-viewing': {
+      type: String,
+      enum: OnlineViewingArray,
+      default: OnlineViewing.No,
+    },
     'postal-code': {
       type: String,
-      required: [ true, 'Postal code is required' ],
+      default: '',
     },
     'reference-number': String,
     'registration-number': String,

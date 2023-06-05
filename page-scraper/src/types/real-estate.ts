@@ -1,3 +1,6 @@
+import { OnlineViewing } from '../constants';
+
+
 export interface IRealEstate {
   url: string;
   title: string;
@@ -8,7 +11,7 @@ export interface IRealEstate {
   price: number;
   currency: string;
   ad_id: string;
-  'online-viewing'?: boolean;
+  'online-viewing'?: OnlineViewing;
   'postal-code': string;
   'reference-number'?: string;
   'registration-number'?: number;

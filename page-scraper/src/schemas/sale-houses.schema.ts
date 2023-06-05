@@ -9,6 +9,8 @@ import {
   EnergyEfficiencyArray,
   FurnishingArray,
   HousesTypeArray,
+  OnlineViewing,
+  OnlineViewingArray,
   ParkingArray,
 } from '../constants';
 import { ISaleHouses } from '../types/real-estate-for-sale';
@@ -51,10 +53,14 @@ export const SaleHousesSchema = new Schema<ISaleHousesDoc, Model<ISaleHousesDoc>
       type: String,
       required: [ true, 'Original id is required' ],
     },
-    'online-viewing': Schema.Types.Boolean,
+    'online-viewing': {
+      type: String,
+      enum: OnlineViewingArray,
+      default: OnlineViewing.No,
+    },
     'postal-code': {
       type: String,
-      required: [ true, 'Postal code is required' ],
+      default: '',
     },
     'reference-number': String,
     'registration-number': String,
