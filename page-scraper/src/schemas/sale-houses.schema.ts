@@ -27,9 +27,7 @@ export const SaleHousesSchema = new Schema<ISaleHousesDoc, Model<ISaleHousesDoc>
       type: String,
       required: [ true, 'Title is required' ],
     },
-    description: {
-      type: String,
-    },
+    description: String,
     publish_date: {
       type: Number,
       required: [ true, 'Publish date is required' ],
@@ -38,9 +36,7 @@ export const SaleHousesSchema = new Schema<ISaleHousesDoc, Model<ISaleHousesDoc>
       type: String,
       required: [ true, 'City is required' ],
     },
-    district: {
-      type: String,
-    },
+    district: String,
     price: {
       type: Number,
       required: [ true, 'Price is required' ],

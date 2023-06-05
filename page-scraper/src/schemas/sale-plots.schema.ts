@@ -25,9 +25,7 @@ export const SalePlotsSchema = new Schema<ISalePlotsDoc, Model<ISalePlotsDoc>>(
       type: String,
       required: [ true, 'Title is required' ],
     },
-    description: {
-      type: String,
-    },
+    description: String,
     publish_date: {
       type: Number,
       required: [ true, 'Publish date is required' ],
@@ -36,9 +34,7 @@ export const SalePlotsSchema = new Schema<ISalePlotsDoc, Model<ISalePlotsDoc>>(
       type: String,
       required: [ true, 'City is required' ],
     },
-    district: {
-      type: String,
-    },
+    district: String,
     price: {
       type: Number,
       required: [ true, 'Price is required' ],

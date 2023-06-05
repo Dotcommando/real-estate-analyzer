@@ -12,15 +12,16 @@ import {
   EnergyEfficiencyArray,
   Furnishing,
   FurnishingArray,
-  ParkingArray,
+  ParkingArray, Pets,
+  PetsArray,
 } from '../constants';
-import { ISaleApartmentsFlats } from '../types/real-estate-for-sale';
+import { IRentApartmentsFlats } from '../types/real-estate-to-rent';
 
 
-export interface ISaleApartmentsFlatsDoc extends ISaleApartmentsFlats, Document {
+export interface IRentApartmentsFlatsDoc extends IRentApartmentsFlats, Document {
 }
 
-export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Model<ISaleApartmentsFlatsDoc>>(
+export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Model<IRentApartmentsFlatsDoc>>(
   {
     url: {
       type: String,
@@ -113,7 +114,12 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       enum: AirConditioningArray,
       default: AirConditioning.No,
     },
+    pets: {
+      type: String,
+      enum: PetsArray,
+      default: Pets.NotAllowed,
+    },
   },
 );
 
-export const SaleApartmentsFlatsModel = mongoose.model<ISaleApartmentsFlatsDoc, Model<ISaleApartmentsFlatsDoc>>('SaleApartmentsFlats', SaleApartmentsFlatsSchema);
+export const RentApartmentsFlatsModel = mongoose.model<IRentApartmentsFlatsDoc, Model<IRentApartmentsFlatsDoc>>('RentApartmentsFlats', RentApartmentsFlatsSchema);

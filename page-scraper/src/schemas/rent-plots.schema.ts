@@ -1,14 +1,14 @@
 import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
-import { CommercialTypeArray, Condition, ConditionArray, EnergyEfficiency, EnergyEfficiencyArray } from '../constants';
-import { ISaleCommercial } from '../types/real-estate-for-sale';
+import { PlotTypeArray, Share, ShareArray } from '../constants';
+import { IRentPlots } from '../types/real-estate-to-rent';
 
 
-export interface ISaleCommercialDoc extends ISaleCommercial, Document {
+export interface IRentPlotsDoc extends IRentPlots, Document {
 }
 
-export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCommercialDoc>>(
+export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
   {
     url: {
       type: String,
@@ -52,31 +52,6 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
       type: Number,
       required: [ true, 'Square meter price is required' ],
     },
-    condition: {
-      type: String,
-      enum: ConditionArray,
-      default: Condition.Resale,
-    },
-    'energy-efficiency': {
-      type: String,
-      enum: EnergyEfficiencyArray,
-      default: EnergyEfficiency.NA,
-    },
-    included: [ String ],
-    'construction-year': String,
-    type: {
-      type: String,
-      enum: CommercialTypeArray,
-    },
-    area: {
-      type: Number,
-      required: [ true, 'Area is required' ],
-    },
-    'area-unit': {
-      type: String,
-      default: 'm²',
-      required: [ true, 'Area Unit is required' ],
-    },
     'plot-area': {
       type: Number,
       required: [ true, 'Plot Area is required' ],
@@ -86,7 +61,21 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
       default: 'm²',
       required: [ true, 'Plot Area Unit is required' ],
     },
+    'plot-type': {
+      type: String,
+      enum: PlotTypeArray,
+      required: [ true, 'Plot Type is required' ],
+    },
+    share: {
+      type: String,
+      enum: ShareArray,
+      default: Share.No,
+    },
+    'parcel-number': String,
+    'planning-zone': String,
+    density: String,
+    coverage: String,
   },
 );
 
-export const SaleCommercialModel = mongoose.model<ISaleCommercialDoc, Model<ISaleCommercialDoc>>('SaleCommercial', SaleCommercialSchema);
+export const RentPlotsModel = mongoose.model<IRentPlotsDoc, Model<IRentPlotsDoc>>('RentPlots', RentPlotsSchema);

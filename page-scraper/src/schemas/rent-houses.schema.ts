@@ -2,25 +2,23 @@ import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
 import {
-  AirConditioning,
   AirConditioningArray,
-  ApartmentsFlatsType,
-  ApartmentsFlatsTypeArray,
   Condition,
   ConditionArray,
   EnergyEfficiency,
   EnergyEfficiencyArray,
-  Furnishing,
   FurnishingArray,
+  HousesTypeArray,
   ParkingArray,
+  PetsArray,
 } from '../constants';
-import { ISaleApartmentsFlats } from '../types/real-estate-for-sale';
+import { IRentHouses } from '../types/real-estate-to-rent';
 
 
-export interface ISaleApartmentsFlatsDoc extends ISaleApartmentsFlats, Document {
+export interface IRentHousesDoc extends IRentHouses, Document {
 }
 
-export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Model<ISaleApartmentsFlatsDoc>>(
+export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>>(
   {
     url: {
       type: String,
@@ -76,16 +74,6 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     },
     included: [ String ],
     'construction-year': String,
-    type: {
-      type: String,
-      enum: ApartmentsFlatsTypeArray,
-      default: ApartmentsFlatsType.Apartment,
-    },
-    floor: String,
-    parking: {
-      type: String,
-      enum: ParkingArray,
-    },
     'property-area': {
       type: Number,
       required: [ true, 'Property Area is required' ],
@@ -95,25 +83,46 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       default: 'm²',
       required: [ true, 'Property Area Unit is required' ],
     },
+    type: {
+      type: String,
+      enum: HousesTypeArray,
+      required: [ true, 'Type is required' ],
+    },
+    parking: {
+      type: String,
+      enum: ParkingArray,
+    },
     furnishing: {
       type: String,
       enum: FurnishingArray,
-      default: Furnishing.Unfurnished,
-    },
-    bedrooms: {
-      type: Number,
-      required: [ true, 'Bedrooms count is required' ],
-    },
-    bathrooms: {
-      type: Number,
-      required: [ true, 'Bathrooms count is required' ],
     },
     'air-conditioning': {
       type: String,
       enum: AirConditioningArray,
-      default: AirConditioning.No,
+    },
+    bedrooms: {
+      type: Number,
+      required: [ true, 'Number of bedrooms is required' ],
+    },
+    bathrooms: {
+      type: Number,
+      required: [ true, 'Number of bathrooms is required' ],
+    },
+    pets: {
+      type: String,
+      enum: PetsArray,
+      required: [ true, 'Pets policy is required' ],
+    },
+    'plot-area': {
+      type: Number,
+      required: [ true, 'Plot Area is required' ],
+    },
+    'plot-area-unit': {
+      type: String,
+      default: 'm²',
+      required: [ true, 'Plot Area Unit is required' ],
     },
   },
 );
 
-export const SaleApartmentsFlatsModel = mongoose.model<ISaleApartmentsFlatsDoc, Model<ISaleApartmentsFlatsDoc>>('SaleApartmentsFlats', SaleApartmentsFlatsSchema);
+export const RentHousesModel = mongoose.model<IRentHousesDoc, Model<IRentHousesDoc>>('RentHouses', RentHousesSchema);

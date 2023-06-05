@@ -2,25 +2,19 @@ import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
 import {
-  AirConditioning,
-  AirConditioningArray,
-  ApartmentsFlatsType,
-  ApartmentsFlatsTypeArray,
+  CommercialTypeArray,
   Condition,
   ConditionArray,
   EnergyEfficiency,
   EnergyEfficiencyArray,
-  Furnishing,
-  FurnishingArray,
-  ParkingArray,
 } from '../constants';
-import { ISaleApartmentsFlats } from '../types/real-estate-for-sale';
+import { IRentCommercial } from '../types/real-estate-to-rent';
 
 
-export interface ISaleApartmentsFlatsDoc extends ISaleApartmentsFlats, Document {
+export interface IRentCommercialDoc extends IRentCommercial, Document {
 }
 
-export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Model<ISaleApartmentsFlatsDoc>>(
+export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCommercialDoc>>(
   {
     url: {
       type: String,
@@ -78,13 +72,8 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     'construction-year': String,
     type: {
       type: String,
-      enum: ApartmentsFlatsTypeArray,
-      default: ApartmentsFlatsType.Apartment,
-    },
-    floor: String,
-    parking: {
-      type: String,
-      enum: ParkingArray,
+      enum: CommercialTypeArray,
+      required: [ true, 'Commercial Type is required' ],
     },
     'property-area': {
       type: Number,
@@ -95,25 +84,16 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       default: 'm²',
       required: [ true, 'Property Area Unit is required' ],
     },
-    furnishing: {
-      type: String,
-      enum: FurnishingArray,
-      default: Furnishing.Unfurnished,
-    },
-    bedrooms: {
+    'plot-area': {
       type: Number,
-      required: [ true, 'Bedrooms count is required' ],
+      required: [ true, 'Plot Area is required' ],
     },
-    bathrooms: {
-      type: Number,
-      required: [ true, 'Bathrooms count is required' ],
-    },
-    'air-conditioning': {
+    'plot-area-unit': {
       type: String,
-      enum: AirConditioningArray,
-      default: AirConditioning.No,
+      default: 'm²',
+      required: [ true, 'Plot Area Unit is required' ],
     },
   },
 );
 
-export const SaleApartmentsFlatsModel = mongoose.model<ISaleApartmentsFlatsDoc, Model<ISaleApartmentsFlatsDoc>>('SaleApartmentsFlats', SaleApartmentsFlatsSchema);
+export const RentCommercialModel = mongoose.model<IRentCommercialDoc, Model<IRentCommercialDoc>>('RentCommercial', RentCommercialSchema);
