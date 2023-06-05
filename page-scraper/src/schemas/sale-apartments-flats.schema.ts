@@ -15,9 +15,11 @@ import {
   ParkingArray,
 } from '../constants';
 import { ISaleApartmentsFlats } from '../types/real-estate-for-sale';
+import { roundDate } from '../utils';
 
 
 export interface ISaleApartmentsFlatsDoc extends ISaleApartmentsFlats, Document {
+  active_dates: Date[];
 }
 
 export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Model<ISaleApartmentsFlatsDoc>>(
@@ -32,7 +34,7 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     },
     description: String,
     publish_date: {
-      type: Number,
+      type: Schema.Types.Date,
       required: [ true, 'Publish date is required' ],
     },
     city: {
@@ -113,7 +115,21 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       enum: AirConditioningArray,
       default: AirConditioning.No,
     },
+    active_dates: {
+      type: [ Schema.Types.Date ] as unknown as Date[],
+      required: [ true, 'Active dates are required' ],
+    },
   },
 );
+
+SaleApartmentsFlatsSchema.pre<ISaleApartmentsFlatsDoc>('save', async function(next) {
+  const currentDate = roundDate(new Date());
+
+  if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
+    this.active_dates.push(currentDate);
+  }
+
+  next();
+});
 
 export const SaleApartmentsFlatsModel = mongoose.model<ISaleApartmentsFlatsDoc, Model<ISaleApartmentsFlatsDoc>>('SaleApartmentsFlats', SaleApartmentsFlatsSchema);

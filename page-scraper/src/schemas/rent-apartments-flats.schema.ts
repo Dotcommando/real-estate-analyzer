@@ -16,9 +16,11 @@ import {
   PetsArray,
 } from '../constants';
 import { IRentApartmentsFlats } from '../types/real-estate-to-rent';
+import { roundDate } from '../utils';
 
 
 export interface IRentApartmentsFlatsDoc extends IRentApartmentsFlats, Document {
+  active_dates: Date[];
 }
 
 export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Model<IRentApartmentsFlatsDoc>>(
@@ -33,7 +35,7 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
     },
     description: String,
     publish_date: {
-      type: Number,
+      type: Schema.Types.Date,
       required: [ true, 'Publish date is required' ],
     },
     city: {
@@ -119,7 +121,21 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
       enum: PetsArray,
       default: Pets.NotAllowed,
     },
+    active_dates: {
+      type: [ Schema.Types.Date ] as unknown as Date[],
+      required: [ true, 'Active dates are required' ],
+    },
   },
 );
+
+RentApartmentsFlatsSchema.pre<IRentApartmentsFlatsDoc>('save', async function(next) {
+  const currentDate = roundDate(new Date());
+
+  if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
+    this.active_dates.push(currentDate);
+  }
+
+  next();
+});
 
 export const RentApartmentsFlatsModel = mongoose.model<IRentApartmentsFlatsDoc, Model<IRentApartmentsFlatsDoc>>('RentApartmentsFlats', RentApartmentsFlatsSchema);

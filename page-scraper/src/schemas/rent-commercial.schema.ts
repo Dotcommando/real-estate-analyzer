@@ -9,9 +9,11 @@ import {
   EnergyEfficiencyArray,
 } from '../constants';
 import { IRentCommercial } from '../types/real-estate-to-rent';
+import { roundDate } from '../utils';
 
 
 export interface IRentCommercialDoc extends IRentCommercial, Document {
+  active_dates: Date[];
 }
 
 export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCommercialDoc>>(
@@ -26,7 +28,7 @@ export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCo
     },
     description: String,
     publish_date: {
-      type: Number,
+      type: Schema.Types.Date,
       required: [ true, 'Publish date is required' ],
     },
     city: {
@@ -93,7 +95,21 @@ export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCo
       default: 'm²',
       required: [ true, 'Plot Area Unit is required' ],
     },
+    active_dates: {
+      type: [ Schema.Types.Date ] as unknown as Date[],
+      required: [ true, 'Active dates are required' ],
+    },
   },
 );
+
+RentCommercialSchema.pre<IRentCommercialDoc>('save', async function(next) {
+  const currentDate = roundDate(new Date());
+
+  if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
+    this.active_dates.push(currentDate);
+  }
+
+  next();
+});
 
 export const RentCommercialModel = mongoose.model<IRentCommercialDoc, Model<IRentCommercialDoc>>('RentCommercial', RentCommercialSchema);

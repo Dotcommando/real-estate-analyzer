@@ -9,6 +9,15 @@ import * as redisStore from 'cache-manager-ioredis';
 
 import { AppController } from './app.controller';
 import { ServiceName } from './constants';
+import {
+  RentApartmentsFlatsSchema,
+  RentCommercialSchema,
+  RentHousesSchema,
+  SaleApartmentsFlatsSchema,
+  SaleCommercialSchema,
+  SaleHousesSchema,
+  SalePlotsSchema,
+} from './schemas';
 import { AppService, DelayService, MongoConfigService, ParseService } from './services';
 
 
@@ -49,6 +58,62 @@ import { AppService, DelayService, MongoConfigService, ParseService } from './se
       useClass: MongoConfigService,
       inject: [ ConfigService ],
     }),
+    MongooseModule.forFeature([
+      {
+        name: 'RentApartmentsFlats',
+        schema: RentApartmentsFlatsSchema,
+        collection: 'rentapartmentsflats',
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: 'RentCommercial',
+        schema: RentCommercialSchema,
+        collection: 'rentcommercial',
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: 'RentHouses',
+        schema: RentHousesSchema,
+        collection: 'renthouses',
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: 'RentHouses',
+        schema: RentHousesSchema,
+        collection: 'renthouses',
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: 'SaleApartmentsFlats',
+        schema: SaleApartmentsFlatsSchema,
+        collection: 'saleapartmentsflats',
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: 'SaleCommercial',
+        schema: SaleCommercialSchema,
+        collection: 'salecommercial',
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: 'SaleHouses',
+        schema: SaleHousesSchema,
+        collection: 'salehouses',
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: 'SalePlots',
+        schema: SalePlotsSchema,
+        collection: 'saleplots',
+      },
+    ]),
     HttpModule.register({
       timeout: parseInt(process.env.HTTP_GET_TIMEOUT),
       maxRedirects: parseInt(process.env.MAX_REDIRECTS),

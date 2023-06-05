@@ -3,9 +3,11 @@ import { Document, Model, Schema } from 'mongoose';
 
 import { PlotTypeArray, Share, ShareArray } from '../constants';
 import { IRentPlots } from '../types/real-estate-to-rent';
+import { roundDate } from '../utils';
 
 
 export interface IRentPlotsDoc extends IRentPlots, Document {
+  active_dates: Date[];
 }
 
 export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
@@ -20,7 +22,7 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
     },
     description: String,
     publish_date: {
-      type: Number,
+      type: Schema.Types.Date,
       required: [ true, 'Publish date is required' ],
     },
     city: {
@@ -75,7 +77,21 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
     'planning-zone': String,
     density: String,
     coverage: String,
+    active_dates: {
+      type: [ Schema.Types.Date ] as unknown as Date[],
+      required: [ true, 'Active dates are required' ],
+    },
   },
 );
+
+RentPlotsSchema.pre<IRentPlotsDoc>('save', async function(next) {
+  const currentDate = roundDate(new Date());
+
+  if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
+    this.active_dates.push(currentDate);
+  }
+
+  next();
+});
 
 export const RentPlotsModel = mongoose.model<IRentPlotsDoc, Model<IRentPlotsDoc>>('RentPlots', RentPlotsSchema);

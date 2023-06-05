@@ -2,7 +2,7 @@ export interface IRealEstate {
   url: string;
   title: string;
   description: string;
-  publish_date: number;
+  publish_date: Date;
   city: string;
   district?: string;
   price: number;

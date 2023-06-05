@@ -3,9 +3,11 @@ import { Document, Model, Schema } from 'mongoose';
 
 import { CommercialTypeArray, Condition, ConditionArray, EnergyEfficiency, EnergyEfficiencyArray } from '../constants';
 import { ISaleCommercial } from '../types/real-estate-for-sale';
+import { roundDate } from '../utils';
 
 
 export interface ISaleCommercialDoc extends ISaleCommercial, Document {
+  active_dates: Date[];
 }
 
 export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCommercialDoc>>(
@@ -20,7 +22,7 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
     },
     description: String,
     publish_date: {
-      type: Number,
+      type: Schema.Types.Date,
       required: [ true, 'Publish date is required' ],
     },
     city: {
@@ -86,7 +88,21 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
       default: 'm²',
       required: [ true, 'Plot Area Unit is required' ],
     },
+    active_dates: {
+      type: [ Schema.Types.Date ] as unknown as Date[],
+      required: [ true, 'Active dates are required' ],
+    },
   },
 );
+
+SaleCommercialSchema.pre<ISaleCommercialDoc>('save', async function(next) {
+  const currentDate = roundDate(new Date());
+
+  if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
+    this.active_dates.push(currentDate);
+  }
+
+  next();
+});
 
 export const SaleCommercialModel = mongoose.model<ISaleCommercialDoc, Model<ISaleCommercialDoc>>('SaleCommercial', SaleCommercialSchema);

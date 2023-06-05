@@ -12,9 +12,11 @@ import {
   ParkingArray,
 } from '../constants';
 import { ISaleHouses } from '../types/real-estate-for-sale';
+import { roundDate } from '../utils';
 
 
 export interface ISaleHousesDoc extends ISaleHouses, Document {
+  active_dates: Date[];
 }
 
 export const SaleHousesSchema = new Schema<ISaleHousesDoc, Model<ISaleHousesDoc>>(
@@ -29,7 +31,7 @@ export const SaleHousesSchema = new Schema<ISaleHousesDoc, Model<ISaleHousesDoc>
     },
     description: String,
     publish_date: {
-      type: Number,
+      type: Schema.Types.Date,
       required: [ true, 'Publish date is required' ],
     },
     city: {
@@ -106,7 +108,21 @@ export const SaleHousesSchema = new Schema<ISaleHousesDoc, Model<ISaleHousesDoc>
       type: Number,
       required: [ true, 'Bathrooms count is required' ],
     },
+    active_dates: {
+      type: [ Schema.Types.Date ] as unknown as Date[],
+      required: [ true, 'Active dates are required' ],
+    },
   },
 );
+
+SaleHousesSchema.pre<ISaleHousesDoc>('save', async function(next) {
+  const currentDate = roundDate(new Date());
+
+  if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
+    this.active_dates.push(currentDate);
+  }
+
+  next();
+});
 
 export const SaleHousesModel = mongoose.model<ISaleHousesDoc, Model<ISaleHousesDoc>>('SaleHouses', SaleHousesSchema);
