@@ -33,11 +33,11 @@ export class DbAccessService {
 
     if (existingAnnouncement) {
       const roundedDate = roundDate(new Date());
-      const roundedDateAsString = roundedDate.toISOString();
+      const roundedDateAsString = roundedDate.toString();
 
       if (
         !existingAnnouncement.active_dates
-          .map(date => date.toISOString()).includes(roundedDateAsString)
+          .map(date => date.toString()).includes(roundedDateAsString)
       ) {
         existingAnnouncement.active_dates.push(roundedDate);
         await existingAnnouncement.save();

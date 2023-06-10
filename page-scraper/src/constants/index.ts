@@ -13,3 +13,4 @@ export * from './pets.enum';
 export * from './plot-type.enum';
 export * from './service-name';
 export * from './share';
+export * from './user-agents';

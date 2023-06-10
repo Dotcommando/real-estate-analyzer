@@ -8,7 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import * as redisStore from 'cache-manager-ioredis';
 
 import { AppController } from './app.controller';
-import { ServiceName } from './constants';
+import { ServiceName, UserAgents } from './constants';
 import {
   RentApartmentsFlatsSchema,
   RentCommercialSchema,
@@ -20,6 +20,7 @@ import {
   SalePlotsSchema,
 } from './schemas';
 import { AppService, DbAccessService, DelayService, MongoConfigService, ParseService } from './services';
+import { getRandomElement } from './utils';
 
 
 @Module({
@@ -118,6 +119,11 @@ import { AppService, DbAccessService, DelayService, MongoConfigService, ParseSer
     HttpModule.register({
       timeout: parseInt(process.env.HTTP_GET_TIMEOUT),
       maxRedirects: parseInt(process.env.MAX_REDIRECTS),
+      transformRequest: [ (data, headers) => {
+        headers['User-Agent'] = getRandomElement(UserAgents);
+
+        return data;
+      } ],
     }),
   ],
   providers: [ AppService, ParseService, DelayService, DbAccessService ],

@@ -38,7 +38,7 @@ export class AppController {
   @EventPattern(Messages.PARSE_URL)
   public async getPageData(
     @Payload() url: string,
-  ) {
+  ): Promise<Partial<IRealEstate> | null> {
     try {
       const fromCache = await this.cacheManager.get(url);
       let pageData: Partial<IRealEstate>;
@@ -48,6 +48,10 @@ export class AppController {
         await this.delayService.delayRequest();
 
         const pageResult = await this.appService.getPage(url);
+
+        if (!pageResult) {
+          return null;
+        }
 
         [ pageData, category ] = await this.parseService.parsePage(pageResult, url);
 
