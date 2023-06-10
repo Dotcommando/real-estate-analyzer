@@ -1,6 +1,8 @@
 require('dotenv').config();
 const amqp = require('amqplib');
-const queueName = process.env.URL_QUEUE_NAME;
+const queueName = process.argv[2] === '1'
+    ? process.env.QUEUE_NAME_1
+    : process.env.QUEUE_NAME_2;
 const mockUrls = [
     'http://localhost:3000/adv/4524513_5-bedroom-detached-house-to-rent/',
     'http://localhost:3000/adv/4659324_2-bedroom-detached-house-to-rent/',
@@ -12,6 +14,8 @@ const mockUrls = [
 async function publishToQueue() {
     const connection = await amqp.connect(`amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@localhost:${process.env.RABBITMQ_PORT}`);
     const channel = await connection.createChannel();
+
+    console.log('queueName', queueName);
 
     await channel.assertQueue(queueName);
 

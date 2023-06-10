@@ -35,7 +35,7 @@ import { getRandomElement } from './utils';
             `amqp://localhost:${process.env.RABBITMQ_PORT}`,
             // `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@localhost:${process.env.RABBITMQ_PORT}`,
           ],
-          queue: process.env.URL_QUEUE_NAME,
+          queue: process.env.QUEUE_NAME,
           queueOptions: {
             durable: true,
           },
@@ -51,8 +51,8 @@ import { getRandomElement } from './utils';
         store: redisStore,
         host: configService.get('REDIS_HOST'),
         port: configService.get('REDIS_PORT'),
-        ttl: configService.get('CACHE_TTL'),
-        max: configService.get('CACHE_MAX_ITEMS'),
+        ttl: configService.get('RCACHE_TTL'),
+        max: configService.get('RCACHE_MAX_ITEMS'),
       }),
     }),
     MongooseModule.forRootAsync({

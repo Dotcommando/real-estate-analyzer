@@ -6,7 +6,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "test-queue": "node test-queue.js",
+    "test-queue-1": "node test-queue.js 1",
+    "test-queue-2": "node test-queue.js 2",
     "start-rabbit": "docker-compose up -d",
     "stop-rabbit": "docker-compose down",
     "clear-rabbit": "node clear-queue.js"

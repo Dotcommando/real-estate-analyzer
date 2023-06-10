@@ -2,7 +2,7 @@ require('dotenv').config();
 
 
 const amqp = require('amqplib');
-const queueName = process.env.URL_QUEUE_NAME;
+const queueName = process.env.QUEUE_NAME;
 
 async function clearQueue() {
     const connection = await amqp.connect(`amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@localhost:${process.env.RABBITMQ_PORT}`);
