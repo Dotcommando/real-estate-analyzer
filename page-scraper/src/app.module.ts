@@ -1,6 +1,6 @@
 import { HttpModule } from '@nestjs/axios';
 import { CacheModule } from '@nestjs/cache-manager';
-import { Module } from '@nestjs/common';
+import { LoggerService, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -8,7 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import * as redisStore from 'cache-manager-ioredis';
 
 import { AppController } from './app.controller';
-import { ServiceName, USER_AGENTS } from './constants';
+import { LOGGER, ServiceName, USER_AGENTS } from './constants';
 import {
   RentApartmentsFlatsSchema,
   RentCommercialSchema,
@@ -19,7 +19,15 @@ import {
   SaleHousesSchema,
   SalePlotsSchema,
 } from './schemas';
-import { AppService, DbAccessService, DelayService, MongoConfigService, ParseService } from './services';
+import {
+  AppService,
+  DbAccessService,
+  DelayService,
+  DummyLogger,
+  Logger,
+  MongoConfigService,
+  ParseService,
+} from './services';
 import { getRandomElement } from './utils';
 
 
@@ -126,7 +134,23 @@ import { getRandomElement } from './utils';
       } ],
     }),
   ],
-  providers: [ AppService, ParseService, DelayService, DbAccessService ],
+  providers: [
+    AppService,
+    ParseService,
+    DelayService,
+    DbAccessService,
+    {
+      provide: LOGGER,
+      useFactory: (configService: ConfigService): LoggerService => {
+        const environment = configService.get('MODE');
+
+        return environment === 'prod'
+          ? new DummyLogger()
+          : new Logger();
+      },
+      inject: [ ConfigService ],
+    },
+  ],
   controllers: [ AppController ],
 })
 export class AppModule {}

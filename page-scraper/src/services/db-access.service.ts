@@ -1,16 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 
 import { Model } from 'mongoose';
 
-import { SlugByCategory } from '../constants/categories';
+import { LOGGER, SlugByCategory } from '../constants';
 import { IRealEstate } from '../types';
 import { roundDate } from '../utils';
 
 
 @Injectable()
 export class DbAccessService {
-  constructor(private moduleRef: ModuleRef) {}
+  constructor(
+    @Inject(LOGGER) private readonly logger: LoggerService,
+    private moduleRef: ModuleRef,
+  ) {}
 
   private getModelByUrl(categoryUrl: string): Model<any> | null {
     try {
@@ -30,12 +33,11 @@ export class DbAccessService {
         return null;
       }
 
-      console.log(announcementData.ad_id);
-
       const existingAnnouncement = await Model.findOne({ ad_id: announcementData.ad_id });
 
       if (existingAnnouncement) {
-        console.log('Exist a duplicate!');
+        this.logger.log(`A duplicate found for ad ${announcementData.ad_id} in the DB.`);
+
         const roundedDate = roundDate(new Date());
         const roundedDateAsString = roundedDate.toString();
 
@@ -49,7 +51,8 @@ export class DbAccessService {
 
         return existingAnnouncement;
       } else {
-        console.log('NEW!');
+        this.logger.log(`No duplicates found for ad ${announcementData.ad_id} in the DB.`);
+
         const newAnnouncement = new Model(announcementData);
 
         newAnnouncement.active_dates = [ roundDate(new Date()) ];
@@ -58,14 +61,11 @@ export class DbAccessService {
         return newAnnouncement;
       }
     } catch (e) {
-      console.log(' ');
-      console.log(' ');
-      console.log('Error happened in \'saveNewAnnouncement\' method');
-      console.log('categoryUrl:', categoryUrl);
-      console.log('announcementData:');
-      console.log(announcementData);
-      console.log(' ');
-      console.error(e);
+      this.logger.log(' ');
+      this.logger.error('Error happened in \'saveNewAnnouncement\' method.');
+      this.logger.error('categoryUrl:', categoryUrl);
+      this.logger.error(' ');
+      this.logger.error(e);
     }
   }
 

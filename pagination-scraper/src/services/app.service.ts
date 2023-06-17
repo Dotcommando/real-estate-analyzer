@@ -6,7 +6,7 @@ import { Cron } from '@nestjs/schedule';
 
 import { AxiosResponse } from 'axios';
 import { config } from 'dotenv';
-import { catchError, combineLatest, filter, tap } from 'rxjs';
+import { catchError, of, take } from 'rxjs';
 
 import { DelayService } from './delay.service';
 import { ParseService } from './parse.service';
@@ -47,12 +47,18 @@ export class AppService {
         this.logger.log(`URL ${ url } sent`);
 
         const record: RmqRecord<string> = new RmqRecordBuilder(url)
-          .setOptions({
-            persistent: true,
-          })
           .build();
 
-        this.client.send<any, RmqRecord>(Messages.PARSE_URL, record).subscribe();
+        this.client.send<unknown, RmqRecord>(Messages.PARSE_URL, record)
+          .pipe(
+            take(1),
+            catchError(err => {
+              this.logger.error('Error in \'parseIndexBySchedule\' method in RxJS pipe of client.send.');
+              this.logger.error(err);
+
+              return of(true);
+            }),
+          );
       }
     } catch (e) {
       this.logger.log('An error occurred in \'parseIndexBySchedule\' method.');
@@ -99,7 +105,8 @@ export class AppService {
 
       return isNaN(maxPageNumber) ? 0 : maxPageNumber;
     } catch (e) {
-      this.logger.error('Error happened in getMaxNumberOfPagination method of app.service.ts');
+      this.logger.error('Error happened in \'getMaxNumberOfPagination\' method of app.service.ts');
+      this.logger.error(e);
 
       return 0;
     }

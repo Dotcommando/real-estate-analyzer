@@ -1,11 +1,11 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Controller, Inject } from '@nestjs/common';
+import { Controller, Inject, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 
 import { Cache } from 'cache-manager';
 
-import { Messages } from './constants';
+import { LOGGER, Messages } from './constants';
 import { AppService, DbAccessService, DelayService, ParseService } from './services';
 import { IRealEstate } from './types';
 
@@ -16,6 +16,7 @@ export class AppController {
 
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject(LOGGER) private readonly logger: LoggerService,
     private readonly appService: AppService,
     private readonly parseService: ParseService,
     private readonly configService: ConfigService,
@@ -32,7 +33,7 @@ export class AppController {
     // const channel = context?.getChannelRef();
     // const originalMsg = context?.getMessage();
 
-    console.log(`data: ${data.length < 30 ? data : data.substring(0, 22) + ' ... ' + data.substring(data.length - 3)}, typeof data: ${typeof data}`);
+    this.logger.log(`data: ${data.length < 30 ? data : data.substring(0, 22) + ' ... ' + data.substring(data.length - 3)}, typeof data: ${typeof data}`);
 
     // channel.ack(originalMsg);
   }
@@ -59,14 +60,18 @@ export class AppController {
         [ pageData, category ] = await this.parseService.parsePage(pageResult, url);
 
         await this.cacheManager.set(cacheKey, [ pageData, category ], this.cacheTTL);
+        this.logger.log(`Parsing ${url}. Not found in the cache.`);
       } else {
         [ pageData, category ] = fromCache as [ Partial<IRealEstate>, string ];
+        this.logger.log(`Parsing ${url}. Found in the cache.`);
       }
 
       const savedDocument = this.dbAccessService.saveNewAnnouncement(category, pageData);
 
       return pageData;
     } catch (e) {
+      this.logger.log(`Failed parsing ${url}.`);
+
       return null;
     }
   }
