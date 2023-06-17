@@ -12,6 +12,8 @@ import { IRealEstate } from './types';
 
 @Controller()
 export class AppController {
+  private readonly cacheTTL = parseInt(this.configService.get('RCACHE_TTL'));
+
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly appService: AppService,
@@ -40,7 +42,8 @@ export class AppController {
     @Payload() url: string,
   ): Promise<Partial<IRealEstate> | null> {
     try {
-      const fromCache = await this.cacheManager.get(url);
+      const cacheKey = this.appService.getKeyByUrl(url);
+      const fromCache = await this.cacheManager.get(cacheKey);
       let pageData: Partial<IRealEstate>;
       let category: string;
 
@@ -55,7 +58,7 @@ export class AppController {
 
         [ pageData, category ] = await this.parseService.parsePage(pageResult, url);
 
-        await this.cacheManager.set(url, [ pageData, category ], parseInt(this.configService.get('RCACHE_TTL')));
+        await this.cacheManager.set(cacheKey, [ pageData, category ], this.cacheTTL);
       } else {
         [ pageData, category ] = fromCache as [ Partial<IRealEstate>, string ];
       }

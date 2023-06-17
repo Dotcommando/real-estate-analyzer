@@ -6,7 +6,8 @@ import { IPaginationPageList } from '../types';
 
 @Injectable()
 export class ParseService {
+  // @ts-ignore
   public async parsePage(pageData: string, url: string): Promise<[ Partial<IPaginationPageList>, string ]> {
-    return new BazarakiPaginationScraper<IPaginationPageList>(pageData, url).getPaginationList();
+    // return new BazarakiPaginationScraper<IPaginationPageList>(pageData, url).getPaginationList();
   }
 }

@@ -1,20 +1,22 @@
 import { HttpModule } from '@nestjs/axios';
 import { CacheModule } from '@nestjs/cache-manager';
-import { Module } from '@nestjs/common';
+import { LoggerService, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 
 import * as redisStore from 'cache-manager-ioredis';
 
 import { AppController } from './app.controller';
-import { ServiceName, UserAgents } from './constants';
-import { AppService, DelayService, ParseService } from './services';
+import { LOGGER, ServiceName, USER_AGENTS } from './constants';
+import { AppService, AsyncQueueService, DelayService, DummyLogger, Logger, ParseService } from './services';
 import { getRandomElement } from './utils';
 
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    ScheduleModule.forRoot(),
     ClientsModule.register([
       {
         name: ServiceName,
@@ -48,13 +50,30 @@ import { getRandomElement } from './utils';
       timeout: parseInt(process.env.HTTP_GET_TIMEOUT),
       maxRedirects: parseInt(process.env.MAX_REDIRECTS),
       transformRequest: [ (data, headers) => {
-        headers['User-Agent'] = getRandomElement(UserAgents);
+        headers['User-Agent'] = getRandomElement(USER_AGENTS);
 
         return data;
       } ],
     }),
   ],
-  providers: [ AppService, ParseService, DelayService ],
+  providers: [
+    AppService,
+    AsyncQueueService,
+    DelayService,
+    ParseService,
+    SchedulerRegistry,
+    {
+      provide: LOGGER,
+      useFactory: (configService: ConfigService): LoggerService => {
+        const environment = configService.get('MODE');
+
+        return environment === 'prod'
+          ? new DummyLogger()
+          : new Logger();
+      },
+      inject: [ ConfigService ],
+    },
+  ],
   controllers: [ AppController ],
 })
 export class AppModule {}
