@@ -4,6 +4,7 @@ export enum PlotType {
   Commercial = 'Commercial',
   Tourist = 'Tourist',
   Industrial = 'Industrial',
+  NotSpecified = 'Not specified',
 }
 
 export const PlotTypeArray = Object.values(PlotType);

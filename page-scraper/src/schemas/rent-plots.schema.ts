@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
-import { OnlineViewing, OnlineViewingArray, PlotTypeArray, Share, ShareArray } from '../constants';
+import { OnlineViewing, OnlineViewingArray, PlotType, PlotTypeArray, Share, ShareArray } from '../constants';
 import { IRentPlots } from '../types/real-estate-to-rent';
 import { roundDate } from '../utils';
 
@@ -60,7 +60,7 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
     },
     'plot-area': {
       type: Number,
-      required: [ true, 'Plot Area is required' ],
+      default: 0,
     },
     'plot-area-unit': {
       type: String,
@@ -70,7 +70,7 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
     'plot-type': {
       type: String,
       enum: PlotTypeArray,
-      required: [ true, 'Plot Type is required' ],
+      default: PlotType.NotSpecified,
     },
     share: {
       type: String,

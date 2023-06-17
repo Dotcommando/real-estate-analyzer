@@ -110,11 +110,11 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     },
     bedrooms: {
       type: Number,
-      required: [ true, 'Bedrooms count is required' ],
+      default: 1,
     },
     bathrooms: {
       type: Number,
-      required: [ true, 'Bathrooms count is required' ],
+      default: 1,
     },
     'air-conditioning': {
       type: String,

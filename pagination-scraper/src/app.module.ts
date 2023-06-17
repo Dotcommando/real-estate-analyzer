@@ -6,12 +6,15 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 
 import * as redisStore from 'cache-manager-ioredis';
+import { config } from 'dotenv';
 
 import { AppController } from './app.controller';
 import { LOGGER, ServiceName, USER_AGENTS } from './constants';
 import { AppService, AsyncQueueService, DelayService, DummyLogger, Logger, ParseService } from './services';
 import { getRandomElement } from './utils';
 
+
+config();
 
 @Module({
   imports: [
@@ -23,8 +26,7 @@ import { getRandomElement } from './utils';
         transport: Transport.RMQ,
         options: {
           urls: [
-            `amqp://localhost:${process.env.RABBITMQ_PORT}`,
-            // `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@localhost:${process.env.RABBITMQ_PORT}`,
+            `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@localhost:${process.env.RABBITMQ_PORT}`,
           ],
           queue: process.env.QUEUE_NAME,
           queueOptions: {

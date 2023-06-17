@@ -4,6 +4,7 @@ import { Document, Model, Schema } from 'mongoose';
 import {
   OnlineViewing,
   OnlineViewingArray,
+  PlotType,
   PlotTypeArray,
   ShareArray,
 } from '../constants';
@@ -65,7 +66,7 @@ export const SalePlotsSchema = new Schema<ISalePlotsDoc, Model<ISalePlotsDoc>>(
     },
     'plot-area': {
       type: Number,
-      required: [ true, 'Plot area is required' ],
+      default: 0,
     },
     'plot-area-unit': {
       type: String,
@@ -75,7 +76,7 @@ export const SalePlotsSchema = new Schema<ISalePlotsDoc, Model<ISalePlotsDoc>>(
     'plot-type': {
       type: String,
       enum: PlotTypeArray,
-      required: [ true, 'Plot Type is required' ],
+      default: PlotType.NotSpecified,
     },
     share: {
       type: String,

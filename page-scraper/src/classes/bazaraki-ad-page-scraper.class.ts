@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import * as dashify from 'dashify';
 import * as levenshtein from 'fast-levenshtein';
 import Root = cheerio.Root;
+import { OnlineViewing, OnlineViewingArray } from '../constants';
 import { IRealEstate } from '../types';
 import { dateInHumanReadableFormat, getRoundYesterday, parseDate, roundDate } from '../utils';
 
@@ -47,7 +48,10 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
 
   private getDescription(): string {
     try {
-      return this.$('.announcement-description .js-description').text().trim();
+      return this.$('.announcement-description .js-description')
+        .text()
+        .trim()
+        .replace(/[\s\t ]+/gm, ' ');
     } catch (e) {
       return '';
     }
@@ -154,6 +158,21 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
             characteristics[kebabKey] = (value.split(',')).map(item => item.trim());
           } else if (kebabKey === 'property-area' || kebabKey === 'bedrooms' || kebabKey === 'bathrooms') {
             characteristics[kebabKey] = parseFloat(value);
+          } else if (kebabKey === 'plot-area') {
+            const plotAreaText = characteristics[kebabKey].replace(/["']+/gm, '');
+            const parsedNumber = parseInt(plotAreaText);
+
+            characteristics[kebabKey] = isNaN(parsedNumber) ? 0 : parsedNumber;
+
+            const plotAreaUnit = plotAreaText.replace(/[\d\t\s]+/gm, '');
+
+            characteristics['plot-area-unit'] = plotAreaUnit !== ''
+              ? plotAreaUnit
+              : 'm²';
+          } else if (kebabKey === 'online-viewing') {
+            characteristics[kebabKey] = OnlineViewingArray.includes(characteristics[kebabKey])
+              ? characteristics[kebabKey]
+              : OnlineViewing.No;
           } else {
             characteristics[kebabKey] = value;
           }

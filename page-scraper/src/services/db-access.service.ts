@@ -23,34 +23,49 @@ export class DbAccessService {
   }
 
   public async saveNewAnnouncement(categoryUrl: string, announcementData: Partial<IRealEstate>): Promise<IRealEstate | null> {
-    const Model = this.getModelByUrl(categoryUrl);
+    try {
+      const Model = this.getModelByUrl(categoryUrl);
 
-    if (!Model) {
-      return null;
-    }
-
-    const existingAnnouncement = await Model.findOne({ ad_id: announcementData.ad_id });
-
-    if (existingAnnouncement) {
-      const roundedDate = roundDate(new Date());
-      const roundedDateAsString = roundedDate.toString();
-
-      if (
-        !existingAnnouncement.active_dates
-          .map(date => date.toString()).includes(roundedDateAsString)
-      ) {
-        existingAnnouncement.active_dates.push(roundedDate);
-        await existingAnnouncement.save();
+      if (!Model) {
+        return null;
       }
 
-      return existingAnnouncement;
-    } else {
-      const newAnnouncement = new Model(announcementData);
+      console.log(announcementData.ad_id);
 
-      newAnnouncement.active_dates = [ roundDate(new Date()) ];
-      await newAnnouncement.save();
+      const existingAnnouncement = await Model.findOne({ ad_id: announcementData.ad_id });
 
-      return newAnnouncement;
+      if (existingAnnouncement) {
+        console.log('Exist a duplicate!');
+        const roundedDate = roundDate(new Date());
+        const roundedDateAsString = roundedDate.toString();
+
+        if (
+          !existingAnnouncement.active_dates
+            .map(date => date.toString()).includes(roundedDateAsString)
+        ) {
+          existingAnnouncement.active_dates.push(roundedDate);
+          await existingAnnouncement.save();
+        }
+
+        return existingAnnouncement;
+      } else {
+        console.log('NEW!');
+        const newAnnouncement = new Model(announcementData);
+
+        newAnnouncement.active_dates = [ roundDate(new Date()) ];
+        await newAnnouncement.save();
+
+        return newAnnouncement;
+      }
+    } catch (e) {
+      console.log(' ');
+      console.log(' ');
+      console.log('Error happened in \'saveNewAnnouncement\' method');
+      console.log('categoryUrl:', categoryUrl);
+      console.log('announcementData:');
+      console.log(announcementData);
+      console.log(' ');
+      console.error(e);
     }
   }
 

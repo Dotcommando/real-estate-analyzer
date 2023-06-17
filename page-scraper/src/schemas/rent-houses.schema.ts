@@ -8,10 +8,12 @@ import {
   EnergyEfficiency,
   EnergyEfficiencyArray,
   FurnishingArray,
+  HousesType,
   HousesTypeArray,
   OnlineViewing,
   OnlineViewingArray,
   ParkingArray,
+  Pets,
   PetsArray,
 } from '../constants';
 import { IRentHouses } from '../types/real-estate-to-rent';
@@ -84,7 +86,7 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
     'construction-year': String,
     'property-area': {
       type: Number,
-      required: [ true, 'Property Area is required' ],
+      default: 0,
     },
     'property-area-unit': {
       type: String,
@@ -94,7 +96,7 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
     type: {
       type: String,
       enum: HousesTypeArray,
-      required: [ true, 'Type is required' ],
+      default: HousesType.NotSpecified,
     },
     parking: {
       type: String,
@@ -110,20 +112,20 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
     },
     bedrooms: {
       type: Number,
-      required: [ true, 'Number of bedrooms is required' ],
+      default: 1,
     },
     bathrooms: {
       type: Number,
-      required: [ true, 'Number of bathrooms is required' ],
+      default: 1,
     },
     pets: {
       type: String,
       enum: PetsArray,
-      required: [ true, 'Pets policy is required' ],
+      default: Pets.NotAllowed,
     },
     'plot-area': {
       type: Number,
-      required: [ true, 'Plot Area is required' ],
+      default: 0,
     },
     'plot-area-unit': {
       type: String,

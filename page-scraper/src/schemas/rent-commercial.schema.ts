@@ -2,6 +2,7 @@ import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
 import {
+  CommercialType,
   CommercialTypeArray,
   Condition,
   ConditionArray,
@@ -81,11 +82,11 @@ export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCo
     type: {
       type: String,
       enum: CommercialTypeArray,
-      required: [ true, 'Commercial Type is required' ],
+      default: CommercialType.MixedUse,
     },
     'property-area': {
       type: Number,
-      required: [ true, 'Property Area is required' ],
+      default: 0,
     },
     'property-area-unit': {
       type: String,
@@ -94,7 +95,7 @@ export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCo
     },
     'plot-area': {
       type: Number,
-      required: [ true, 'Plot Area is required' ],
+      default: 0,
     },
     'plot-area-unit': {
       type: String,

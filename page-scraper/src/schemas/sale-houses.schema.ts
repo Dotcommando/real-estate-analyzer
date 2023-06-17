@@ -108,11 +108,11 @@ export const SaleHousesSchema = new Schema<ISaleHousesDoc, Model<ISaleHousesDoc>
     },
     bedrooms: {
       type: Number,
-      required: [ true, 'Bedrooms count is required' ],
+      default: 1,
     },
     bathrooms: {
       type: Number,
-      required: [ true, 'Bathrooms count is required' ],
+      default: 1,
     },
     active_dates: {
       type: [ Schema.Types.Date ] as unknown as Date[],

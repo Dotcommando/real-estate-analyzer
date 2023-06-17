@@ -98,7 +98,7 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
     },
     'property-area': {
       type: Number,
-      required: [ true, 'Property Area is required' ],
+      default: 0,
     },
     'property-area-unit': {
       type: String,
@@ -112,11 +112,11 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
     },
     bedrooms: {
       type: Number,
-      required: [ true, 'Bedrooms count is required' ],
+      default: 1,
     },
     bathrooms: {
       type: Number,
-      required: [ true, 'Bathrooms count is required' ],
+      default: 1,
     },
     'air-conditioning': {
       type: String,

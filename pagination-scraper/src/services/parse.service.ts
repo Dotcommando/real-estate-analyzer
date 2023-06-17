@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common';
 
 import { BazarakiPaginationScraper } from '../classes';
-import { IPaginationPageList } from '../types';
 
 
 @Injectable()
 export class ParseService {
-  // @ts-ignore
-  public async parsePage(pageData: string, url: string): Promise<[ Partial<IPaginationPageList>, string ]> {
-    // return new BazarakiPaginationScraper<IPaginationPageList>(pageData, url).getPaginationList();
+  public async parsePage(pageData: string, url: string): Promise<[ Set<string>, Set<string> ]> {
+    return new BazarakiPaginationScraper(pageData, url).getPaginationAndAds();
   }
 }

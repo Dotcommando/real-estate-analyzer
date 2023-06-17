@@ -84,7 +84,7 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
     },
     area: {
       type: Number,
-      required: [ true, 'Area is required' ],
+      default: 0,
     },
     'area-unit': {
       type: String,
@@ -93,7 +93,7 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
     },
     'plot-area': {
       type: Number,
-      required: [ true, 'Plot Area is required' ],
+      default: 0,
     },
     'plot-area-unit': {
       type: String,

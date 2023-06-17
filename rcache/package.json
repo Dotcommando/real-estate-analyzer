@@ -8,7 +8,7 @@
   "scripts": {
     "start-cache": "docker-compose up -d",
     "stop-cache": "docker-compose down",
-    "clear-cache": "node clear-cache.js"
+    "clear-cache": "node clear-cache.mjs"
   },
   "dependencies": {
     "dotenv": "16.0.3",
