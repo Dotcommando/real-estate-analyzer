@@ -1,9 +1,10 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ModuleRef } from '@nestjs/core';
 
 import { Model } from 'mongoose';
 
-import { LOGGER, SlugByCategory } from '../constants';
+import { LOGGER, Mode, SlugByCategory } from '../constants';
 import { IRealEstate } from '../types';
 import { roundDate } from '../utils';
 
@@ -12,8 +13,11 @@ import { roundDate } from '../utils';
 export class DbAccessService {
   constructor(
     @Inject(LOGGER) private readonly logger: LoggerService,
+    private readonly configService: ConfigService,
     private moduleRef: ModuleRef,
   ) {}
+
+  private readonly mode = this.configService.get<Mode>('MODE');
 
   private getModelByUrl(categoryUrl: string): Model<any> | null {
     try {
@@ -53,7 +57,10 @@ export class DbAccessService {
       } else {
         this.logger.log(`No duplicates found for ad ${announcementData.ad_id} in the DB.`);
 
-        const newAnnouncement = new Model(announcementData);
+        const newAnnouncement = new Model({
+          ...announcementData,
+          mode: this.mode,
+        });
 
         newAnnouncement.active_dates = [ roundDate(new Date()) ];
         await newAnnouncement.save();

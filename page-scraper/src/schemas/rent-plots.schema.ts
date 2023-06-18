@@ -1,13 +1,23 @@
 import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
-import { OnlineViewing, OnlineViewingArray, PlotType, PlotTypeArray, Share, ShareArray } from '../constants';
+import {
+  Mode,
+  ModeArray,
+  OnlineViewing,
+  OnlineViewingArray,
+  PlotType,
+  PlotTypeArray,
+  Share,
+  ShareArray,
+} from '../constants';
 import { IRentPlots } from '../types/real-estate-to-rent';
 import { roundDate } from '../utils';
 
 
 export interface IRentPlotsDoc extends IRentPlots, Document {
   active_dates: Date[];
+  mode?: Mode;
 }
 
 export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
@@ -84,6 +94,11 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
     active_dates: {
       type: [ Schema.Types.Date ] as unknown as Date[],
       required: [ true, 'Active dates are required' ],
+    },
+    mode: {
+      type: String,
+      enum: ModeArray,
+      default: Mode.Prod,
     },
   },
 );

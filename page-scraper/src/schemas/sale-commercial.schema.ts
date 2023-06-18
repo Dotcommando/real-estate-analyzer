@@ -7,6 +7,8 @@ import {
   ConditionArray,
   EnergyEfficiency,
   EnergyEfficiencyArray,
+  Mode,
+  ModeArray,
   OnlineViewing,
   OnlineViewingArray,
 } from '../constants';
@@ -16,6 +18,7 @@ import { roundDate } from '../utils';
 
 export interface ISaleCommercialDoc extends ISaleCommercial, Document {
   active_dates: Date[];
+  mode?: Mode;
 }
 
 export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCommercialDoc>>(
@@ -103,6 +106,11 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
     active_dates: {
       type: [ Schema.Types.Date ] as unknown as Date[],
       required: [ true, 'Active dates are required' ],
+    },
+    mode: {
+      type: String,
+      enum: ModeArray,
+      default: Mode.Prod,
     },
   },
 );

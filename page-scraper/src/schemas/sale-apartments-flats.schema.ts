@@ -12,6 +12,8 @@ import {
   EnergyEfficiencyArray,
   Furnishing,
   FurnishingArray,
+  Mode,
+  ModeArray,
   OnlineViewing,
   OnlineViewingArray,
   ParkingArray,
@@ -22,6 +24,7 @@ import { roundDate } from '../utils';
 
 export interface ISaleApartmentsFlatsDoc extends ISaleApartmentsFlats, Document {
   active_dates: Date[];
+  mode?: Mode;
 }
 
 export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Model<ISaleApartmentsFlatsDoc>>(
@@ -124,6 +127,11 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     active_dates: {
       type: [ Schema.Types.Date ] as unknown as Date[],
       required: [ true, 'Active dates are required' ],
+    },
+    mode: {
+      type: String,
+      enum: ModeArray,
+      default: Mode.Prod,
     },
   },
 );

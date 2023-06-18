@@ -8,6 +8,8 @@ import {
   ConditionArray,
   EnergyEfficiency,
   EnergyEfficiencyArray,
+  Mode,
+  ModeArray,
   OnlineViewing,
   OnlineViewingArray,
 } from '../constants';
@@ -17,6 +19,7 @@ import { roundDate } from '../utils';
 
 export interface IRentCommercialDoc extends IRentCommercial, Document {
   active_dates: Date[];
+  mode?: Mode;
 }
 
 export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCommercialDoc>>(
@@ -105,6 +108,11 @@ export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCo
     active_dates: {
       type: [ Schema.Types.Date ] as unknown as Date[],
       required: [ true, 'Active dates are required' ],
+    },
+    mode: {
+      type: String,
+      enum: ModeArray,
+      default: Mode.Prod,
     },
   },
 );

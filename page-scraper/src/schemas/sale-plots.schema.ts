@@ -2,6 +2,8 @@ import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
 import {
+  Mode,
+  ModeArray,
   OnlineViewing,
   OnlineViewingArray,
   PlotType,
@@ -14,6 +16,7 @@ import { roundDate } from '../utils';
 
 export interface ISalePlotsDoc extends ISalePlots, Document {
   active_dates: Date[];
+  mode?: Mode;
 }
 
 export const SalePlotsSchema = new Schema<ISalePlotsDoc, Model<ISalePlotsDoc>>(
@@ -89,6 +92,11 @@ export const SalePlotsSchema = new Schema<ISalePlotsDoc, Model<ISalePlotsDoc>>(
     active_dates: {
       type: [ Schema.Types.Date ] as unknown as Date[],
       required: [ true, 'Active dates are required' ],
+    },
+    mode: {
+      type: String,
+      enum: ModeArray,
+      default: Mode.Prod,
     },
   },
 );

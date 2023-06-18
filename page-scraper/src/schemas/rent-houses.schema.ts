@@ -10,6 +10,8 @@ import {
   FurnishingArray,
   HousesType,
   HousesTypeArray,
+  Mode,
+  ModeArray,
   OnlineViewing,
   OnlineViewingArray,
   ParkingArray,
@@ -22,6 +24,7 @@ import { roundDate } from '../utils';
 
 export interface IRentHousesDoc extends IRentHouses, Document {
   active_dates: Date[];
+  mode?: Mode;
 }
 
 export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>>(
@@ -135,6 +138,11 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
     active_dates: {
       type: [ Schema.Types.Date ] as unknown as Date[],
       required: [ true, 'Active dates are required' ],
+    },
+    mode: {
+      type: String,
+      enum: ModeArray,
+      default: Mode.Prod,
     },
   },
 );

@@ -1,10 +1,12 @@
 import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { HttpStatus, Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy, RmqRecord, RmqRecordBuilder } from '@nestjs/microservices';
 import { Cron } from '@nestjs/schedule';
 
 import { AxiosResponse } from 'axios';
+import { Cache } from 'cache-manager';
 import { config } from 'dotenv';
 import { catchError, of, take } from 'rxjs';
 
@@ -13,6 +15,7 @@ import { ParseService } from './parse.service';
 
 import { getArrayIterator, LOGGER, Messages, ServiceName } from '../constants';
 import { IAsyncArrayIterator, ICategoriesData } from '../types';
+import { getMillisecondsLeftUntilNewDay } from '../utils';
 
 
 config();
@@ -20,6 +23,7 @@ config();
 @Injectable()
 export class AppService {
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(LOGGER) private readonly logger: LoggerService,
     @Inject(ServiceName) private client: ClientProxy,
     private readonly httpService: HttpService,
@@ -33,6 +37,7 @@ export class AppService {
   private readonly baseUrl = this.configService.get('BASE_URL');
   private readonly prefix = this.configService.get('MCACHE_PREFIX');
   private categoriesToParse = [];
+  private oneDayMs = 24 * 60 * 60 * 1000;
 
   @Cron(process.env.PAGINATION_SCRAPING_PERIOD, {
     name: 'pagination_scraping_task',
@@ -45,9 +50,10 @@ export class AppService {
       const paginationToVisit: Set<string> = this.getAllUrlsFromCategoriesData('paginationUrls', categoriesIndexData);
       const categoriesInternalData: ICategoriesData = await this.visitPaginationPage(Array.from(paginationToVisit));
       const adsPagesToVisitFromInternalPages: Set<string> = this.getAllUrlsFromCategoriesData('adsUrls', categoriesInternalData);
-      const allAdsPagesToVisit = new Set([ ...adsPagesToVisitFromIndexPages, ...adsPagesToVisitFromInternalPages ]);
+      const allAdsPagesToVisit: Set<string> = new Set([ ...adsPagesToVisitFromIndexPages, ...adsPagesToVisitFromInternalPages ]);
+      const nonCachedAdsPagesOnly: Set<string> = await this.getNonCachedUrls(allAdsPagesToVisit);
 
-      for (const url of allAdsPagesToVisit) {
+      for (const url of nonCachedAdsPagesOnly) {
         this.logger.log(`URL ${ url } sent`);
 
         const record: RmqRecord<string> = new RmqRecordBuilder(url)
@@ -57,17 +63,53 @@ export class AppService {
           .pipe(
             take(1),
             catchError(err => {
-              this.logger.error('Error in \'parseIndexBySchedule\' method in RxJS pipe of client.send.');
-              this.logger.error(err);
+              this.logger.error('Error in \'parseIndexBySchedule\' method in RxJS pipe of client.send. ' + err);
 
               return of(true);
             }),
-          );
+          )
+          .subscribe();
       }
+
+      this.logger.log(`New URLs to add: ${nonCachedAdsPagesOnly.size}, total: ${allAdsPagesToVisit.size}`);
+
+      await this.addPagesToCache(nonCachedAdsPagesOnly);
     } catch (e) {
       this.logger.log('An error occurred in \'parseIndexBySchedule\' method.');
       this.logger.error(e.message);
     }
+  }
+
+  private async getNonCachedUrls(urlSet: Set<string> | string[]): Promise<Set<string>> {
+    const urlArray = Array.from(urlSet);
+    const urlArrayIterator: IAsyncArrayIterator<string> = getArrayIterator(urlArray);
+    const result = new Set<string>();
+
+    for await (const path of urlArrayIterator) {
+      const cacheKey = this.getKeyByUrl(path);
+      const fromCache = await this.cacheManager.get(cacheKey);
+
+      if (!fromCache) {
+        result.add(path);
+      }
+    }
+
+    return result;
+  }
+
+  private async addPagesToCache(urlSet: Set<string> | string[]): Promise<Set<string>> {
+    const urlArray = Array.from(urlSet);
+    const urlArrayIterator: IAsyncArrayIterator<string> = getArrayIterator(urlArray);
+    const result = new Set<string>();
+
+    for await (const path of urlArrayIterator) {
+      const cacheKey = this.getKeyByUrl(path);
+      const addToCache = await this.cacheManager.set(cacheKey, true, getMillisecondsLeftUntilNewDay());
+
+      result.add(path);
+    }
+
+    return result;
   }
 
   private getCategoriesFromConfig(): void {
