@@ -37,7 +37,6 @@ export class AppService {
   private readonly baseUrl = this.configService.get('BASE_URL');
   private readonly prefix = this.configService.get('MCACHE_PREFIX');
   private categoriesToParse = [];
-  private oneDayMs = 24 * 60 * 60 * 1000;
 
   @Cron(process.env.PAGINATION_SCRAPING_PERIOD, {
     name: 'pagination_scraping_task',
@@ -45,6 +44,14 @@ export class AppService {
   })
   public async parseIndexBySchedule() {
     try {
+      const threadLocked = this.delayService.getThreadStatus();
+
+      if (threadLocked) {
+        return;
+      }
+
+      this.delayService.setThreadStatus(true);
+
       const categoriesIndexData: ICategoriesData = await this.visitPaginationPage(this.categoriesToParse);
       const adsPagesToVisitFromIndexPages: Set<string> = this.getAllUrlsFromCategoriesData('adsUrls', categoriesIndexData);
       const paginationToVisit: Set<string> = this.getAllUrlsFromCategoriesData('paginationUrls', categoriesIndexData);
@@ -88,9 +95,12 @@ export class AppService {
       this.logger.log(`New URLs to add: ${nonCachedAdsPagesOnly.size}, total: ${allAdsPagesToVisit.size}`);
 
       await this.addPagesToCache(nonCachedAdsPagesOnly);
+
+      this.delayService.setThreadStatus(false);
     } catch (e) {
       this.logger.log('An error occurred in \'parseIndexBySchedule\' method.');
       this.logger.error(e.message);
+      this.delayService.setThreadStatus(false);
     }
   }
 

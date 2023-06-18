@@ -16,6 +16,7 @@ export class DelayService {
   private endOfWaitingTime = Date.now();
   private from = parseInt(this.configService.get('MIN_DELAY'));
   private to = parseInt(this.configService.get('MAX_DELAY'));
+  private threadLocked = false;
 
   private getRandomInRangeTimeMs(from: number, to: number): number {
     return from + Math.random() * (to - from);
@@ -44,5 +45,13 @@ export class DelayService {
 
       await delay(this.endOfWaitingTime - currentTime, this.logger.log.bind(this.logger));
     }
+  }
+
+  public getThreadStatus(): boolean {
+    return this.threadLocked;
+  }
+
+  public setThreadStatus(locked: boolean): void {
+    this.threadLocked = locked;
   }
 }
