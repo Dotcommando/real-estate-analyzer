@@ -41,9 +41,13 @@ export class AppService {
   public async parseIndexBySchedule() {
     try {
       const categoriesIndexData: ICategoriesData = await this.visitPaginationPage(this.categoriesToParse);
-      const adsPagesToVisit = this.getAllUrlsFromCategoriesData('adsUrls', categoriesIndexData);
+      const adsPagesToVisitFromIndexPages: Set<string> = this.getAllUrlsFromCategoriesData('adsUrls', categoriesIndexData);
+      const paginationToVisit: Set<string> = this.getAllUrlsFromCategoriesData('paginationUrls', categoriesIndexData);
+      const categoriesInternalData: ICategoriesData = await this.visitPaginationPage(Array.from(paginationToVisit));
+      const adsPagesToVisitFromInternalPages: Set<string> = this.getAllUrlsFromCategoriesData('adsUrls', categoriesInternalData);
+      const allAdsPagesToVisit = new Set([ ...adsPagesToVisitFromIndexPages, ...adsPagesToVisitFromInternalPages ]);
 
-      for (const url of adsPagesToVisit) {
+      for (const url of allAdsPagesToVisit) {
         this.logger.log(`URL ${ url } sent`);
 
         const record: RmqRecord<string> = new RmqRecordBuilder(url)
@@ -113,13 +117,14 @@ export class AppService {
   }
 
   public getPaginationUrlsSet(from: number, to: number, categoryUrl: string): Set<string> {
+    const clearCategoryUrl = categoryUrl.replace(/[?&]{1}page=[\d]{1,}$/, '');
     const result = new Set<string>();
-    const delimiter = categoryUrl.substring(categoryUrl.length - 1) === '/'
+    const delimiter = clearCategoryUrl.substring(clearCategoryUrl.length - 1) === '/'
       ? ''
       : '/';
 
     for (let i = from; i <= to; i++) {
-      result.add(`${categoryUrl}${delimiter}?page=${i}`);
+      result.add(`${clearCategoryUrl}${delimiter}?page=${i}`);
     }
 
     return result;
@@ -160,7 +165,8 @@ export class AppService {
   }
 
   public async visitPaginationPage(pages: string[]): Promise<ICategoriesData> {
-    const categoriesArrayIterator: IAsyncArrayIterator<string> = getArrayIterator(pages);
+    const paths = pages.map((pageUrl: string) => pageUrl.replace(this.baseUrl, ''));
+    const categoriesArrayIterator: IAsyncArrayIterator<string> = getArrayIterator(paths);
     const categoriesData = {};
 
     for await (const path of categoriesArrayIterator) {
