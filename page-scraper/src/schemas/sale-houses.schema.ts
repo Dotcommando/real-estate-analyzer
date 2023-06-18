@@ -86,7 +86,7 @@ export const SaleHousesSchema = new Schema<ISaleHousesDoc, Model<ISaleHousesDoc>
     'construction-year': String,
     'property-area': {
       type: Number,
-      required: [ true, 'Property area is required' ],
+      default: 0,
     },
     'property-area-unit': {
       type: String,

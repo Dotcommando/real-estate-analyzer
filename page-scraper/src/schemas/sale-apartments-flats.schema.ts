@@ -99,7 +99,7 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     },
     'property-area': {
       type: Number,
-      required: [ true, 'Property Area is required' ],
+      default: 0,
     },
     'property-area-unit': {
       type: String,

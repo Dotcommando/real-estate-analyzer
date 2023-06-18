@@ -4,9 +4,17 @@ import { ModuleRef } from '@nestjs/core';
 
 import { Model } from 'mongoose';
 
-import { LOGGER, Mode, SlugByCategory } from '../constants';
+import {
+  EnergyEfficiency,
+  EnergyEfficiencyArray,
+  LOGGER,
+  Mode,
+  OnlineViewing,
+  OnlineViewingArray,
+  SlugByCategory,
+} from '../constants';
 import { IRealEstate } from '../types';
-import { roundDate } from '../utils';
+import { castToNumber, roundDate } from '../utils';
 
 
 @Injectable()
@@ -30,13 +38,26 @@ export class DbAccessService {
   }
 
   private typecastingFields(announcementData: Partial<IRealEstate>): Partial<IRealEstate> {
-    if ('square-meter-price' in announcementData) {
-      announcementData['square-meter-price'] = typeof announcementData['square-meter-price'] === 'string'
-        ? parseFloat(
-          (announcementData['square-meter-price'] as string)
-            .replace(/[^\d.]/g, ''),
-        )
-        : announcementData['square-meter-price'];
+    const forceMakeNumberProps = [
+      'square-meter-price',
+      'price',
+      'property-area',
+      'plot-area',
+      'area',
+      'bedrooms',
+      'bathrooms',
+      'registration-number',
+      'registration-block',
+    ];
+
+    announcementData = castToNumber(announcementData, forceMakeNumberProps);
+
+    if ('online-viewing' in announcementData && !OnlineViewingArray.includes(announcementData['online-viewing'])) {
+      announcementData['online-viewing'] = OnlineViewing.No;
+    }
+
+    if ('energy-efficiency' in announcementData && !EnergyEfficiencyArray.includes(announcementData['energy-efficiency'] as EnergyEfficiency)) {
+      announcementData['energy-efficiency'] = EnergyEfficiency.NA;
     }
 
     return announcementData;

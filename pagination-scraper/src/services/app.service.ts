@@ -278,6 +278,8 @@ export class AppService implements OnModuleInit {
 
       return null;
     } catch (e) {
+      this.logger.error(e);
+
       return null;
     }
   }
