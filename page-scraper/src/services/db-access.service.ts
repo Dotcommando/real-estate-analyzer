@@ -29,6 +29,19 @@ export class DbAccessService {
     }
   }
 
+  private typecastingFields(announcementData: Partial<IRealEstate>): Partial<IRealEstate> {
+    if ('square-meter-price' in announcementData) {
+      announcementData['square-meter-price'] = typeof announcementData['square-meter-price'] === 'string'
+        ? parseFloat(
+          (announcementData['square-meter-price'] as string)
+            .replace(/[^\d.]/g, ''),
+        )
+        : announcementData['square-meter-price'];
+    }
+
+    return announcementData;
+  }
+
   public async saveNewAnnouncement(categoryUrl: string, announcementData: Partial<IRealEstate>): Promise<IRealEstate | null> {
     try {
       const Model = this.getModelByUrl(categoryUrl);
@@ -58,7 +71,7 @@ export class DbAccessService {
         this.logger.log(`No duplicates found for ad ${announcementData.ad_id} in the DB.`);
 
         const newAnnouncement = new Model({
-          ...announcementData,
+          ...this.typecastingFields(announcementData),
           mode: this.mode,
         });
 

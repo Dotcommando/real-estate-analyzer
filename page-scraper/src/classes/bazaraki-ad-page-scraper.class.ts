@@ -59,7 +59,12 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
 
   private getSquareMeterPrice(): number {
     try {
-      const sqMeterPrice = parseFloat(this.$('.announcement-price__per-meter').text().trim().replace(/[^\d.]/g, ''));
+      const sqMeterPrice = parseFloat(
+        this.$('.announcement-price__per-meter')
+          .text()
+          .trim()
+          .replace(/[^\d.]/g, ''),
+      );
 
       return isNaN(sqMeterPrice)
         ? 0
