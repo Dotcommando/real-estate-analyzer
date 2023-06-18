@@ -1,6 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { HttpStatus, Inject, Injectable, LoggerService } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, LoggerService, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy, RmqRecord, RmqRecordBuilder } from '@nestjs/microservices';
 import { Cron } from '@nestjs/schedule';
@@ -21,7 +21,7 @@ import { getMillisecondsLeftUntilNewDay } from '../utils';
 config();
 
 @Injectable()
-export class AppService {
+export class AppService implements OnModuleInit {
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(LOGGER) private readonly logger: LoggerService,
@@ -37,6 +37,10 @@ export class AppService {
   private readonly baseUrl = this.configService.get('BASE_URL');
   private readonly prefix = this.configService.get('MCACHE_PREFIX');
   private categoriesToParse = [];
+
+  public async onModuleInit(): Promise<void> {
+    await this.parseIndexBySchedule();
+  }
 
   @Cron(process.env.PAGINATION_SCRAPING_PERIOD, {
     name: 'pagination_scraping_task',
