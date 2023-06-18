@@ -53,8 +53,17 @@ export class AppService {
       const allAdsPagesToVisit: Set<string> = new Set([ ...adsPagesToVisitFromIndexPages, ...adsPagesToVisitFromInternalPages ]);
       const nonCachedAdsPagesOnly: Set<string> = await this.getNonCachedUrls(allAdsPagesToVisit);
 
+      let i = 0;
+      let errorHappened = false;
+
       for (const url of nonCachedAdsPagesOnly) {
-        this.logger.log(`URL ${ url } sent`);
+        if (i < 16) {
+          if (i < 15) {
+            this.logger.log(`URL ${ url } sent`);
+          } else if (i === 15) {
+            this.logger.log('...');
+          }
+        }
 
         const record: RmqRecord<string> = new RmqRecordBuilder(url)
           .build();
@@ -63,12 +72,17 @@ export class AppService {
           .pipe(
             take(1),
             catchError(err => {
-              this.logger.error('Error in \'parseIndexBySchedule\' method in RxJS pipe of client.send. ' + err);
+              if (!errorHappened) {
+                errorHappened = true;
+                this.logger.error('Error in \'parseIndexBySchedule\' method in RxJS pipe of client.send. ' + err);
+              }
 
               return of(true);
             }),
           )
           .subscribe();
+
+        i++;
       }
 
       this.logger.log(`New URLs to add: ${nonCachedAdsPagesOnly.size}, total: ${allAdsPagesToVisit.size}`);
