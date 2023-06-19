@@ -85,7 +85,7 @@ export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCo
     type: {
       type: String,
       enum: CommercialTypeArray,
-      default: CommercialType.MixedUse,
+      default: CommercialType.Other,
     },
     'property-area': {
       type: Number,

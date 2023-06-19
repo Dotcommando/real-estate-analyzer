@@ -2,6 +2,7 @@ import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
 import {
+  CommercialType,
   CommercialTypeArray,
   Condition,
   ConditionArray,
@@ -84,6 +85,7 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
     type: {
       type: String,
       enum: CommercialTypeArray,
+      default: CommercialType.Other,
     },
     area: {
       type: Number,

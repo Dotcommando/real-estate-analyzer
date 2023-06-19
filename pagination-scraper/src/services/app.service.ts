@@ -39,14 +39,107 @@ export class AppService implements OnModuleInit {
   private categoriesToParse = [];
 
   public async onModuleInit(): Promise<void> {
-    await this.parseIndexBySchedule();
+    await this.parseIndexBySchedule(1);
   }
 
-  @Cron(process.env.PAGINATION_SCRAPING_PERIOD, {
-    name: 'pagination_scraping_task',
+  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_0_2, {
+    name: 'pagination_scraping_task_0_2',
     timeZone: 'Asia/Nicosia',
   })
-  public async parseIndexBySchedule() {
+  public async runner0to2(): Promise<void> {
+    this.logger.log(' ');
+    this.logger.log(' ');
+    this.logger.log('Task for period 0:00 - 2:59 o\'clock started');
+
+    return await this.parseIndexBySchedule(0);
+  };
+
+  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_3_5, {
+    name: 'pagination_scraping_task_3_5',
+    timeZone: 'Asia/Nicosia',
+  })
+  public async runner3to5(): Promise<void> {
+    this.logger.log(' ');
+    this.logger.log(' ');
+    this.logger.log('Task for period 3:00 - 5:59 o\'clock started');
+
+    return await this.parseIndexBySchedule(0);
+  };
+
+  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_6_8, {
+    name: 'pagination_scraping_task_6_8',
+    timeZone: 'Asia/Nicosia',
+  })
+  public async runner6to8(): Promise<void> {
+    this.logger.log(' ');
+    this.logger.log(' ');
+    this.logger.log('Task for period 6:00 - 8:59 o\'clock started');
+
+    return await this.parseIndexBySchedule(4);
+  };
+
+  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_9_11, {
+    name: 'pagination_scraping_task_9_11',
+    timeZone: 'Asia/Nicosia',
+  })
+  public async runner9to11(): Promise<void> {
+    this.logger.log(' ');
+    this.logger.log(' ');
+    this.logger.log('Task for period 9:00 - 11:59 o\'clock started');
+
+    return await this.parseIndexBySchedule(1);
+  };
+
+  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_12_14, {
+    name: 'pagination_scraping_task_12_14',
+    timeZone: 'Asia/Nicosia',
+  })
+  public async runner12to14(): Promise<void> {
+    this.logger.log(' ');
+    this.logger.log(' ');
+    this.logger.log('Task for period 12:00 - 14:59 o\'clock started');
+
+    return await this.parseIndexBySchedule(2);
+  };
+
+  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_15_17, {
+    name: 'pagination_scraping_task_15_17',
+    timeZone: 'Asia/Nicosia',
+  })
+  public async runner15to17(): Promise<void> {
+    this.logger.log(' ');
+    this.logger.log(' ');
+    this.logger.log('Task for period 15:00 - 17:59 o\'clock started');
+
+    return await this.parseIndexBySchedule(1);
+  };
+
+  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_18_20, {
+    name: 'pagination_scraping_task_18_20',
+    timeZone: 'Asia/Nicosia',
+  })
+  public async runner18to20(): Promise<void> {
+    this.logger.log(' ');
+    this.logger.log(' ');
+    this.logger.log('Task for period 18:00 - 20:59 o\'clock started');
+
+    return await this.parseIndexBySchedule(4);
+  };
+
+  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_21_23, {
+    name: 'pagination_scraping_task_21_23',
+    timeZone: 'Asia/Nicosia',
+  })
+  public async runner21to23(): Promise<void> {
+    this.logger.log(' ');
+    this.logger.log(' ');
+    this.logger.log('Task for period 21:00 - 23:59 o\'clock started');
+
+    return await this.parseIndexBySchedule(4);
+  };
+
+
+  public async parseIndexBySchedule(maxPaginationNumber = 0) {
     try {
       const threadLocked = this.delayService.getThreadStatus();
 
@@ -56,10 +149,12 @@ export class AppService implements OnModuleInit {
 
       this.delayService.setThreadStatus(true);
 
-      const categoriesIndexData: ICategoriesData = await this.visitPaginationPage(this.categoriesToParse);
+      const categoriesIndexData: ICategoriesData = await this.visitPaginationPage(this.categoriesToParse, maxPaginationNumber);
       const adsPagesToVisitFromIndexPages: Set<string> = this.getAllUrlsFromCategoriesData('adsUrls', categoriesIndexData);
       const paginationToVisit: Set<string> = this.getAllUrlsFromCategoriesData('paginationUrls', categoriesIndexData);
-      const categoriesInternalData: ICategoriesData = await this.visitPaginationPage(Array.from(paginationToVisit));
+      const categoriesInternalData: ICategoriesData = maxPaginationNumber === 1
+        ? null
+        : await this.visitPaginationPage(Array.from(paginationToVisit), maxPaginationNumber);
       const adsPagesToVisitFromInternalPages: Set<string> = this.getAllUrlsFromCategoriesData('adsUrls', categoriesInternalData);
       const allAdsPagesToVisit: Set<string> = new Set([ ...adsPagesToVisitFromIndexPages, ...adsPagesToVisitFromInternalPages ]);
       const nonCachedAdsPagesOnly: Set<string> = await this.getNonCachedUrls(allAdsPagesToVisit);
@@ -187,6 +282,10 @@ export class AppService implements OnModuleInit {
   }
 
   public getPaginationUrlsSet(from: number, to: number, categoryUrl: string): Set<string> {
+    if (from > to) {
+      return new Set<string>();
+    }
+
     const clearCategoryUrl = categoryUrl.replace(/[?&]{1}page=[\d]{1,}$/, '');
     const result = new Set<string>();
     const delimiter = clearCategoryUrl.substring(clearCategoryUrl.length - 1) === '/'
@@ -224,7 +323,11 @@ export class AppService implements OnModuleInit {
     return result;
   }
 
-  getAllUrlsFromCategoriesData(setName: 'paginationUrls' | 'adsUrls', catData: ICategoriesData) {
+  getAllUrlsFromCategoriesData(setName: 'paginationUrls' | 'adsUrls', catData: ICategoriesData): Set<string> {
+    if (!catData) {
+      return new Set<string>();
+    }
+
     let resultSet = new Set<string>();
 
     for (const path in catData) {
@@ -234,7 +337,7 @@ export class AppService implements OnModuleInit {
     return resultSet;
   }
 
-  public async visitPaginationPage(pages: string[]): Promise<ICategoriesData> {
+  public async visitPaginationPage(pages: string[], maxPaginationNumber = 0): Promise<ICategoriesData> {
     const paths = pages.map((pageUrl: string) => pageUrl.replace(this.baseUrl, ''));
     const categoriesArrayIterator: IAsyncArrayIterator<string> = getArrayIterator(paths);
     const categoriesData = {};
@@ -251,8 +354,13 @@ export class AppService implements OnModuleInit {
 
         const [ paginationPageUrls, adsUrls ] = await this.parseService
           .parsePage(pageData, categoryIndexURL);
-        const maxPaginationNumber = this.getMaxNumberOfPagination(paginationPageUrls);
-        const setOfPaginationUrls = this.getPaginationUrlsSet(2, maxPaginationNumber, categoryIndexURL);
+        const setOfPaginationUrls: Set<string> = this.getPaginationUrlsSet(
+          2,
+          maxPaginationNumber === 0
+            ? this.getMaxNumberOfPagination(paginationPageUrls)
+            : maxPaginationNumber,
+          categoryIndexURL,
+        );
 
         categoriesData[path] = {
           paginationUrls: setOfPaginationUrls,

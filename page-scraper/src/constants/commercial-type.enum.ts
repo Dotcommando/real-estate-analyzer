@@ -5,6 +5,8 @@ export enum CommercialType {
   Offices = 'Offices',
   Storage = 'Storage, warehouses',
   Restaurants = 'Restaurants, bars',
+  ResidentialBuildings = 'Residential buildings',
+  Other = 'Other',
 }
 
 export const CommercialTypeArray = Object.values(CommercialType);
