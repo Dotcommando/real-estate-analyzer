@@ -13,9 +13,9 @@ import { catchError, of, take } from 'rxjs';
 import { DelayService } from './delay.service';
 import { ParseService } from './parse.service';
 
-import { getArrayIterator, LOGGER, Messages, ServiceName } from '../constants';
+import { LOGGER, Messages, ServiceName } from '../constants';
 import { IAsyncArrayIterator, ICategoriesData } from '../types';
-import { getMillisecondsLeftUntilNewDay } from '../utils';
+import { getArrayIterator, getMillisecondsLeftUntilNewDay } from '../utils';
 
 
 config();
@@ -39,7 +39,7 @@ export class AppService implements OnModuleInit {
   private categoriesToParse = [];
 
   public async onModuleInit(): Promise<void> {
-    await this.parseIndexBySchedule(1);
+    await this.parseIndexBySchedule(0);
   }
 
   @Cron(process.env.PAGINATION_SCRAPING_PERIOD_0_2, {

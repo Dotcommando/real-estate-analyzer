@@ -1,3 +1,4 @@
+export * from './array-async-iterator';
 export * from './date-in-human-readable-format';
 export * from './delay';
 export * from './get-milliseconds-elapsed-since-start-of-day';
