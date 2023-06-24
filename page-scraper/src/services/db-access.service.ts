@@ -5,12 +5,24 @@ import { ModuleRef } from '@nestjs/core';
 import { Model } from 'mongoose';
 
 import {
+  AirConditioning,
+  AirConditioningArray,
+  Condition,
+  ConditionArray,
   EnergyEfficiency,
   EnergyEfficiencyArray,
+  Furnishing,
+  FurnishingArray,
   LOGGER,
   Mode,
   OnlineViewing,
   OnlineViewingArray,
+  Parking,
+  ParkingArray,
+  Pets,
+  PetsArray,
+  Share,
+  ShareArray,
   SlugByCategory,
 } from '../constants';
 import { IRealEstate } from '../types';
@@ -58,6 +70,30 @@ export class DbAccessService {
 
     if ('energy-efficiency' in announcementData && !EnergyEfficiencyArray.includes(announcementData['energy-efficiency'] as EnergyEfficiency)) {
       announcementData['energy-efficiency'] = EnergyEfficiency.NA;
+    }
+
+    if ('condition' in announcementData && !ConditionArray.includes(announcementData['condition'] as Condition)) {
+      announcementData['condition'] = Condition.Resale;
+    }
+
+    if ('furnishing' in announcementData && !FurnishingArray.includes(announcementData['furnishing'] as Furnishing)) {
+      announcementData['furnishing'] = Furnishing.Unfurnished;
+    }
+
+    if ('air-conditioning' in announcementData && !AirConditioningArray.includes(announcementData['air-conditioning'] as AirConditioning)) {
+      announcementData['air-conditioning'] = AirConditioning.No;
+    }
+
+    if ('pets' in announcementData && !PetsArray.includes(announcementData['pets'] as Pets)) {
+      announcementData['pets'] = Pets.NotAllowed;
+    }
+
+    if ('parking' in announcementData && !ParkingArray.includes(announcementData['parking'] as Parking)) {
+      announcementData['parking'] = Parking.No;
+    }
+
+    if ('share' in announcementData && !ShareArray.includes(announcementData['share'] as Share)) {
+      announcementData['share'] = Share.No;
     }
 
     return announcementData;
