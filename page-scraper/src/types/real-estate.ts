@@ -1,4 +1,6 @@
-import { OnlineViewing } from '../constants';
+import { Document } from 'mongoose';
+
+import { Mode, OnlineViewing } from '../constants';
 
 
 export interface IRealEstate {
@@ -17,4 +19,9 @@ export interface IRealEstate {
   'registration-number'?: number;
   'registration-block'?: number;
   'square-meter-price': number;
+}
+
+export interface IRealEstateDoc extends IRealEstate, Document {
+  active_dates: Date[];
+  mode?: Mode;
 }

@@ -1,6 +1,5 @@
-export async function delay(delay: number, log = console.log): Promise<void> {
+export async function delay(delay: number): Promise<number> {
   return new Promise(resolve => setTimeout(() => {
-    log(` ... ${Math.round(delay / 100) / 10} sec ... `);
-    resolve();
+    resolve(delay);
   }, delay));
 }

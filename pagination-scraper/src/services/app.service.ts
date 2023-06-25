@@ -14,7 +14,7 @@ import { DelayService } from './delay.service';
 import { ParseService } from './parse.service';
 
 import { LOGGER, Messages, ServiceName } from '../constants';
-import { IAsyncArrayIterator, ICategoriesData } from '../types';
+import { IAsyncArrayIterator, ICategoriesData, IUrlToVisitData } from '../types';
 import { getArrayIterator, getMillisecondsLeftUntilNewDay } from '../utils';
 
 
@@ -135,7 +135,7 @@ export class AppService implements OnModuleInit {
     this.logger.log(' ');
     this.logger.log('Task for period 21:00 - 23:59 o\'clock started');
 
-    return await this.parseIndexBySchedule(4);
+    return await this.parseIndexBySchedule(5);
   };
 
 
@@ -150,28 +150,28 @@ export class AppService implements OnModuleInit {
       this.delayService.setThreadStatus(true);
 
       const categoriesIndexData: ICategoriesData = await this.visitPaginationPage(this.categoriesToParse, maxPaginationNumber);
-      const adsPagesToVisitFromIndexPages: Set<string> = this.getAllUrlsFromCategoriesData('adsUrls', categoriesIndexData);
+      const urlsToParseFromIndexPages: IUrlToVisitData[] = this.getUrlsToParse(categoriesIndexData);
       const paginationToVisit: Set<string> = this.getAllUrlsFromCategoriesData('paginationUrls', categoriesIndexData);
       const categoriesInternalData: ICategoriesData = maxPaginationNumber === 1
         ? null
         : await this.visitPaginationPage(Array.from(paginationToVisit), maxPaginationNumber);
-      const adsPagesToVisitFromInternalPages: Set<string> = this.getAllUrlsFromCategoriesData('adsUrls', categoriesInternalData);
-      const allAdsPagesToVisit: Set<string> = new Set([ ...adsPagesToVisitFromIndexPages, ...adsPagesToVisitFromInternalPages ]);
-      const nonCachedAdsPagesOnly: Set<string> = await this.getNonCachedUrls(allAdsPagesToVisit);
+      const urlsToParseFromInternalPages: IUrlToVisitData[] = this.getUrlsToParse(categoriesInternalData);
+      const allAdsPagesToVisit: IUrlToVisitData[] = [ ...urlsToParseFromIndexPages, ...urlsToParseFromInternalPages ];
+      const nonCachedOnly: IUrlToVisitData[] = await this.getNonCached(allAdsPagesToVisit);
 
       let i = 0;
       let errorHappened = false;
 
-      for (const url of nonCachedAdsPagesOnly) {
+      for (const urlData of nonCachedOnly) {
         if (i < 16) {
           if (i < 15) {
-            this.logger.log(`URL ${ url } sent`);
+            this.logger.log(`URL ${ urlData.url } sent`);
           } else if (i === 15) {
             this.logger.log('...');
           }
         }
 
-        const record: RmqRecord<string> = new RmqRecordBuilder(url)
+        const record: RmqRecord<IUrlToVisitData> = new RmqRecordBuilder(urlData)
           .build();
 
         this.client.send<unknown, RmqRecord>(Messages.PARSE_URL, record)
@@ -191,9 +191,9 @@ export class AppService implements OnModuleInit {
         i++;
       }
 
-      this.logger.log(`New URLs to add: ${nonCachedAdsPagesOnly.size}, total: ${allAdsPagesToVisit.size}`);
+      this.logger.log(`New URLs to add: ${nonCachedOnly.length}, total: ${allAdsPagesToVisit.length}`);
 
-      await this.addPagesToCache(nonCachedAdsPagesOnly);
+      await this.addPagesToCache(nonCachedOnly);
 
       this.delayService.setThreadStatus(false);
     } catch (e) {
@@ -203,33 +203,31 @@ export class AppService implements OnModuleInit {
     }
   }
 
-  private async getNonCachedUrls(urlSet: Set<string> | string[]): Promise<Set<string>> {
-    const urlArray = Array.from(urlSet);
-    const urlArrayIterator: IAsyncArrayIterator<string> = getArrayIterator(urlArray);
-    const result = new Set<string>();
+  private async getNonCached(urlDataArray: IUrlToVisitData[]): Promise<IUrlToVisitData[]> {
+    const urlDataArrayIterator: IAsyncArrayIterator<IUrlToVisitData> = getArrayIterator(urlDataArray);
+    const result: IUrlToVisitData[] = [];
 
-    for await (const path of urlArrayIterator) {
-      const cacheKey = this.getKeyByUrl(path);
+    for await (const urlData of urlDataArrayIterator) {
+      const cacheKey = this.getKeyByUrl(urlData.url);
       const fromCache = await this.cacheManager.get(cacheKey);
 
       if (!fromCache) {
-        result.add(path);
+        result.push(urlData);
       }
     }
 
     return result;
   }
 
-  private async addPagesToCache(urlSet: Set<string> | string[]): Promise<Set<string>> {
-    const urlArray = Array.from(urlSet);
-    const urlArrayIterator: IAsyncArrayIterator<string> = getArrayIterator(urlArray);
-    const result = new Set<string>();
+  private async addPagesToCache(urlData: IUrlToVisitData[]): Promise<IUrlToVisitData[]> {
+    const urlDataArrayIterator: IAsyncArrayIterator<IUrlToVisitData> = getArrayIterator(urlData);
+    const result: IUrlToVisitData[] = [];
 
-    for await (const path of urlArrayIterator) {
-      const cacheKey = this.getKeyByUrl(path);
+    for await (const urlData of urlDataArrayIterator) {
+      const cacheKey = this.getKeyByUrl(urlData.url);
       const addToCache = await this.cacheManager.set(cacheKey, true, getMillisecondsLeftUntilNewDay());
 
-      result.add(path);
+      result.push(urlData);
     }
 
     return result;
@@ -321,6 +319,25 @@ export class AppService implements OnModuleInit {
     }
 
     return result;
+  }
+
+  getUrlsToParse(catData: ICategoriesData): IUrlToVisitData[] {
+    try {
+      const result: IUrlToVisitData[] = [];
+
+      for (const path in catData) {
+        for (const url of catData[path]['adsUrls']) {
+          result.push({
+            url,
+            category: path.replace(/[?&]{1}page=[\d]*/, ''),
+          });
+        }
+      }
+
+      return result;
+    } catch (e) {
+      return [];
+    }
   }
 
   getAllUrlsFromCategoriesData(setName: 'paginationUrls' | 'adsUrls', catData: ICategoriesData): Set<string> {

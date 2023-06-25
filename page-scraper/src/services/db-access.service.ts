@@ -25,8 +25,8 @@ import {
   ShareArray,
   SlugByCategory,
 } from '../constants';
-import { IRealEstate } from '../types';
-import { castToNumber, roundDate } from '../utils';
+import { IRealEstate, IRealEstateDoc } from '../types';
+import { castToNumber, dateInHumanReadableFormat, roundDate } from '../utils';
 
 
 @Injectable()
@@ -38,6 +38,7 @@ export class DbAccessService {
   ) {}
 
   private readonly mode = this.configService.get<Mode>('MODE');
+  private readonly baseUrl = this.configService.get('BASE_URL');
 
   private getModelByUrl(categoryUrl: string): Model<any> | null {
     try {
@@ -110,8 +111,6 @@ export class DbAccessService {
       const existingAnnouncement = await Model.findOne({ ad_id: announcementData.ad_id });
 
       if (existingAnnouncement) {
-        this.logger.log(`A duplicate found for ad ${announcementData.ad_id} in the DB.`);
-
         const roundedDate = roundDate(new Date());
         const roundedDateAsString = roundedDate.toString();
 
@@ -121,12 +120,14 @@ export class DbAccessService {
         ) {
           existingAnnouncement.active_dates.push(roundedDate);
           await existingAnnouncement.save();
+
+          this.logger.log(`${announcementData.url.replace(this.baseUrl, '')}: has a duplicate in the DB. Added active date: ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY HH:mm')}. Collection: ${Model.collection.name}.`);
+        } else {
+          this.logger.log(`${announcementData.url.replace(this.baseUrl, '')}: has a duplicate in the DB. No active date added. Collection: ${Model.collection.name}.`);
         }
 
         return existingAnnouncement;
       } else {
-        this.logger.log(`No duplicates found for ad ${announcementData.ad_id} in the DB.`);
-
         const newAnnouncement = new Model({
           ...this.typecastingFields(announcementData),
           mode: this.mode,
@@ -135,25 +136,29 @@ export class DbAccessService {
         newAnnouncement.active_dates = [ roundDate(new Date()) ];
         await newAnnouncement.save();
 
-        return newAnnouncement;
+        this.logger.log(`${announcementData.url.replace(this.baseUrl, '')}: saved in the DB. Collection: ${Model.collection.name}.`);
+
+        return newAnnouncement.toObject();
       }
     } catch (e) {
       this.logger.log(' ');
       this.logger.error('Error happened in \'saveNewAnnouncement\' method.');
       this.logger.error('categoryUrl:', categoryUrl);
-      this.logger.error(' ');
+      this.logger.error('Url:', announcementData.url);
       this.logger.error(e);
     }
   }
 
-  public async addActiveDate(categoryUrl: string, ad_id: string, activeDate: Date | number): Promise<IRealEstate | null> {
+  public async findDuplicateAndUpdateActiveDate(categoryUrl: string, url: string, activeDate: Date | number): Promise<IRealEstateDoc | null> {
     const Model = this.getModelByUrl(categoryUrl);
 
     if (!Model) {
+      this.logger.error(`${url.replace(this.baseUrl, '')}: model not found for category: ${categoryUrl}.`);
+
       return null;
     }
 
-    const existingAnnouncement = await Model.findOne({ ad_id });
+    const existingAnnouncement: IRealEstateDoc = await Model.findOne({ url: url });
 
     if (!existingAnnouncement) {
       return null;
@@ -166,10 +171,12 @@ export class DbAccessService {
       !existingAnnouncement.active_dates
         .map(date => date.toISOString()).includes(roundedDateAsString)
     ) {
+      this.logger.log(`${existingAnnouncement.url.replace(this.baseUrl, '')}: added active date ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY HH:mm')}. Collection: ${Model.collection.name}.`);
+
       existingAnnouncement.active_dates.push(roundedDate);
       await existingAnnouncement.save();
     }
 
-    return existingAnnouncement;
+    return existingAnnouncement.toObject();
   }
 }

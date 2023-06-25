@@ -40,8 +40,8 @@ import { getRandomElement } from './utils';
         transport: Transport.RMQ,
         options: {
           urls: [
-            `amqp://localhost:${process.env.RABBITMQ_PORT}`,
-            // `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@localhost:${process.env.RABBITMQ_PORT}`,
+            // `amqp://localhost:${process.env.RABBITMQ_PORT}`,
+            `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@localhost:${process.env.RABBITMQ_PORT}`,
           ],
           queue: process.env.QUEUE_NAME,
           queueOptions: {

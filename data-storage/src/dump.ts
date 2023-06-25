@@ -35,7 +35,7 @@ async function makeDump(): Promise<void> {
   for await (const collectionName of collectionsArrayIterator) {
     const fileAddress: string = await createDumpFile(resolve(process.cwd(), dumpFolder), collectionName);
 
-    totalDocumentsNumber += await makeDumpOfCollection(fileAddress, collectionName, 5);
+    totalDocumentsNumber += await makeDumpOfCollection(fileAddress, collectionName, 100);
   }
 
   debugLog('Total documents:', totalDocumentsNumber);
