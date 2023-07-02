@@ -6,8 +6,6 @@ import {
   ModeArray,
   OnlineViewing,
   OnlineViewingArray,
-  PlotType,
-  PlotTypeArray,
   Share,
   ShareArray,
 } from '../constants';
@@ -79,8 +77,7 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
     },
     'plot-type': {
       type: String,
-      enum: PlotTypeArray,
-      default: PlotType.NotSpecified,
+      default: '',
     },
     share: {
       type: String,

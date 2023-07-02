@@ -19,6 +19,7 @@ export interface IRealEstate {
   'registration-number'?: number;
   'registration-block'?: number;
   'square-meter-price': number;
+  expired?: boolean;
 }
 
 export interface IRealEstateDoc extends IRealEstate, Document {

@@ -8,7 +8,6 @@ import {
   EnergyEfficiency,
   EnergyEfficiencyArray,
   FurnishingArray,
-  HousesTypeArray,
   Mode,
   ModeArray,
   OnlineViewing,
@@ -95,7 +94,7 @@ export const SaleHousesSchema = new Schema<ISaleHousesDoc, Model<ISaleHousesDoc>
     },
     type: {
       type: String,
-      enum: HousesTypeArray,
+      default: '',
     },
     parking: {
       type: String,

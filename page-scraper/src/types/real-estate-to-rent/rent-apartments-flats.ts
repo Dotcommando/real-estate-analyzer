@@ -1,9 +1,9 @@
-import { AirConditioning, ApartmentsFlatsType, Furnishing, Parking, Pets } from '../../constants';
+import { AirConditioning, Furnishing, Parking, Pets } from '../../constants';
 import { IRentProperty } from '../rent-property';
 
 
 export interface IRentApartmentsFlats extends IRentProperty {
-  type: ApartmentsFlatsType;
+  type: string;
   floor?: string;
   parking?: Parking;
   'property-area': number;

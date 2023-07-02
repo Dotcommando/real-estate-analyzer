@@ -1,11 +1,11 @@
-import { AirConditioning, Furnishing, HousesType, Parking, Pets } from '../../constants';
+import { AirConditioning, Furnishing, Parking, Pets } from '../../constants';
 import { IRentProperty } from '../rent-property';
 
 
 export interface IRentHouses extends IRentProperty {
   'property-area': number;
   'property-area-unit': 'm²';
-  type: HousesType;
+  type: string;
   parking?: Parking;
   furnishing?: Furnishing;
   'air-conditioning': AirConditioning;

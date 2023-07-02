@@ -2,8 +2,6 @@ import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
 import {
-  CommercialType,
-  CommercialTypeArray,
   Condition,
   ConditionArray,
   EnergyEfficiency,
@@ -84,8 +82,7 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
     'construction-year': String,
     type: {
       type: String,
-      enum: CommercialTypeArray,
-      default: CommercialType.Other,
+      default: '',
     },
     area: {
       type: Number,

@@ -4,8 +4,6 @@ import { Document, Model, Schema } from 'mongoose';
 import {
   AirConditioning,
   AirConditioningArray,
-  ApartmentsFlatsType,
-  ApartmentsFlatsTypeArray,
   Condition,
   ConditionArray,
   EnergyEfficiency,
@@ -89,8 +87,7 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     'construction-year': String,
     type: {
       type: String,
-      enum: ApartmentsFlatsTypeArray,
-      default: ApartmentsFlatsType.Apartment,
+      default: '',
     },
     floor: String,
     parking: {

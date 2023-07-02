@@ -32,6 +32,7 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
       price: this.getPrice(),
       ad_id: this.getAdId(),
       'square-meter-price': this.getSquareMeterPrice(),
+      expired: this.getExpiredStatus(),
       ...(this.getCharacteristics('.announcement-characteristics .chars-column')),
     };
 
@@ -187,6 +188,18 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
       return characteristics;
     } catch (e) {
       return {};
+    }
+  }
+
+  private getExpiredStatus(): boolean {
+    try {
+      const phoneBlockText = this.$('.phone-author .phone-author__subtext')
+        .text()
+        .trim();
+
+      return phoneBlockText.includes('expired');
+    } catch (e) {
+      return false;
     }
   }
 

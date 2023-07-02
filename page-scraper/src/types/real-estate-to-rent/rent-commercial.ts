@@ -1,9 +1,8 @@
-import { CommercialType } from '../../constants';
 import { IRentProperty } from '../rent-property';
 
 
 export interface IRentCommercial extends IRentProperty {
-  type?: CommercialType;
+  type?: string;
   'property-area': number;
   'property-area-unit': 'm²';
   'plot-area': number;

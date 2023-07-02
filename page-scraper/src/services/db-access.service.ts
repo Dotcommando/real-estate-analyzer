@@ -1,4 +1,4 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ModuleRef } from '@nestjs/core';
 
@@ -13,7 +13,6 @@ import {
   EnergyEfficiencyArray,
   Furnishing,
   FurnishingArray,
-  LOGGER,
   Mode,
   OnlineViewing,
   OnlineViewingArray,
@@ -25,20 +24,18 @@ import {
   ShareArray,
   SlugByCategory,
 } from '../constants';
-import { IRealEstate, IRealEstateDoc } from '../types';
+import { IAdDBOperationResult, IRealEstate, IRealEstateDoc } from '../types';
 import { castToNumber, dateInHumanReadableFormat, roundDate } from '../utils';
 
 
 @Injectable()
 export class DbAccessService {
   constructor(
-    @Inject(LOGGER) private readonly logger: LoggerService,
     private readonly configService: ConfigService,
     private moduleRef: ModuleRef,
   ) {}
 
   private readonly mode = this.configService.get<Mode>('MODE');
-  private readonly baseUrl = this.configService.get('BASE_URL');
 
   private getModelByUrl(categoryUrl: string): Model<any> | null {
     try {
@@ -50,7 +47,7 @@ export class DbAccessService {
     }
   }
 
-  private typecastingFields(announcementData: Partial<IRealEstate>): Partial<IRealEstate> {
+  public typecastingFields(announcementData: Partial<IRealEstate>): Partial<IRealEstate> {
     const forceMakeNumberProps = [
       'square-meter-price',
       'price',
@@ -97,18 +94,23 @@ export class DbAccessService {
       announcementData['share'] = Share.No;
     }
 
+    if (typeof announcementData['type'] !== 'string') {
+      announcementData['type'] = String(announcementData['type']);
+    }
+
     return announcementData;
   }
 
-  public async saveNewAnnouncement(categoryUrl: string, announcementData: Partial<IRealEstate>): Promise<IRealEstate | null> {
+  public async saveNewAnnouncement(categoryUrl: string, announcementData: Partial<IRealEstate>): Promise<IAdDBOperationResult> {
     try {
       const Model = this.getModelByUrl(categoryUrl);
 
       if (!Model) {
-        return null;
+        return { ad: null, status: `Model not found for category: ${ categoryUrl }.` };
       }
 
       const existingAnnouncement = await Model.findOne({ ad_id: announcementData.ad_id });
+      let status: string;
 
       if (existingAnnouncement) {
         const roundedDate = roundDate(new Date());
@@ -121,12 +123,12 @@ export class DbAccessService {
           existingAnnouncement.active_dates.push(roundedDate);
           await existingAnnouncement.save();
 
-          this.logger.log(`${announcementData.url.replace(this.baseUrl, '')}: has a duplicate in the DB. Added active date: ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY HH:mm')}. Collection: ${Model.collection.name}.`);
+          status = `Has a duplicate in the DB. Added active date: ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY')}. Collection: ${Model.collection.name}.`;
         } else {
-          this.logger.log(`${announcementData.url.replace(this.baseUrl, '')}: has a duplicate in the DB. No active date added. Collection: ${Model.collection.name}.`);
+          status = `Has a duplicate in the DB. No active date added. Collection: ${Model.collection.name}.`;
         }
 
-        return existingAnnouncement;
+        return { ad: existingAnnouncement.toObject(), status };
       } else {
         const newAnnouncement = new Model({
           ...this.typecastingFields(announcementData),
@@ -136,47 +138,71 @@ export class DbAccessService {
         newAnnouncement.active_dates = [ roundDate(new Date()) ];
         await newAnnouncement.save();
 
-        this.logger.log(`${announcementData.url.replace(this.baseUrl, '')}: saved in the DB. Collection: ${Model.collection.name}.`);
+        status = `Saved in the DB. Collection: ${Model.collection.name}.`;
 
-        return newAnnouncement.toObject();
+        return { ad: newAnnouncement.toObject(), status };
       }
     } catch (e) {
-      this.logger.log(' ');
-      this.logger.error('Error happened in \'saveNewAnnouncement\' method.');
-      this.logger.error('categoryUrl:', categoryUrl);
-      this.logger.error('Url:', announcementData.url);
-      this.logger.error(e);
+      return {
+        ad: null,
+        status: typeof e.message === 'string' ? e.message : String(e),
+        error: true,
+      };
     }
   }
 
-  public async findDuplicateAndUpdateActiveDate(categoryUrl: string, url: string, activeDate: Date | number): Promise<IRealEstateDoc | null> {
-    const Model = this.getModelByUrl(categoryUrl);
+  public async findDuplicate(categoryUrl: string, url: string): Promise<IAdDBOperationResult<IRealEstateDoc>> {
+    try {
+      const Model = this.getModelByUrl(categoryUrl);
 
-    if (!Model) {
-      this.logger.error(`${url.replace(this.baseUrl, '')}: model not found for category: ${categoryUrl}.`);
+      if (!Model) {
+        return { ad: null, status: `model not found for category: ${ categoryUrl }.` };
+      }
 
-      return null;
+      const existingAnnouncement: IRealEstateDoc = await Model.findOne({ url: url });
+
+      if (!existingAnnouncement) {
+        return { ad: null, status: `Ad not found for url: ${ url }.` };
+      }
+
+      return { ad: existingAnnouncement, status: '' };
+    } catch (e) {
+      return {
+        ad: null,
+        status: typeof e.message === 'string' ? e.message : String(e),
+        error: true,
+      };
     }
+  }
 
-    const existingAnnouncement: IRealEstateDoc = await Model.findOne({ url: url });
+  public async updateActiveDate(categoryUrl: string, url: string, activeDate: Date | number): Promise<IAdDBOperationResult> {
+    const existingAnnouncementResponse: IAdDBOperationResult<IRealEstateDoc> = await this.findDuplicate(categoryUrl, url);
+    const existingAnnouncement: IRealEstateDoc | null = existingAnnouncementResponse.ad;
 
     if (!existingAnnouncement) {
-      return null;
+      return {
+        ad: null,
+        status: existingAnnouncementResponse.status,
+        ...(existingAnnouncementResponse.error && { error: true }),
+      };
     }
 
     const roundedDate = roundDate(new Date(activeDate));
     const roundedDateAsString = roundedDate.toISOString();
+    let status: string;
 
     if (
       !existingAnnouncement.active_dates
         .map(date => date.toISOString()).includes(roundedDateAsString)
     ) {
-      this.logger.log(`${existingAnnouncement.url.replace(this.baseUrl, '')}: added active date ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY HH:mm')}. Collection: ${Model.collection.name}.`);
+      status = `Added active date ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY')}. Collection: ${Model.collection.name}.`;
 
       existingAnnouncement.active_dates.push(roundedDate);
       await existingAnnouncement.save();
+
+      return { ad: existingAnnouncement.toObject(), status };
     }
 
-    return existingAnnouncement.toObject();
+    return { ad: existingAnnouncement.toObject(), status: 'Current date already added.' };
   }
 }

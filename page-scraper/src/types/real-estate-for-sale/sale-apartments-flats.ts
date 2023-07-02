@@ -1,6 +1,5 @@
 import {
   AirConditioning,
-  ApartmentsFlatsType,
   Furnishing,
   Parking,
 } from '../../constants';
@@ -8,7 +7,7 @@ import { ISaleProperty } from '../sale-property';
 
 
 export interface ISaleApartmentsFlats extends ISaleProperty {
-  type: ApartmentsFlatsType;
+  type: string;
   floor?: string;
   parking?: Parking;
   'property-area': number;

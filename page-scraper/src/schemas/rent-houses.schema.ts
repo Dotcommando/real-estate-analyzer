@@ -8,8 +8,6 @@ import {
   EnergyEfficiency,
   EnergyEfficiencyArray,
   FurnishingArray,
-  HousesType,
-  HousesTypeArray,
   Mode,
   ModeArray,
   OnlineViewing,
@@ -98,8 +96,7 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
     },
     type: {
       type: String,
-      enum: HousesTypeArray,
-      default: HousesType.NotSpecified,
+      default: '',
     },
     parking: {
       type: String,
