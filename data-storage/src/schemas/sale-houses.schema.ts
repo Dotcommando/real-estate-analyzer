@@ -127,6 +127,7 @@ export const SaleHousesSchema = new Schema<ISaleHousesDoc, Model<ISaleHousesDoc>
       default: Mode.Prod,
     },
   },
+  { collection: 'salehouses' },
 );
 
 SaleHousesSchema.pre<ISaleHousesDoc>('save', async function(next) {

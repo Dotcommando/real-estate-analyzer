@@ -11,11 +11,11 @@ import { AppController } from './app.controller';
 import { LOGGER, ServiceName, USER_AGENTS } from './constants';
 import {
   RentApartmentsFlatsSchema,
-  RentCommercialSchema,
+  RentCommercialsSchema,
   RentHousesSchema,
   RentPlotsSchema,
   SaleApartmentsFlatsSchema,
-  SaleCommercialSchema,
+  SaleCommercialsSchema,
   SaleHousesSchema,
   SalePlotsSchema,
 } from './schemas';
@@ -77,9 +77,9 @@ import { getRandomElement } from './utils';
     ]),
     MongooseModule.forFeatureAsync([
       {
-        name: 'RentCommercial',
-        useFactory: () => RentCommercialSchema,
-        collection: 'rentcommercial',
+        name: 'RentCommercials',
+        useFactory: () => RentCommercialsSchema,
+        collection: 'rentcommercials',
       },
     ]),
     MongooseModule.forFeatureAsync([
@@ -105,9 +105,9 @@ import { getRandomElement } from './utils';
     ]),
     MongooseModule.forFeatureAsync([
       {
-        name: 'SaleCommercial',
-        useFactory: () => SaleCommercialSchema,
-        collection: 'salecommercial',
+        name: 'SaleCommercials',
+        useFactory: () => SaleCommercialsSchema,
+        collection: 'salecommercials',
       },
     ]),
     MongooseModule.forFeatureAsync([

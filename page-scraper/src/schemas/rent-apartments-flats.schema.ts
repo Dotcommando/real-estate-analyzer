@@ -138,6 +138,7 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
       default: Mode.Prod,
     },
   },
+  { collection: 'rentapartmentsflats' },
 );
 
 RentApartmentsFlatsSchema.pre<IRentApartmentsFlatsDoc>('save', async function(next) {

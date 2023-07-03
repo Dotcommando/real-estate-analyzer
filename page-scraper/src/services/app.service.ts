@@ -52,7 +52,7 @@ export class AppService {
     }
   }
 
-  private async parseAndSave(url: string): Promise<Partial<IRealEstate>> {
+  private async parseAndSave(url: string, redirectFrom?: number): Promise<Partial<IRealEstate>> {
     const cacheKey = this.getKeyByUrl(url);
     const delay: number = await this.delayService.delayRequest();
     const pageResult = await this.getPage(url);
@@ -70,7 +70,7 @@ export class AppService {
     await this.cacheManager.set(cacheKey, [ typeCastedPageData, category ], this.cacheTTL);
 
     if (typeCastedPageData.expired) {
-      this.logger.log(`${path}: is new. EXPIRED. Skipped.`);
+      this.logger.log(`${path}: ${redirectFrom ? redirectFrom : 1}, is new. EXPIRED. Skipped.`);
 
       return typeCastedPageData;
     }
@@ -78,9 +78,9 @@ export class AppService {
     const savingResult: IAdDBOperationResult = await this.dbAccessService.saveNewAnnouncement(category, typeCastedPageData);
 
     if (savingResult.error) {
-      this.logger.error(`${path}: parsing. Delay ${Math.round(delay / 100) / 10} sec. ${savingResult.status}`);
+      this.logger.error(`${path}: ${redirectFrom ? redirectFrom : 1}, parsing. Delay ${Math.round(delay / 100) / 10} sec. ${savingResult.status}`);
     } else {
-      this.logger.log(`${path}: parsing. Delay ${Math.round(delay / 100) / 10} sec. ${savingResult.status}`);
+      this.logger.log(`${path}: ${redirectFrom ? redirectFrom : 1}, parsing. Delay ${Math.round(delay / 100) / 10} sec. ${savingResult.status}`);
     }
 
     return savingResult.ad;
@@ -93,9 +93,9 @@ export class AppService {
     const savingResult: IAdDBOperationResult = await this.dbAccessService.saveNewAnnouncement(category, pageData);
 
     if (savingResult.error) {
-      this.logger.error(`${path}: found in cache but not in DB. ${savingResult.status}`);
+      this.logger.error(`${path}: 2, found in cache but not in DB. ${savingResult.status}`);
     } else {
-      this.logger.log(`${path}: found in cache but not in DB. ${savingResult.status}`);
+      this.logger.log(`${path}: 2, found in cache but not in DB. ${savingResult.status}`);
     }
 
     return pageData;
@@ -108,14 +108,14 @@ export class AppService {
       const updatingResult: IAdDBOperationResult = await this.dbAccessService.updateActiveDate(category, url, roundDate(new Date()));
 
       if (updatingResult.error) {
-        this.logger.error(`${ path }: exists in DB. ${ updatingResult.status }`);
+        this.logger.error(`${ path }: 3, exists in DB. ${ updatingResult.status }`);
       } else {
-        this.logger.log(`${ path }: exists in DB. ${ updatingResult.status }`);
+        this.logger.log(`${ path }: 3, exists in DB. ${ updatingResult.status }`);
       }
 
       return pageData;
     } else {
-      return await this.parseAndSave(url);
+      return await this.parseAndSave(url, 4);
     }
   }
 

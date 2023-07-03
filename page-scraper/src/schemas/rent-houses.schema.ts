@@ -142,6 +142,7 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
       default: Mode.Prod,
     },
   },
+  { collection: 'renthouses' },
 );
 
 RentHousesSchema.pre<IRentHousesDoc>('save', async function(next) {

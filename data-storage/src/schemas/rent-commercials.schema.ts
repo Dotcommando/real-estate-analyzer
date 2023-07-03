@@ -11,16 +11,16 @@ import {
   OnlineViewing,
   OnlineViewingArray,
 } from '../constants';
-import { IRentCommercial } from '../types/real-estate-to-rent';
+import { IRentCommercials } from '../types/real-estate-to-rent';
 import { roundDate } from '../utils';
 
 
-export interface IRentCommercialDoc extends IRentCommercial, Document {
+export interface IRentCommercialDoc extends IRentCommercials, Document {
   active_dates: Date[];
   mode?: Mode;
 }
 
-export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCommercialDoc>>(
+export const RentCommercialsSchema = new Schema<IRentCommercialDoc, Model<IRentCommercialDoc>>(
   {
     url: {
       type: String,
@@ -112,9 +112,10 @@ export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCo
       default: Mode.Prod,
     },
   },
+  { collection: 'rentcommercials' },
 );
 
-RentCommercialSchema.pre<IRentCommercialDoc>('save', async function(next) {
+RentCommercialsSchema.pre<IRentCommercialDoc>('save', async function(next) {
   const currentDate = roundDate(new Date());
 
   if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
@@ -124,4 +125,4 @@ RentCommercialSchema.pre<IRentCommercialDoc>('save', async function(next) {
   next();
 });
 
-export const RentCommercialModel = mongoose.model<IRentCommercialDoc, Model<IRentCommercialDoc>>('RentCommercial', RentCommercialSchema);
+export const RentCommercialsModel = mongoose.model<IRentCommercialDoc, Model<IRentCommercialDoc>>('RentCommercials', RentCommercialsSchema);

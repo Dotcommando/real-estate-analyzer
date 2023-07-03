@@ -14,7 +14,9 @@
     "db:rm": "docker-compose stop bazaraki-data-storage && docker-compose rm -fs bazaraki-data-storage",
     "lint": "eslint \"**/*.[jt]s\" --fix",
     "build": "rimraf dist && tsc -p tsconfig.build.json",
-    "dump": "npm run build && node -r dotenv/config dist/dump.js dotenv_config_path=.env"
+    "dump": "npm run build && node -r dotenv/config dist/dump.js dotenv_config_path=.env",
+    "merge-rent-commercials": "npm run build && node -r dotenv/config dist/merge-duplicates-rent-commercials.js dotenv_config_path=.env",
+    "merge-sale-commercials": "npm run build && node -r dotenv/config dist/merge-duplicates-sale-commercials.js dotenv_config_path=.env"
   },
   "dependencies": {
     "dotenv": "16.0.3",

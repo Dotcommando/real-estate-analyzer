@@ -11,16 +11,16 @@ import {
   OnlineViewing,
   OnlineViewingArray,
 } from '../constants';
-import { ISaleCommercial } from '../types/real-estate-for-sale';
+import { ISaleCommercials } from '../types/real-estate-for-sale';
 import { roundDate } from '../utils';
 
 
-export interface ISaleCommercialDoc extends ISaleCommercial, Document {
+export interface ISaleCommercialDoc extends ISaleCommercials, Document {
   active_dates: Date[];
   mode?: Mode;
 }
 
-export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCommercialDoc>>(
+export const SaleCommercialsSchema = new Schema<ISaleCommercialDoc, Model<ISaleCommercialDoc>>(
   {
     url: {
       type: String,
@@ -112,9 +112,10 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
       default: Mode.Prod,
     },
   },
+  { collection: 'salecommercials' },
 );
 
-SaleCommercialSchema.pre<ISaleCommercialDoc>('save', async function(next) {
+SaleCommercialsSchema.pre<ISaleCommercialDoc>('save', async function(next) {
   const currentDate = roundDate(new Date());
 
   if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
@@ -124,4 +125,4 @@ SaleCommercialSchema.pre<ISaleCommercialDoc>('save', async function(next) {
   next();
 });
 
-export const SaleCommercialModel = mongoose.model<ISaleCommercialDoc, Model<ISaleCommercialDoc>>('SaleCommercial', SaleCommercialSchema);
+export const SaleCommercialModel = mongoose.model<ISaleCommercialDoc, Model<ISaleCommercialDoc>>('SaleCommercial', SaleCommercialsSchema);

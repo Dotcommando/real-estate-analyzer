@@ -2,11 +2,11 @@ import { Model } from 'mongoose';
 
 import {
   RentApartmentsFlatsModel,
-  RentCommercialModel,
+  RentCommercialsModel,
   RentHousesModel,
   RentPlotsModel,
   SaleApartmentsFlatsModel,
-  SaleCommercialModel,
+  SaleCommercialsModel,
   SaleHousesModel,
   SalePlotsModel,
 } from '../schemas';
@@ -18,10 +18,10 @@ export function getModelByCollectionName(collectionName: string): Model<unknown>
       return RentApartmentsFlatsModel;
 
     case 'rentcommercial':
-      return RentCommercialModel;
+      return RentCommercialsModel;
 
     case 'rentcommercials':
-      return RentCommercialModel;
+      return RentCommercialsModel;
 
     case 'renthouses':
       return RentHousesModel;
@@ -33,10 +33,10 @@ export function getModelByCollectionName(collectionName: string): Model<unknown>
       return SaleApartmentsFlatsModel;
 
     case 'salecommercial':
-      return SaleCommercialModel;
+      return SaleCommercialsModel;
 
     case 'salecommercials':
-      return SaleCommercialModel;
+      return SaleCommercialsModel;
 
     case 'salehouses':
       return SaleHousesModel;

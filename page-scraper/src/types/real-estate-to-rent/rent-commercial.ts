@@ -1,7 +1,7 @@
 import { IRentProperty } from '../rent-property';
 
 
-export interface IRentCommercial extends IRentProperty {
+export interface IRentCommercials extends IRentProperty {
   type?: string;
   'property-area': number;
   'property-area-unit': 'm²';

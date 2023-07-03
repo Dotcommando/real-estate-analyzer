@@ -2,8 +2,6 @@ import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
 import {
-  CommercialType,
-  CommercialTypeArray,
   Condition,
   ConditionArray,
   EnergyEfficiency,
@@ -13,16 +11,16 @@ import {
   OnlineViewing,
   OnlineViewingArray,
 } from '../constants';
-import { IRentCommercial } from '../types/real-estate-to-rent';
+import { ISaleCommercials } from '../types/real-estate-for-sale';
 import { roundDate } from '../utils';
 
 
-export interface IRentCommercialDoc extends IRentCommercial, Document {
+export interface ISaleCommercialDoc extends ISaleCommercials, Document {
   active_dates: Date[];
   mode?: Mode;
 }
 
-export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCommercialDoc>>(
+export const SaleCommercialsSchema = new Schema<ISaleCommercialDoc, Model<ISaleCommercialDoc>>(
   {
     url: {
       type: String,
@@ -84,17 +82,16 @@ export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCo
     'construction-year': String,
     type: {
       type: String,
-      enum: CommercialTypeArray,
-      default: CommercialType.Other,
+      default: '',
     },
-    'property-area': {
+    area: {
       type: Number,
       default: 0,
     },
-    'property-area-unit': {
+    'area-unit': {
       type: String,
       default: 'm²',
-      required: [ true, 'Property Area Unit is required' ],
+      required: [ true, 'Area Unit is required' ],
     },
     'plot-area': {
       type: Number,
@@ -117,7 +114,7 @@ export const RentCommercialSchema = new Schema<IRentCommercialDoc, Model<IRentCo
   },
 );
 
-RentCommercialSchema.pre<IRentCommercialDoc>('save', async function(next) {
+SaleCommercialsSchema.pre<ISaleCommercialDoc>('save', async function(next) {
   const currentDate = roundDate(new Date());
 
   if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
@@ -127,4 +124,4 @@ RentCommercialSchema.pre<IRentCommercialDoc>('save', async function(next) {
   next();
 });
 
-export const RentCommercialModel = mongoose.model<IRentCommercialDoc, Model<IRentCommercialDoc>>('RentCommercial', RentCommercialSchema);
+export const SaleCommercialsModel = mongoose.model<ISaleCommercialDoc, Model<ISaleCommercialDoc>>('SaleCommercials', SaleCommercialsSchema);

@@ -101,6 +101,7 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
       default: Mode.Prod,
     },
   },
+  { collection: 'rentplots' },
 );
 
 RentPlotsSchema.pre<IRentPlotsDoc>('save', async function(next) {

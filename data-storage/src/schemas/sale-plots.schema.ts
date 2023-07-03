@@ -99,6 +99,7 @@ export const SalePlotsSchema = new Schema<ISalePlotsDoc, Model<ISalePlotsDoc>>(
       default: Mode.Prod,
     },
   },
+  { collection: 'saleplots' },
 );
 
 SalePlotsSchema.pre<ISalePlotsDoc>('save', async function(next) {

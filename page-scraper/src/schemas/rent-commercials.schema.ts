@@ -2,8 +2,6 @@ import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
 import {
-  CommercialType,
-  CommercialTypeArray,
   Condition,
   ConditionArray,
   EnergyEfficiency,
@@ -13,16 +11,16 @@ import {
   OnlineViewing,
   OnlineViewingArray,
 } from '../constants';
-import { ISaleCommercial } from '../types/real-estate-for-sale';
+import { IRentCommercials } from '../types/real-estate-to-rent';
 import { roundDate } from '../utils';
 
 
-export interface ISaleCommercialDoc extends ISaleCommercial, Document {
+export interface IRentCommercialDoc extends IRentCommercials, Document {
   active_dates: Date[];
   mode?: Mode;
 }
 
-export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCommercialDoc>>(
+export const RentCommercialsSchema = new Schema<IRentCommercialDoc, Model<IRentCommercialDoc>>(
   {
     url: {
       type: String,
@@ -84,17 +82,16 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
     'construction-year': String,
     type: {
       type: String,
-      enum: CommercialTypeArray,
-      default: CommercialType.Other,
+      default: '',
     },
-    area: {
+    'property-area': {
       type: Number,
       default: 0,
     },
-    'area-unit': {
+    'property-area-unit': {
       type: String,
       default: 'm²',
-      required: [ true, 'Area Unit is required' ],
+      required: [ true, 'Property Area Unit is required' ],
     },
     'plot-area': {
       type: Number,
@@ -115,9 +112,10 @@ export const SaleCommercialSchema = new Schema<ISaleCommercialDoc, Model<ISaleCo
       default: Mode.Prod,
     },
   },
+  { collection: 'rentcommercials' },
 );
 
-SaleCommercialSchema.pre<ISaleCommercialDoc>('save', async function(next) {
+RentCommercialsSchema.pre<IRentCommercialDoc>('save', async function(next) {
   const currentDate = roundDate(new Date());
 
   if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
@@ -127,4 +125,4 @@ SaleCommercialSchema.pre<ISaleCommercialDoc>('save', async function(next) {
   next();
 });
 
-export const SaleCommercialModel = mongoose.model<ISaleCommercialDoc, Model<ISaleCommercialDoc>>('SaleCommercial', SaleCommercialSchema);
+export const RentCommercialsModel = mongoose.model<IRentCommercialDoc, Model<IRentCommercialDoc>>('RentCommercials', RentCommercialsSchema);

@@ -134,6 +134,7 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       default: Mode.Prod,
     },
   },
+  { collection: 'saleapartmentsflats' },
 );
 
 SaleApartmentsFlatsSchema.pre<ISaleApartmentsFlatsDoc>('save', async function(next) {
