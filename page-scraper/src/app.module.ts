@@ -43,7 +43,7 @@ import { getRandomElement } from './utils';
             // `amqp://localhost:${process.env.RABBITMQ_PORT}`,
             `amqp://${process.env.RABBITMQ_DEFAULT_USER}:${process.env.RABBITMQ_DEFAULT_PASS}@localhost:${process.env.RABBITMQ_PORT}`,
           ],
-          queue: process.env.QUEUE_NAME,
+          queue: process.env.RABBITMQ_QUEUE_NAME,
           queueOptions: {
             durable: true,
           },

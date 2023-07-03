@@ -125,4 +125,4 @@ SaleCommercialsSchema.pre<ISaleCommercialDoc>('save', async function(next) {
   next();
 });
 
-export const SaleCommercialModel = mongoose.model<ISaleCommercialDoc, Model<ISaleCommercialDoc>>('SaleCommercial', SaleCommercialsSchema);
+export const SaleCommercialsModel = mongoose.model<ISaleCommercialDoc, Model<ISaleCommercialDoc>>('SaleCommercials', SaleCommercialsSchema);

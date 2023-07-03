@@ -195,7 +195,7 @@ export class DbAccessService {
       !existingAnnouncement.active_dates
         .map(date => date.toISOString()).includes(roundedDateAsString)
     ) {
-      status = `Added active date ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY')}. Collection: ${Model.collection.name}.`;
+      status = `Added active date ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY')}. Collection: ${existingAnnouncement.collection.name}.`;
 
       existingAnnouncement.active_dates.push(roundedDate);
       await existingAnnouncement.save();

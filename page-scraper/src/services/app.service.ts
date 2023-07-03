@@ -48,6 +48,9 @@ export class AppService {
 
       return null;
     } catch (e) {
+      this.logger.error(`${pageUrl.replace(this.baseUrl, '')}: Parsing failed.`);
+      this.logger.error(e);
+
       return null;
     }
   }
@@ -59,8 +62,6 @@ export class AppService {
     const path = url.replace(this.baseUrl, '');
 
     if (!pageResult) {
-      this.logger.error(`${path}: Parsing failed.`);
-
       return null;
     }
 
@@ -101,22 +102,17 @@ export class AppService {
     return pageData;
   }
 
-  private async updateActiveDate(url: string, fromCache: [ Partial<IRealEstate>, string ]) {
-    if (Array.isArray(fromCache) && fromCache.length) {
-      const [ pageData, category ] = fromCache as [ Partial<IRealEstate>, string ];
-      const path = url.replace(this.baseUrl, '');
-      const updatingResult: IAdDBOperationResult = await this.dbAccessService.updateActiveDate(category, url, roundDate(new Date()));
+  private async updateActiveDate(categoryUrl: string, url: string): Promise<Partial<IRealEstate>> {
+    const path = url.replace(this.baseUrl, '');
+    const updatingResult: IAdDBOperationResult = await this.dbAccessService.updateActiveDate(categoryUrl, url, roundDate(new Date()));
 
-      if (updatingResult.error) {
-        this.logger.error(`${ path }: 3, exists in DB. ${ updatingResult.status }`);
-      } else {
-        this.logger.log(`${ path }: 3, exists in DB. ${ updatingResult.status }`);
-      }
-
-      return pageData;
+    if (updatingResult.error) {
+      this.logger.error(`${ path }: 3, updating active date. ${ updatingResult.status }`);
     } else {
-      return await this.parseAndSave(url, 4);
+      this.logger.log(`${ path }: 3, updating active date. ${ updatingResult.status }`);
     }
+
+    return updatingResult.ad;
   }
 
   public async getPageData(urlData: IUrlToVisitData): Promise<Partial<IRealEstate> | null> {
@@ -136,16 +132,17 @@ export class AppService {
 
       const fromDB = (fromPromises[1] as PromiseFulfilledResult<IAdDBOperationResult<IRealEstateDoc>>)?.value ?? null;
 
-      if (!fromDB && !fromCache) {
+      if (!fromDB.ad && !fromCache) {
         return await this.parseAndSave(urlData.url);
-      } else if (!fromDB && fromCache) {
+      } else if (!fromDB.ad && fromCache) {
         return await this.moveFromCacheToDB(urlData.url, fromCache as [ Partial<IRealEstate>, string ]);
       } else {
         // (fromDB && !fromCache) || (fromDB && fromCache)
-        return await this.updateActiveDate(urlData.url, fromCache as [ Partial<IRealEstate>, string ]);
+        return await this.updateActiveDate(urlData.category, urlData.url);
       }
     } catch (e) {
       this.logger.error(`${urlData.url.replace(this.baseUrl, '')}: parsing failed. Category ${urlData.category}.`);
+      this.logger.error(e);
 
       return null;
     }
