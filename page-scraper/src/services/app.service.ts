@@ -12,8 +12,14 @@ import { DelayService } from './delay.service';
 import { ParseService } from './parse.service';
 
 import { LOGGER } from '../constants';
-import { IAdDBOperationResult, IRealEstate, IRealEstateDoc, IUrlToVisitData } from '../types';
-import { roundDate } from '../utils';
+import {
+  IAdDBOperationResult,
+  IAsyncArrayIterator,
+  IRealEstate,
+  IRealEstateDoc,
+  IUrlToVisitData,
+} from '../types';
+import { getArrayIterator, roundDate } from '../utils';
 
 
 @Injectable()
@@ -79,9 +85,9 @@ export class AppService {
     const savingResult: IAdDBOperationResult = await this.dbAccessService.saveNewAnnouncement(category, typeCastedPageData);
 
     if (savingResult.error) {
-      this.logger.error(`${path}: ${redirectFrom ? redirectFrom : 1}, parsing. Delay ${Math.round(delay / 100) / 10} sec. ${savingResult.status}`);
+      this.logger.error(`${path}: case ${redirectFrom ? redirectFrom : 1}. Delay ${Math.round(delay / 100) / 10} sec. Parsing. ${savingResult.status}`);
     } else {
-      this.logger.log(`${path}: ${redirectFrom ? redirectFrom : 1}, parsing. Delay ${Math.round(delay / 100) / 10} sec. ${savingResult.status}`);
+      this.logger.log(`${path}: case ${redirectFrom ? redirectFrom : 1}. Delay ${Math.round(delay / 100) / 10} sec. Parsing. ${savingResult.status}`);
     }
 
     return savingResult.ad;
@@ -94,9 +100,9 @@ export class AppService {
     const savingResult: IAdDBOperationResult = await this.dbAccessService.saveNewAnnouncement(category, pageData);
 
     if (savingResult.error) {
-      this.logger.error(`${path}: 2, found in cache but not in DB. ${savingResult.status}`);
+      this.logger.error(`${path}: case 2. Found in cache but not in DB. ${savingResult.status}`);
     } else {
-      this.logger.log(`${path}: 2, found in cache but not in DB. ${savingResult.status}`);
+      this.logger.log(`${path}: case 2. Found in cache but not in DB. ${savingResult.status}`);
     }
 
     return pageData;
@@ -107,9 +113,9 @@ export class AppService {
     const updatingResult: IAdDBOperationResult = await this.dbAccessService.updateActiveDate(categoryUrl, url, roundDate(new Date()));
 
     if (updatingResult.error) {
-      this.logger.error(`${ path }: 3, updating active date. ${ updatingResult.status }`);
+      this.logger.error(`${ path }: case 3. Updating active date. ${ updatingResult.status }`);
     } else {
-      this.logger.log(`${ path }: 3, updating active date. ${ updatingResult.status }`);
+      this.logger.log(`${ path }: case 3. Updating active date. ${ updatingResult.status }`);
     }
 
     return updatingResult.ad;
@@ -145,6 +151,22 @@ export class AppService {
       this.logger.error(e);
 
       return null;
+    }
+  }
+
+  public async getPagesData(urlsData: IUrlToVisitData[]): Promise<boolean> {
+    try {
+      const urlDataArrayIterator: IAsyncArrayIterator<IUrlToVisitData> = getArrayIterator(urlsData);
+
+      for await (const urlData of urlDataArrayIterator) {
+        await this.getPageData(urlData);
+      }
+
+      return true;
+    } catch (e) {
+      this.logger.error(e);
+
+      return false;
     }
   }
 }

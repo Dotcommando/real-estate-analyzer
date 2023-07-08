@@ -2,18 +2,18 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { HttpStatus, Inject, Injectable, LoggerService, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClientProxy, RmqRecord, RmqRecordBuilder } from '@nestjs/microservices';
+import { ClientProxy } from '@nestjs/microservices';
 import { Cron } from '@nestjs/schedule';
 
 import { AxiosResponse } from 'axios';
 import { Cache } from 'cache-manager';
 import { config } from 'dotenv';
-import { catchError, of, take } from 'rxjs';
+import { lastValueFrom, timeout } from 'rxjs';
 
 import { DelayService } from './delay.service';
 import { ParseService } from './parse.service';
 
-import { LOGGER, Messages, ServiceName } from '../constants';
+import { LOGGER, Messages } from '../constants';
 import { IAsyncArrayIterator, ICategoriesData, IUrlToVisitData } from '../types';
 import { getArrayIterator, getMillisecondsLeftUntilNewDay } from '../utils';
 
@@ -23,9 +23,9 @@ config();
 @Injectable()
 export class AppService implements OnModuleInit {
   constructor(
+    @Inject('RUNNER_SERVICE') private readonly runnerServiceClient: ClientProxy,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(LOGGER) private readonly logger: LoggerService,
-    @Inject(ServiceName) private client: ClientProxy,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly delayService: DelayService,
@@ -36,6 +36,9 @@ export class AppService implements OnModuleInit {
 
   private readonly baseUrl = this.configService.get('BASE_URL');
   private readonly prefix = this.configService.get('MCACHE_PREFIX');
+  private readonly tcpTimeout = this.configService.get('TCP_TIMEOUT')
+    ? parseInt(this.configService.get('TCP_TIMEOUT'))
+    : 6000;
   private categoriesToParse = [];
 
   public async onModuleInit(): Promise<void> {
@@ -158,47 +161,33 @@ export class AppService implements OnModuleInit {
       const urlsToParseFromInternalPages: IUrlToVisitData[] = this.getUrlsToParse(categoriesInternalData);
       const allAdsPagesToVisit: IUrlToVisitData[] = [ ...urlsToParseFromIndexPages, ...urlsToParseFromInternalPages ];
       const nonCachedOnly: IUrlToVisitData[] = await this.getNonCached(allAdsPagesToVisit);
+      const maxNumberOfRecordsToShow = nonCachedOnly.length >= 15 ? 15 : nonCachedOnly.length;
 
-      let i = 0;
-      let errorHappened = false;
-
-      for (const urlData of nonCachedOnly) {
+      for (let i = 0; i < maxNumberOfRecordsToShow; i++) {
         if (i < 16) {
           if (i < 15) {
-            this.logger.log(`URL ${ urlData.url } sent`);
+            this.logger.log(`URL ${ nonCachedOnly[i].url } sent`);
           } else if (i === 15) {
             this.logger.log('...');
           }
         }
-
-        const record: RmqRecord<IUrlToVisitData> = new RmqRecordBuilder(urlData)
-          .build();
-
-        this.client.send<unknown, RmqRecord>(Messages.PARSE_URL, record)
-          .pipe(
-            take(1),
-            catchError(err => {
-              if (!errorHappened) {
-                errorHappened = true;
-                this.logger.error('Error in \'parseIndexBySchedule\' method in RxJS pipe of client.send. ' + err);
-              }
-
-              return of(true);
-            }),
-          )
-          .subscribe();
 
         i++;
       }
 
       this.logger.log(`New URLs to add: ${nonCachedOnly.length}, total: ${allAdsPagesToVisit.length}`);
 
-      await this.addPagesToCache(nonCachedOnly);
+      const batchUrlDataSent = await lastValueFrom(
+        this.runnerServiceClient
+          .send(Messages.PARSE_URLS, nonCachedOnly)
+          .pipe(timeout(this.tcpTimeout)),
+      );
 
-      this.delayService.setThreadStatus(false);
+      await this.addPagesToCache(nonCachedOnly);
     } catch (e) {
       this.logger.log('An error occurred in \'parseIndexBySchedule\' method.');
       this.logger.error(e.message);
+    } finally {
       this.delayService.setThreadStatus(false);
     }
   }

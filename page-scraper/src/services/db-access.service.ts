@@ -123,9 +123,9 @@ export class DbAccessService {
           existingAnnouncement.active_dates.push(roundedDate);
           await existingAnnouncement.save();
 
-          status = `Has a duplicate in the DB. Added active date: ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY')}. Collection: ${Model.collection.name}.`;
+          status = `Has a duplicate in DB. Added active date: ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY')}. Collection: ${Model.collection.name}.`;
         } else {
-          status = `Has a duplicate in the DB. No active date added. Collection: ${Model.collection.name}.`;
+          status = `Has a duplicate in DB. No active date added. Collection: ${Model.collection.name}.`;
         }
 
         return { ad: existingAnnouncement.toObject(), status };
@@ -138,7 +138,7 @@ export class DbAccessService {
         newAnnouncement.active_dates = [ roundDate(new Date()) ];
         await newAnnouncement.save();
 
-        status = `Saved in the DB. Collection: ${Model.collection.name}.`;
+        status = `Saved in DB. Collection: ${Model.collection.name}.`;
 
         return { ad: newAnnouncement.toObject(), status };
       }

@@ -22,8 +22,6 @@
     "@nestjs/microservices": "9.4.1",
     "@nestjs/mongoose": "9.2.2",
     "@nestjs/platform-express": "9.4.0",
-    "amqp-connection-manager": "4.1.13",
-    "amqplib": "0.10.3",
     "axios": "1.4.0",
     "cache-manager": "5.2.1",
     "cache-manager-ioredis": "2.1.0",

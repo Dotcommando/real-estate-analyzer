@@ -1,3 +1,4 @@
+export * from './array-async-iterator';
 export * from './cast-to-number';
 export * from './date-in-human-readable-format';
 export * from './delay';

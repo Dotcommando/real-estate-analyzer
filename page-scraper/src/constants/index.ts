@@ -13,6 +13,5 @@ export * from './online-viewing.enum';
 export * from './parking.enum';
 export * from './pets.enum';
 export * from './plot-type.enum';
-export * from './service-name';
 export * from './share';
 export * from './user-agents';
