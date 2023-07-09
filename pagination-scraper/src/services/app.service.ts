@@ -106,6 +106,20 @@ export class AppService implements OnModuleInit {
     return await this.parseIndexBySchedule(1);
   };
 
+  @Cron(process.env.CLEAR_MCACHE, {
+    name: 'pagination_clear_mcache',
+    timeZone: 'Asia/Nicosia',
+  })
+  public async clearMCache() {
+    const mcacheKeys = await this.cacheManager.store.keys(this.prefix + '*');
+
+    for (const key of mcacheKeys) {
+      await this.cacheManager.del(key);
+    }
+
+    this.logger.log(' *** MCACHE storage cleared');
+  }
+
   public async parseIndexBySchedule(maxPaginationNumber = 0) {
     const threadLocked = this.delayService.getThreadStatus();
 
