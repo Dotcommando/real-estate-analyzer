@@ -15,7 +15,7 @@ import { ParseService } from './parse.service';
 
 import { LOGGER, Messages } from '../constants';
 import { IAsyncArrayIterator, ICategoriesData, IUrlToVisitData } from '../types';
-import { getArrayIterator, getMillisecondsLeftUntilNewDay } from '../utils';
+import { getArrayIterator, getMillisecondsLeftUntilNewDay, paddingStartSpaces } from '../utils';
 
 
 config();
@@ -40,116 +40,80 @@ export class AppService implements OnModuleInit {
     ? parseInt(this.configService.get('TCP_TIMEOUT'))
     : 6000;
   private categoriesToParse = [];
+  private firstRunDepth = this.configService.get('FIRST_RUN_DEPTH')
+    ? parseInt(this.configService.get('FIRST_RUN_DEPTH'))
+    : 0;
 
   public async onModuleInit(): Promise<void> {
-    await this.parseIndexBySchedule(0);
+    await this.parseIndexBySchedule(this.firstRunDepth);
   }
 
-  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_0_2, {
-    name: 'pagination_scraping_task_0_2',
+  public showRunnerMessage(depth: string) {
+    const runnerMessage = this.delayService.getThreadStatus()
+      ? ` !!! Task  ${depth} parsing  cannot be started`
+      : ` >>> Task  ${depth} parsing  started`;
+
+    this.logger.log(runnerMessage);
+  }
+
+  @Cron(process.env.PAGINATION_SCRAPING_FULL, {
+    name: 'pagination_scraping_full',
     timeZone: 'Asia/Nicosia',
   })
-  public async runner0to2(): Promise<void> {
-    this.logger.log(' ');
-    this.logger.log(' ');
-    this.logger.log('Task for period 0:00 - 2:59 o\'clock started');
+  public async runnerFull(): Promise<void> {
+    this.showRunnerMessage('FULL');
 
     return await this.parseIndexBySchedule(0);
   };
 
-  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_3_5, {
-    name: 'pagination_scraping_task_3_5',
+  @Cron(process.env.PAGINATION_SCRAPING_DEEP, {
+    name: 'pagination_scraping_deep',
     timeZone: 'Asia/Nicosia',
   })
-  public async runner3to5(): Promise<void> {
-    this.logger.log(' ');
-    this.logger.log(' ');
-    this.logger.log('Task for period 3:00 - 5:59 o\'clock started');
+  public async runnerDeep(): Promise<void> {
+    this.showRunnerMessage('DEEP');
 
-    return await this.parseIndexBySchedule(0);
+    return await this.parseIndexBySchedule(80);
   };
 
-  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_6_8, {
-    name: 'pagination_scraping_task_6_8',
+  @Cron(process.env.PAGINATION_SCRAPING_MODERATE, {
+    name: 'pagination_scraping_moderate',
     timeZone: 'Asia/Nicosia',
   })
-  public async runner6to8(): Promise<void> {
-    this.logger.log(' ');
-    this.logger.log(' ');
-    this.logger.log('Task for period 6:00 - 8:59 o\'clock started');
+  public async runnerModerate(): Promise<void> {
+    this.showRunnerMessage('MODERATE');
 
-    return await this.parseIndexBySchedule(4);
+    return await this.parseIndexBySchedule(50);
   };
 
-  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_9_11, {
-    name: 'pagination_scraping_task_9_11',
+  @Cron(process.env.PAGINATION_SCRAPING_SUPERFICIAL, {
+    name: 'pagination_scraping_superficial',
     timeZone: 'Asia/Nicosia',
   })
-  public async runner9to11(): Promise<void> {
-    this.logger.log(' ');
-    this.logger.log(' ');
-    this.logger.log('Task for period 9:00 - 11:59 o\'clock started');
+  public async runnerSuperficial(): Promise<void> {
+    this.showRunnerMessage('SUPERFICIAL');
+
+    return await this.parseIndexBySchedule(20);
+  };
+
+  @Cron(process.env.PAGINATION_SCRAPING_SHALLOW, {
+    name: 'pagination_scraping_shallow',
+    timeZone: 'Asia/Nicosia',
+  })
+  public async runnerShallow(): Promise<void> {
+    this.showRunnerMessage('SHALLOW');
 
     return await this.parseIndexBySchedule(1);
   };
-
-  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_12_14, {
-    name: 'pagination_scraping_task_12_14',
-    timeZone: 'Asia/Nicosia',
-  })
-  public async runner12to14(): Promise<void> {
-    this.logger.log(' ');
-    this.logger.log(' ');
-    this.logger.log('Task for period 12:00 - 14:59 o\'clock started');
-
-    return await this.parseIndexBySchedule(2);
-  };
-
-  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_15_17, {
-    name: 'pagination_scraping_task_15_17',
-    timeZone: 'Asia/Nicosia',
-  })
-  public async runner15to17(): Promise<void> {
-    this.logger.log(' ');
-    this.logger.log(' ');
-    this.logger.log('Task for period 15:00 - 17:59 o\'clock started');
-
-    return await this.parseIndexBySchedule(1);
-  };
-
-  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_18_20, {
-    name: 'pagination_scraping_task_18_20',
-    timeZone: 'Asia/Nicosia',
-  })
-  public async runner18to20(): Promise<void> {
-    this.logger.log(' ');
-    this.logger.log(' ');
-    this.logger.log('Task for period 18:00 - 20:59 o\'clock started');
-
-    return await this.parseIndexBySchedule(4);
-  };
-
-  @Cron(process.env.PAGINATION_SCRAPING_PERIOD_21_23, {
-    name: 'pagination_scraping_task_21_23',
-    timeZone: 'Asia/Nicosia',
-  })
-  public async runner21to23(): Promise<void> {
-    this.logger.log(' ');
-    this.logger.log(' ');
-    this.logger.log('Task for period 21:00 - 23:59 o\'clock started');
-
-    return await this.parseIndexBySchedule(5);
-  };
-
 
   public async parseIndexBySchedule(maxPaginationNumber = 0) {
+    const threadLocked = this.delayService.getThreadStatus();
+
+    if (threadLocked) {
+      return;
+    }
+
     try {
-      const threadLocked = this.delayService.getThreadStatus();
-
-      if (threadLocked) {
-        return;
-      }
-
       this.delayService.setThreadStatus(true);
 
       const categoriesIndexData: ICategoriesData = await this.visitPaginationPage(this.categoriesToParse, maxPaginationNumber);
@@ -164,15 +128,11 @@ export class AppService implements OnModuleInit {
       const maxNumberOfRecordsToShow = nonCachedOnly.length >= 15 ? 15 : nonCachedOnly.length;
 
       for (let i = 0; i < maxNumberOfRecordsToShow; i++) {
-        if (i < 16) {
-          if (i < 15) {
-            this.logger.log(`URL ${ nonCachedOnly[i].url } sent`);
-          } else if (i === 15) {
-            this.logger.log('...');
-          }
+        if (i < maxNumberOfRecordsToShow - 2) {
+          this.logger.log(`URL ${ nonCachedOnly[i].url } sent`);
+        } else if (i === maxNumberOfRecordsToShow - 1) {
+          this.logger.log('...');
         }
-
-        i++;
       }
 
       this.logger.log(`New URLs to add: ${nonCachedOnly.length}, total: ${allAdsPagesToVisit.length}`);
@@ -352,11 +312,8 @@ export class AppService implements OnModuleInit {
       const categoryIndexURL = this.baseUrl + path;
       const pageData = await this.getPage(categoryIndexURL);
 
-      this.logger.log(' ');
-      this.logger.log('Parsing of: ' + path);
-
       if (pageData) {
-        await this.delayService.delayRequest();
+        const delay = await this.delayService.delayRequest();
 
         const [ paginationPageUrls, adsUrls ] = await this.parseService
           .parsePage(pageData, categoryIndexURL);
@@ -373,6 +330,7 @@ export class AppService implements OnModuleInit {
           adsUrls: this.addBaseUrl(this.baseUrl, adsUrls),
         };
 
+        this.logger.log(`Delay ${paddingStartSpaces(Math.round(delay / 100) / 10, 3)} sec. Parsing: ${path}`);
       } else {
         this.logger.log('Failed to fetch page: ' + categoryIndexURL);
       }

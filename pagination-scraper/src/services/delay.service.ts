@@ -22,7 +22,7 @@ export class DelayService {
     return from + Math.random() * (to - from);
   }
 
-  public async delayRequest(): Promise<void> {
+  public async delayRequest(): Promise<number> {
     const minDelay = this.from;
     const currentTime = Date.now();
     const elapsedTime = currentTime - this.endOfWaitingTime;
@@ -32,18 +32,18 @@ export class DelayService {
 
       this.endOfWaitingTime = Date.now() + delayTime;
 
-      await delay(delayTime, this.logger.log.bind(this.logger));
+      return await delay(delayTime);
     } else if (currentTime > this.endOfWaitingTime && elapsedTime >= minDelay) {
       this.endOfWaitingTime = Date.now() + 1;
 
-      await delay(0, this.logger.log.bind(this.logger));
+      return await delay(0);
     } else {
       // currentTime <= this.endOfWaitingTime
       const delayTime = this.getRandomInRangeTimeMs(this.from, this.to);
 
       this.endOfWaitingTime = this.endOfWaitingTime + delayTime;
 
-      await delay(this.endOfWaitingTime - currentTime, this.logger.log.bind(this.logger));
+      return await delay(this.endOfWaitingTime - currentTime);
     }
   }
 
