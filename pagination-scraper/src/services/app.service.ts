@@ -151,13 +151,13 @@ export class AppService implements OnModuleInit {
 
       this.logger.log(`New URLs to add: ${nonCachedOnly.length}, total: ${allAdsPagesToVisit.length}`);
 
+      await this.addPagesToCache(nonCachedOnly);
+
       const batchUrlDataSent = await lastValueFrom(
         this.runnerServiceClient
           .send(Messages.PARSE_URLS, nonCachedOnly)
           .pipe(timeout(this.tcpTimeout)),
       );
-
-      await this.addPagesToCache(nonCachedOnly);
     } catch (e) {
       this.logger.log('An error occurred in \'parseIndexBySchedule\' method.');
       this.logger.error(e.message);
