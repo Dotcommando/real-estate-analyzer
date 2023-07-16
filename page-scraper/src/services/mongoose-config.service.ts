@@ -5,6 +5,8 @@ import {
   MongooseOptionsFactory,
 } from '@nestjs/mongoose';
 
+import { Mode } from '../constants';
+
 
 @Injectable()
 export class MongoConfigService implements MongooseOptionsFactory {
@@ -15,7 +17,9 @@ export class MongoConfigService implements MongooseOptionsFactory {
 
   public createMongooseOptions(): MongooseModuleOptions {
     return {
-      uri: `mongodb://${this.configService.get('MONGO_INITDB_ROOT_USERNAME')}:${this.configService.get('MONGO_INITDB_ROOT_PASSWORD')}@localhost:${this.configService.get('MONGO_PORT')}/${this.configService.get('MONGO_INITDB_DATABASE')}?authSource=admin&replicaSet=rs0&ssl=false`,
+      uri: this.configService.get('MODE') === Mode.Dev
+        ? `mongodb://${this.configService.get('MONGO_INITDB_ROOT_USERNAME')}:${this.configService.get('MONGO_INITDB_ROOT_PASSWORD')}@localhost:${this.configService.get('MONGO_PORT')}/${this.configService.get('MONGO_INITDB_DATABASE')}?authSource=admin${this.configService.get('MONGO_RS') ? '&replicaSet=' + this.configService.get('MONGO_RS') : ''}&ssl=false`
+        : `mongodb://${this.configService.get('MONGO_INITDB_ROOT_USERNAME')}:${this.configService.get('MONGO_INITDB_ROOT_PASSWORD')}@localhost:${this.configService.get('MONGO_PORT')}/${this.configService.get('MONGO_INITDB_DATABASE')}`,
     };
   }
 }
