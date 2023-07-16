@@ -4,7 +4,7 @@ services:
 
   bazaraki-data-storage:
     image: mongo:6.0
-    command: [ "--bind_ip", "0.0.0.0", "--replSet", "rs0", "--keyFile", "/mng/keyfile.key", "--port", "${MONGO_PORT}" ]
+    command: [ "--bind_ip", "0.0.0.0", "--replSet", "rs0", "--keyFile", "/mng/keyfile.key", "--port", "${MONGO_PORT}", "--wiredTigerCacheSizeGB", "1" ]
     restart: always
     env_file: .env
     container_name: bazaraki-data-storage-mongo-rs
@@ -14,3 +14,7 @@ services:
     hostname: localhost
     ports:
       - "${MONGO_PORT}:${MONGO_PORT}"
+    deploy:
+      resources:
+        limits:
+          memory: 2G

@@ -57,3 +57,8 @@ mock-server/assets/**/*.html
 
 # Private key for replica set
 /data-storage/mongodb/replica-set.key
+
+# Docker volume for MongoDB files
+/data-storage/mongodb/db/*
+!/data-storage/mongodb/db/.gitkeep
+
