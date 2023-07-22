@@ -8,7 +8,7 @@ import { createDumpFile, debugError, debugLog, getArrayIterator, makeDumpOfColle
 
 dotenv.config();
 
-const DSN = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@localhost:${process.env.MONGO_PORT}/${process.env.MONGO_INITDB_DATABASE}?authSource=admin&replicaSet=rs0&ssl=false`;
+const DSN = `mongodb://${process.env.MONGO_INITDB_ROOT_USERNAME}:${process.env.MONGO_INITDB_ROOT_PASSWORD}@localhost:${process.env.MONGO_PORT}/${process.env.MONGO_INITDB_DATABASE}?authSource=admin${process.env.MONGO_RS ? '&replicaSet=' + process.env.MONGO_RS : ''}&ssl=false`;
 const dumpFolder = './dist/dump';
 let collections: string[];
 
@@ -41,10 +41,11 @@ async function makeDump(): Promise<void> {
   debugLog('Total documents:', totalDocumentsNumber);
 }
 
-try {
-  mongoose.connect(DSN)
-    .then(makeDump)
-    .then(() => process.exit(0));
-} catch (err) {
-  debugError(err);
-}
+mongoose.connect(DSN)
+  .then(makeDump)
+  .then(() => mongoose.connection.close())
+  .then(() => process.exit(0))
+  .catch((err) => {
+    debugError(err);
+    mongoose.connection.close();
+  });

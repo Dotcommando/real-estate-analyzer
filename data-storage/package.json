@@ -15,6 +15,7 @@
     "lint": "eslint \"**/*.[jt]s\" --fix",
     "build": "rimraf dist && tsc -p tsconfig.build.json",
     "dump": "npm run build && node -r dotenv/config dist/dump.js dotenv_config_path=.env",
+    "data-scope": "npm run build && node -r dotenv/config dist/data-scope.js dotenv_config_path=.env",
     "merge-rent-commercials": "npm run build && node -r dotenv/config dist/merge-duplicates-rent-commercials.js dotenv_config_path=.env",
     "merge-sale-commercials": "npm run build && node -r dotenv/config dist/merge-duplicates-sale-commercials.js dotenv_config_path=.env"
   },

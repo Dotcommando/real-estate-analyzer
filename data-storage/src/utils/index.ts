@@ -1,4 +1,5 @@
 export * from './array-async-iterator';
+export * from './create-analysis-file';
 export * from './create-dump-file';
 export * from './date-in-human-readable-format';
 export * from './debug-error.helper';
@@ -8,3 +9,4 @@ export * from './make-dump-of-collection';
 export * from './round-date';
 export * from './serialize-doc';
 export * from './timeoffset-to-human-readable-format';
+export * from './write-file';
