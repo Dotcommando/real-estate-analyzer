@@ -62,3 +62,5 @@ mock-server/assets/**/*.html
 /data-storage/mongodb/db/*
 !/data-storage/mongodb/db/.gitkeep
 
+# Python system files
+**/__pycache__
