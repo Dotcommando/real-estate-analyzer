@@ -3,6 +3,7 @@ export * from './apartments-flats-type.enum';
 export * from './categories';
 export * from './commercial-type.enum';
 export * from './condition.enum';
+export * from './coords.regexp';
 export * from './energy-efficiency.enum';
 export * from './furnishing.enum';
 export * from './houses-type.enum';

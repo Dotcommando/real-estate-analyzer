@@ -1,5 +1,7 @@
 import { Document } from 'mongoose';
 
+import { ICoords } from './coords';
+
 import { Mode, OnlineViewing } from '../constants';
 
 
@@ -19,6 +21,7 @@ export interface IRealEstate {
   'registration-number'?: number;
   'registration-block'?: number;
   'square-meter-price': number;
+  coords?: ICoords;
   expired?: boolean;
 }
 

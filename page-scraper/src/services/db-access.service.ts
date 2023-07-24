@@ -98,6 +98,19 @@ export class DbAccessService {
       announcementData['type'] = String(announcementData['type']);
     }
 
+    if ('coords' in announcementData && announcementData['coords'] !== null) {
+      if (typeof announcementData['coords'].lng !== 'number' || isNaN(announcementData['coords'].lng)) {
+        delete announcementData['coords'];
+      } else if (typeof announcementData['coords'].lat !== 'number' || isNaN(announcementData['coords'].lat)) {
+        delete announcementData['coords'];
+      } else {
+        announcementData['coords'].latTitle = 'N';
+        announcementData['coords'].lngTitle = 'E';
+      }
+    } else if (announcementData['coords'] === null) {
+      delete announcementData['coords'];
+    }
+
     return announcementData;
   }
 
@@ -124,6 +137,11 @@ export class DbAccessService {
           await existingAnnouncement.save();
 
           status = `Has a duplicate in DB. Added active date: ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY')}. Collection: ${Model.collection.name}.`;
+        } else if (!existingAnnouncement.coords && announcementData.coords) { // TODO remove it, it's temporary decision
+          existingAnnouncement.coords = announcementData.coords;
+          await existingAnnouncement.save();
+
+          status = `Has a duplicate in DB. Coords updated. Collection: ${Model.collection.name}.`;
         } else {
           status = `Has a duplicate in DB. No active date added. Collection: ${Model.collection.name}.`;
         }

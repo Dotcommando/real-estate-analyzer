@@ -1,6 +1,8 @@
 import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
+import { CoordsSchema } from './coords.schema';
+
 import {
   Mode,
   ModeArray,
@@ -91,6 +93,9 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
     active_dates: {
       type: [ Schema.Types.Date ] as unknown as Date[],
       required: [ true, 'Active dates are required' ],
+    },
+    coords: {
+      type: CoordsSchema,
     },
     mode: {
       type: String,

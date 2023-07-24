@@ -1,6 +1,8 @@
 import * as mongoose from 'mongoose';
 import { Document, Model, Schema } from 'mongoose';
 
+import { CoordsSchema } from './coords.schema';
+
 import {
   AirConditioningArray,
   Condition,
@@ -138,6 +140,9 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
     active_dates: {
       type: [ Schema.Types.Date ] as unknown as Date[],
       required: [ true, 'Active dates are required' ],
+    },
+    coords: {
+      type: CoordsSchema,
     },
     mode: {
       type: String,

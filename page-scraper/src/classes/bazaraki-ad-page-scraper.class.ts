@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 import * as dashify from 'dashify';
 import * as levenshtein from 'fast-levenshtein';
 import Root = cheerio.Root;
-import { OnlineViewing, OnlineViewingArray } from '../constants';
+import { coordsRegexp, OnlineViewing, OnlineViewingArray } from '../constants';
 import { IRealEstate } from '../types';
 import { dateInHumanReadableFormat, getRoundYesterday, parseDate, roundDate } from '../utils';
 
@@ -33,6 +33,7 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
       ad_id: this.getAdId(),
       'square-meter-price': this.getSquareMeterPrice(),
       expired: this.getExpiredStatus(),
+      coords: this.getCoords(),
       ...(this.getCharacteristics('.announcement-characteristics .chars-column')),
     };
 
@@ -200,6 +201,28 @@ export class BazarakiAdPageScraperClass<T extends IRealEstate> {
       return phoneBlockText.includes('expired');
     } catch (e) {
       return false;
+    }
+  }
+
+  private getCoords(): { lat: number; lng: number } {
+    try {
+      const coordsData = this.$('.announcement__location').data('coords');
+
+      if (!coordsData) {
+        return null;
+      }
+
+      const coords = coordsData.match(coordsRegexp())?.[0]
+        ?.replace(/[\(\)]/, '')
+        ?.split(/\s{1,2}/);
+      const lng = parseFloat(coords[0]);
+      const lat = parseFloat(coords[1]);
+
+      return !isNaN(lng) && !isNaN(lat)
+        ? { lat, lng }
+        : null;
+    } catch (e) {
+      return null;
     }
   }
 

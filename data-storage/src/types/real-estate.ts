@@ -1,3 +1,5 @@
+import { ICoords } from './coords';
+
 import { OnlineViewing } from '../constants';
 
 
@@ -17,4 +19,6 @@ export interface IRealEstate {
   'registration-number'?: number;
   'registration-block'?: number;
   'square-meter-price': number;
+  coords?: ICoords;
+  expired?: boolean;
 }
