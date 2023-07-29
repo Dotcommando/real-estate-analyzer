@@ -43,6 +43,21 @@ export class AppService implements OnModuleInit {
   private firstRunDepth = this.configService.get('FIRST_RUN_DEPTH')
     ? parseInt(this.configService.get('FIRST_RUN_DEPTH'))
     : 0;
+  private depthFull = this.configService.get('DEPTH_FULL')
+    ? parseInt(this.configService.get('DEPTH_FULL'))
+    : 0;
+  private depthDeep = this.configService.get('DEPTH_DEEP')
+    ? parseInt(this.configService.get('DEPTH_DEEP'))
+    : 0;
+  private depthModerate = this.configService.get('DEPTH_MODERATE')
+    ? parseInt(this.configService.get('DEPTH_MODERATE'))
+    : 0;
+  private depthSuperficial = this.configService.get('DEPTH_SUPERFICIAL')
+    ? parseInt(this.configService.get('DEPTH_SUPERFICIAL'))
+    : 0;
+  private depthShallow = this.configService.get('DEPTH_SHALLOW')
+    ? parseInt(this.configService.get('DEPTH_SHALLOW'))
+    : 0;
 
   public async onModuleInit(): Promise<void> {
     await this.parseIndexBySchedule(this.firstRunDepth);
@@ -63,7 +78,7 @@ export class AppService implements OnModuleInit {
   public async runnerFull(): Promise<void> {
     this.showRunnerMessage('FULL');
 
-    return await this.parseIndexBySchedule(0);
+    return await this.parseIndexBySchedule(this.depthFull);
   };
 
   @Cron(process.env.PAGINATION_SCRAPING_DEEP, {
@@ -73,7 +88,7 @@ export class AppService implements OnModuleInit {
   public async runnerDeep(): Promise<void> {
     this.showRunnerMessage('DEEP');
 
-    return await this.parseIndexBySchedule(80);
+    return await this.parseIndexBySchedule(this.depthDeep);
   };
 
   @Cron(process.env.PAGINATION_SCRAPING_MODERATE, {
@@ -83,7 +98,7 @@ export class AppService implements OnModuleInit {
   public async runnerModerate(): Promise<void> {
     this.showRunnerMessage('MODERATE');
 
-    return await this.parseIndexBySchedule(50);
+    return await this.parseIndexBySchedule(this.depthModerate);
   };
 
   @Cron(process.env.PAGINATION_SCRAPING_SUPERFICIAL, {
@@ -93,7 +108,7 @@ export class AppService implements OnModuleInit {
   public async runnerSuperficial(): Promise<void> {
     this.showRunnerMessage('SUPERFICIAL');
 
-    return await this.parseIndexBySchedule(20);
+    return await this.parseIndexBySchedule(this.depthSuperficial);
   };
 
   @Cron(process.env.PAGINATION_SCRAPING_SHALLOW, {
@@ -103,7 +118,7 @@ export class AppService implements OnModuleInit {
   public async runnerShallow(): Promise<void> {
     this.showRunnerMessage('SHALLOW');
 
-    return await this.parseIndexBySchedule(1);
+    return await this.parseIndexBySchedule(this.depthShallow);
   };
 
   @Cron(process.env.CLEAR_MCACHE, {
