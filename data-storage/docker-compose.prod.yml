@@ -7,9 +7,10 @@ services:
     command: [ "--bind_ip", "0.0.0.0", "--port", "${MONGO_PORT}", "--wiredTigerCacheSizeGB", "1" ]
     restart: always
     env_file: .env
-    container_name: bazaraki-data-storage-mongo-rs
+    container_name: bazaraki-data-storage-mongodb
     volumes:
       - "./mongodb/db:/data/db"
+      - "./dist/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js"
     hostname: localhost
     ports:
       - "${MONGO_PORT}:${MONGO_PORT}"
