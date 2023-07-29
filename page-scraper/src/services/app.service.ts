@@ -142,8 +142,6 @@ export class AppService {
         return await this.parseAndSave(urlData.url);
       } else if (!fromDB.ad && fromCache) {
         return await this.moveFromCacheToDB(urlData.url, fromCache as [ Partial<IRealEstate>, string ]);
-      } else if (fromDB.ad && !fromDB.ad.coords) { // TODO remove it, it's a temporary decision
-        return await this.parseAndSave(urlData.url);
       } else {
         // (fromDB && !fromCache) || (fromDB && fromCache)
         return await this.updateActiveDate(urlData.category, urlData.url);

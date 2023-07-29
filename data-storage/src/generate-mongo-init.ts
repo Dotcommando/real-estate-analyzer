@@ -38,14 +38,19 @@ db.createUser({
   user: '${user}',
   pwd: '${pwd}',
   roles: [
-    {
-      role: 'readWrite',
-      db: '${dbName}',
-    },
+    { role: 'readWrite', db: '${dbName}' }
   ],
 });
 
 ${collectionsScripts}
+
+db = db.getSiblingDB('admin');
+db.updateUser('${user}', {
+  roles: [
+    { role: 'root', db: 'admin' },
+    { role: 'dbAdmin', db: '${dbName}' }
+  ],
+});
 `;
 
 try {

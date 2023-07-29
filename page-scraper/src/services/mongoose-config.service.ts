@@ -39,7 +39,7 @@ export class MongoConfigService implements MongooseOptionsFactory {
 
   public createMongooseOptions(): MongooseModuleOptions {
     return {
-      uri: `${this.protocol}://${this.username}:${this.password}@${this.host}${this.port}${this.queryString}`,
+      uri: `${this.protocol}://${this.username}:${this.password}@${this.host}${this.port}/${this.database}${this.queryString}`,
     };
   }
 }

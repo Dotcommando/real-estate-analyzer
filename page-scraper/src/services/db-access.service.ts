@@ -137,11 +137,6 @@ export class DbAccessService {
           await existingAnnouncement.save();
 
           status = `Has a duplicate in DB. Added active date: ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY')}. Collection: ${Model.collection.name}.`;
-        } else if (!existingAnnouncement.coords && announcementData.coords) { // TODO remove it, it's temporary decision
-          existingAnnouncement.coords = announcementData.coords;
-          await existingAnnouncement.save();
-
-          status = `Has a duplicate in DB. Coords updated. Collection: ${Model.collection.name}.`;
         } else {
           status = `Has a duplicate in DB. No active date added. Collection: ${Model.collection.name}.`;
         }
