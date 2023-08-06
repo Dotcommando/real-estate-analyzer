@@ -42,6 +42,22 @@ class DataAnalyser:
 
         return df
 
+    def convert_includes(self, df):
+        # Проверяем, есть ли столбец 'includes' в датафрейме
+        if 'includes' not in df.columns:
+            return df
+
+        # Преобразование списков в includes в серии и затем преобразование их в dummy-переменные
+        includes_dummies = df['includes'].apply(pd.Series).stack().str.get_dummies().sum(level=0)
+
+        # Присоединение этих dummy-переменных к исходному датафрейму
+        df = pd.concat([df.drop('includes', axis=1), includes_dummies], axis=1)
+
+        # Замена NaN на False
+        df.fillna(False, inplace=True)
+
+        return df
+
     async def analyse(self):
         cursor = self.collection.find({
             "$or": [
@@ -86,18 +102,53 @@ class DataAnalyser:
         # Применяем маску к DataFrame, оставляя только те строки, где 'district' является строкой
         df = df[mask]
 
+        # Удаляем строки, где 'price' или 'property-area' не являются числами
+        df = df[df['price'].apply(lambda x: isinstance(x, (int, float))) & df['property-area'].apply(lambda x: isinstance(x, (int, float)))]
+
+        # Удаляем строки, где 'price' или 'property-area' равны нулю
+        df = df[df['price'] != 0]
+        df = df[df['property-area'] != 0]
+
         df = self.clean_districts(df)
+        df = self.convert_includes(df)
 
-        # Группировка по городу и району и подсчёт количества уникальных сочетаний
-        combinations = df.groupby(['city', 'district']).size().reset_index(name='counts')
+        # # Группировка по городу и району и подсчёт количества уникальных сочетаний
+        # combinations = df.groupby(['city', 'district']).size().reset_index(name='counts')
+        #
+        # # Сортировка по количеству уникальных сочетаний в порядке убывания
+        # combinations = combinations.sort_values('counts', ascending=False)
+        #
+        # # Выводим на экран уникальные сочетания городов и районов и их количество
+        # print(f'\nCollection {self.collection.name}')
+        # for index, row in combinations.iterrows():
+        #     print(f'"{row["city"]} - {row["district"]}": {row["counts"]}')
+        #
+        # # Число строк в датафрейме
+        # total_count = df.shape[0]
+        #
+        # # Фильтруем только колонки с булевыми значениями
+        # bool_df = df.select_dtypes(include=[bool])
+        #
+        # # Получаем сумму значений в каждой колонке и преобразуем в словарь
+        # column_counts = bool_df.sum().to_dict()
+        #
+        # # Печатаем отношение количества True значений к общему количеству для каждой колонки
+        # for column, count in column_counts.items():
+        #     print(f"{column}: {count}/{total_count}")
 
-        # Сортировка по количеству уникальных сочетаний в порядке убывания
-        combinations = combinations.sort_values('counts', ascending=False)
+        # Создаем новую колонку с ценой за квадратный метр
+        df['price_per_sqm'] = df['price'] / df['property-area']
 
-        # Выводим на экран уникальные сочетания городов и районов и их количество
-        print("\nCollection Name")
-        for index, row in combinations.iterrows():
-            print(f'"{row["city"]} - {row["district"]}": {row["counts"]}')
+        # Группируем по городу и району и получаем среднее значение цены за квадратный метр
+        city_district_avg_price = df.groupby(['city', 'district'])['price_per_sqm'].mean()
 
-        # print(df.head(6))
+        # Сортируем по средней цене за квадратный метр в порядке убывания
+        city_district_avg_price = city_district_avg_price.sort_values(ascending=False)
+
+        # Печатаем ранжированный список городов и районов
+        print(f'\nCity-District Average Price Per Square Meter (in collection {self.collection.name}):')
+        for index, value in city_district_avg_price.items():
+            city, district = index
+            print(f'{city} - {district}: {round(value, 2)}')
+
         return df
