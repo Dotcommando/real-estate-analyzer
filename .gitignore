@@ -64,3 +64,4 @@ mock-server/assets/**/*.html
 
 # Python system files
 **/__pycache__
+**/venv/
