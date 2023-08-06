@@ -46,4 +46,4 @@ async def startup_event():
         analyser = DataAnalyser(start_date, end_date, collection)
         df = await analyser.analyse()
 
-        print(df)
+        # print(df)

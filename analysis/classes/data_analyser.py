@@ -142,6 +142,9 @@ class DataAnalyser:
         # Группируем по городу и району и получаем среднее значение цены за квадратный метр
         city_district_avg_price = df.groupby(['city', 'district'])['price_per_sqm'].mean()
 
+        # Подсчет числа объектов для каждой группы
+        city_district_counts = df.groupby(['city', 'district']).size()
+
         # Сортируем по средней цене за квадратный метр в порядке убывания
         city_district_avg_price = city_district_avg_price.sort_values(ascending=False)
 
@@ -149,6 +152,9 @@ class DataAnalyser:
         print(f'\nCity-District Average Price Per Square Meter (in collection {self.collection.name}):')
         for index, value in city_district_avg_price.items():
             city, district = index
-            print(f'{city} - {district}: {round(value, 2)}')
+            count = city_district_counts[city][district]
+
+            if count >= 4:
+                print(f'{city} - {district}: {round(value, 2)} (based on data on {count} objects)')
 
         return df
