@@ -161,6 +161,10 @@ class DataAnalyser:
         - pd.DataFrame: Обновленный DataFrame с установленными значениями по умолчанию.
         """
 
+        # Проверяем наличие поля в DataFrame
+        if field_name not in df.columns:
+            return df
+
         if isinstance(valid_values_or_type, list):
             condition = ~df[field_name].isin(valid_values_or_type)
 
@@ -175,6 +179,91 @@ class DataAnalyser:
         df.loc[condition, field_name] = default_value
 
         return df
+
+    def identify_outliers(self, df, threshold=1.5, min_objects_number=4):
+        # Рассчитываем цену за квадратный метр для каждого объекта
+        df['price_per_sqm'] = df['price'] / df['property-area']
+
+        # Функция для рассчета средней цены за квадратный метр в районе без учета текущего объекта
+        def calculate_mean_price_without_current(row):
+            district_data = df[(df['city'] == row['city']) & (df['district'] == row['district'])]
+            if district_data.shape[0] <= min_objects_number:
+                return row['price_per_sqm']
+            else:
+                return (district_data['price'].sum() - row['price']) / (district_data['property-area'].sum() - row['property-area'])
+
+        # Применяем функцию к датафрейму
+        df['mean_price_per_sqm_without_current'] = df.apply(calculate_mean_price_without_current, axis=1)
+
+        # Идентифицируем выбросы
+        df['is_outlier'] = df['price_per_sqm'] > threshold * df['mean_price_per_sqm_without_current']
+
+        # Считаем количество выбросов по районам
+        outlier_counts = df[df['is_outlier']].groupby(['city', 'district']).size().to_dict()
+
+        # Сохраняем датафрейм удаленных выбросов
+        removed_outliers_df = df[df['is_outlier']]
+
+        # Удаляем выбросы из основного датафрейма
+        cleaned_df = df[~df['is_outlier']].drop(columns=['is_outlier', 'price_per_sqm', 'mean_price_per_sqm_without_current'])
+
+        # Возвращаем очищенный датафрейм, количество выбросов по районам и датафрейм удаленных выбросов
+        return cleaned_df, outlier_counts, removed_outliers_df
+
+    def field_analysis(self, df, ignored_fields):
+        results = []
+        columns_to_drop = []
+
+        for column in df.columns:
+            if column in ignored_fields:
+                continue
+
+            if df[column].apply(type).eq(list).any():
+                results.append((column, "contains lists, skipping unique value calculation"))
+                continue
+
+            data_types = set(df[column].apply(type).unique())
+            unique_values = len(df[column].unique())
+            null_values = df[column].isnull().sum()
+
+            if unique_values == 1:
+                columns_to_drop.append(column)
+
+            results.append((column, ', '.join([str(t.__name__) for t in data_types]), unique_values, null_values, len(df)))
+
+        return results, columns_to_drop
+
+    def print_field_analysis(self, analysis_results):
+        print(f'\n')
+        print(f'\nAnalysis of collection {self.collection.name}:')
+        print(f'\nColumn name - type(s) - diff. values/empty values/common notes number')
+
+        for result in analysis_results:
+            if len(result) == 2:
+                print(f"{result[0]} {result[1]}")
+            else:
+                print(f"{result[0]} - {result[1]} - {result[2]}/{result[3]}/{result[4]}")
+
+    def print_value_counts_for_column(self, df, column_name, top_n=10):
+        """
+        Печатает частоту уникальных значений для заданной колонки.
+
+        :param df: DataFrame, содержащий данные.
+        :param column_name: Название колонки для анализа.
+        :param top_n: Максимальное количество выводимых значений.
+        """
+
+        if column_name not in df.columns:
+            print(f"Column '{column_name}' not found in the dataframe.")
+            return
+
+        print(f"\nAnalysis for column: {column_name}\n{'-'*40}")
+
+        # Убираем отсутствующие значения (NaN) перед подсчетом
+        counts = df[column_name].dropna().value_counts().head(top_n)
+
+        for value, count in counts.items():
+            print(f"{value}: {count}")
 
     async def analyse(self):
         cursor = self.collection.find({
@@ -240,6 +329,16 @@ class DataAnalyser:
 
         energy_efficiency_values = [ 'A+++', 'A++', 'A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'E+', 'E', 'N/A', 'In Progress' ]
 
+        if 'floor' in df.columns:
+            valid_floor_values = df[df['floor'].apply(type) == str]['floor'].unique().tolist()
+        else:
+            valid_floor_values = []
+
+        if 'construction-year' in df.columns:
+            valid_construction_year_values = df[df['construction-year'].apply(type) == str]['construction-year'].unique().tolist()
+        else:
+            valid_construction_year_values = []
+
         df = self.drop_if_null(df, 'price', [ 0 ], [ 'int', 'float' ])
         df = self.drop_if_null(df, 'property-area', [ 0 ], [ 'int' ])
         df = self.set_default_value(df, 'online-viewing', [ 'Yes', 'No' ], [ 'No' ])
@@ -251,44 +350,25 @@ class DataAnalyser:
         df = self.set_default_value(df, 'air-conditioning', [ 'Full, all rooms', 'Partly', 'No' ], 'No')
         df = self.set_default_value(df, 'bedrooms', 'int', 1)
         df = self.set_default_value(df, 'bathrooms', 'int', 1)
+        df = self.set_default_value(df, 'floor', valid_floor_values, '1st')
+        df = self.set_default_value(df, 'construction-year', valid_construction_year_values, 'Older')
 
-        df = self.field_analysis(df, ignored_fields)
+        field_analysis_result, columns_to_drop = self.field_analysis(df, ignored_fields)
+        df = df.drop(columns=columns_to_drop)
+        self.print_field_analysis(field_analysis_result)
+        # self.print_value_counts_for_column(df, 'construction-year', 40)
+
+        df, outlier_counts, removed_outliers_df = self.identify_outliers(df, 1.5, 4)
 
         # Выведем первые 5 строк датафрейма
         print(df.head())
 
         # Список интересующих колонок
-        columns_of_interest = [ 'Alarm', 'Attic/Loft', 'Balcony', 'Elevator', 'Fireplace', 'Garden', 'Playroom', 'Pool', 'Storage room' ]
-
-        # Отфильтруйте строки, где хотя бы одна из указанных колонок имеет тип float
-        float_rows = df[df[columns_of_interest].applymap(lambda x: isinstance(x, float)).any(axis=1)].head()
-
-        print(float_rows)
-
-        return df
-
-    def field_analysis(self, df, ignored_fields):
-        print(f'\n')
-        print(f'\nAnalysis of collection {self.collection.name}:')
-        print(f'\nColumn name - type(s) - diff. values/empty values/common notes number')
-
-        for column in df.columns:
-            if column in ignored_fields:
-                continue
-
-            if df[column].apply(type).eq(list).any():
-                print(f"{column} contains lists, skipping unique value calculation")
-                continue
-
-            # Определение типа данных
-            data_types = set(df[column].apply(type).unique())
-
-            # Число разных значений
-            unique_values = len(df[column].unique())
-
-            # Число пустых значений
-            null_values = df[column].isnull().sum()
-
-            print(f"{column} - {', '.join([str(t.__name__) for t in data_types])} - {unique_values}/{null_values}/{len(df)}")
+        # columns_of_interest = [ 'Alarm', 'Attic/Loft', 'Balcony', 'Elevator', 'Fireplace', 'Garden', 'Playroom', 'Pool', 'Storage room' ]
+        #
+        # # Отфильтруйте строки, где хотя бы одна из указанных колонок имеет тип float
+        # float_rows = df[df[columns_of_interest].applymap(lambda x: isinstance(x, float)).any(axis=1)].head()
+        #
+        # print(float_rows)
 
         return df
