@@ -433,7 +433,7 @@ class DataAnalyser:
         if 'rent' in self.collection.name:
             df, outlier_counts, removed_outliers_df = self.identify_outliers(df, 1.8, 5, 0.1, 3)
         else:
-            df, outlier_counts, removed_outliers_df = self.identify_outliers(df, 1.8, 5, 100, 800)
+            df, outlier_counts, removed_outliers_df = self.identify_outliers(df, 2.5, 5, 100, 800)
 
         # self.print_outlier_counts(outlier_counts)
         # self.print_detailed_outliers(removed_outliers_df)
