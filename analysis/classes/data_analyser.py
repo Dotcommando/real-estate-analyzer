@@ -113,8 +113,7 @@ class DataAnalyser:
 
         return stats
 
-    def print_analysis_of_city_district(self, median_prices_df):
-        # Создаем временный датафрейм для отображения
+    def print_analysis_of_city_district(self, median_prices_df, min_objects_threshold=0):
         temp_df = median_prices_df.copy()
         temp_df['  City'] = temp_df['city']
         temp_df['  District'] = temp_df['district']
@@ -122,10 +121,11 @@ class DataAnalyser:
         temp_df['  Avg price/sqm'] = temp_df['mean'].apply(lambda x: f"{x:.2f}")
         temp_df['  Objects'] = temp_df['count']
 
-        # Выбираем нужные колонки для отображения
+        temp_df = temp_df[temp_df['  Objects'] >= min_objects_threshold]
+
         columns_to_show = ['  City', '  District', '  Median price/sqm', '  Avg price/sqm', '  Objects']
 
-        print(f"\nDetailed median prices for City-Districts in {self.collection.name}:\n")
+        print(f"\nDetailed prices for City-Districts in {self.collection.name}:\n")
         print(temp_df[columns_to_show].to_string(index=False))
 
         del temp_df
@@ -221,7 +221,7 @@ class DataAnalyser:
         def calculate_median_price_without_current(row):
             district_data = df[(df['city'] == row['city']) & (df['district'] == row['district'])]
 
-            if district_data.shape[0] <= min_objects_number:
+            if district_data.shape[0] < min_objects_number:
                 return row['price_per_sqm']
             else:
                 return district_data['price_per_sqm'].median()
@@ -364,8 +364,8 @@ class DataAnalyser:
         fields_to_exclude = [
             'url', 'ad_id',  'currency', 'reference-number',
             'registration-number', 'registration-block',
-            'property-area-unit', 'coords', 'mode', '__v',
-            'plot-area-unit', 'square-meter-price' ]
+            'property-area-unit', 'mode', '__v', 'coords',
+            'plot-area-unit', 'square-meter-price', 'postal-code' ]
 
         df = self.remove_fields(df, fields_to_exclude)
         df = self.remove_duplicates(df)
@@ -386,8 +386,8 @@ class DataAnalyser:
         ignored_fields = [
             'url', 'ad_id', 'title', 'description', 'currency',
             'reference-number', 'registration-number', 'registration-block',
-            'property-area-unit', 'coords', 'mode', '_id', '__v', 'active_dates',
-            'plot-area-unit', 'included', 'publish_date' ]
+            'property-area-unit', 'mode', '_id', '__v', 'active_dates',
+            'plot-area-unit', 'included', 'publish_date', 'coords' ]
 
         energy_efficiency_values = [ 'A+++', 'A++', 'A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'E+', 'E', 'N/A', 'In Progress' ]
 
@@ -430,11 +430,17 @@ class DataAnalyser:
         # field_analysis_result, columns_to_drop = self.field_analysis(df, ignored_fields)
         # self.print_field_analysis(field_analysis_result)
 
-        df, outlier_counts, removed_outliers_df = self.identify_outliers(df, 1.8, 4)
+        if 'rent' in self.collection.name:
+            df, outlier_counts, removed_outliers_df = self.identify_outliers(df, 1.8, 5, 0.1, 3)
+        else:
+            df, outlier_counts, removed_outliers_df = self.identify_outliers(df, 1.8, 5, 100, 800)
+
+        # self.print_outlier_counts(outlier_counts)
+        # self.print_detailed_outliers(removed_outliers_df)
         median_prices_city_district_df = self.analyse_city_district(df)
-        self.print_analysis_of_city_district(median_prices_city_district_df)
+        self.print_analysis_of_city_district(median_prices_city_district_df, 5)
 
         # Выведем первые 5 строк датафрейма
-        print(df.head())
+        # print(df.head())
 
-        return df
+        return df, median_prices_city_district_df

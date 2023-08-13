@@ -44,6 +44,6 @@ async def startup_event():
         mongo_db = client[mongo_db_name]
         collection = mongo_db[collection_name]
         analyser = DataAnalyser(start_date, end_date, collection)
-        df = await analyser.analyse()
+        df, median_prices_city_district_df = await analyser.analyse()
 
         # print(df)
