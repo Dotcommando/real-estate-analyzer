@@ -12,6 +12,34 @@ class DataAnalyser:
         self.end_date = end_date
         self.collection = collection
 
+    async def get_db_data(self):
+        cursor = self.collection.find({
+            "$or": [
+                {
+                    "active_dates": {
+                        "$elemMatch": {
+                            "$gte": self.start_date,
+                            "$lte": self.end_date
+                        }
+                    }
+                },
+                {
+                    "_id": {
+                        "$gte": ObjectId.from_datetime(self.start_date),
+                        "$lte": ObjectId.from_datetime(self.end_date)
+                    }
+                },
+                {
+                    "publish_date": {
+                        "$gte": self.start_date,
+                        "$lte": self.end_date
+                    }
+                }
+            ]
+        })
+
+        return await cursor.to_list(length=None)
+
     def clean_districts(self, df):
         # Создаем список городов
         cities = df['city'].unique().tolist()
@@ -52,7 +80,7 @@ class DataAnalyser:
         df['included'] = df['included'].apply(lambda x: [item for item in x if len(item) > 1])
 
         # Преобразование списков в included в серии и затем преобразование их в dummy-переменные
-        included_dummies = df['included'].apply(pd.Series).stack().str.get_dummies().sum(level=0)
+        included_dummies = df['included'].apply(pd.Series).stack().str.get_dummies().groupby(level=0).sum()
 
         # Присоединение этих dummy-переменных к исходному датафрейму
         df = df.drop('included', axis=1).join(included_dummies)
@@ -64,16 +92,19 @@ class DataAnalyser:
         return df
 
     def analyse_city_district(self, df):
-        # Группировка по городу и району и подсчёт количества уникальных сочетаний
-        combinations = df.groupby(['city', 'district']).size().reset_index(name='counts')
+        # Рассчитываем цену за квадратный метр для каждого объекта
+        df['price_per_sqm'] = df['price'] / df['property-area']
 
-        # Сортировка по количеству уникальных сочетаний в порядке убывания
-        combinations = combinations.sort_values('counts', ascending=False)
+        # Группировка по городу и району и подсчёт медианной цены за квадратный метр
+        median_prices = df.groupby(['city', 'district'])['price_per_sqm'].median().reset_index()
 
-        # Выводим на экран уникальные сочетания городов и районов и их количество
-        print(f'\nCollection {self.collection.name}')
-        for index, row in combinations.iterrows():
-            print(f'"{row["city"]} - {row["district"]}": {row["counts"]}')
+        # Сортировка по городу и медианной цене за квадратный метр в порядке убывания
+        median_prices = median_prices.sort_values(['city', 'price_per_sqm'], ascending=[True, False])
+
+        # Выводим на экран уникальные сочетания городов и районов и их медианные цены
+        print(f'\nCollection {self.collection.name}, median price/sqm')
+        for index, row in median_prices.iterrows():
+            print(f'{row["city"]} - {row["district"]}: {row["price_per_sqm"]:.2f}')
 
     def analyse_boolean_columns(self, df):
         # Число строк в датафрейме
@@ -180,34 +211,47 @@ class DataAnalyser:
 
         return df
 
-    def identify_outliers(self, df, threshold=1.5, min_objects_number=4):
+    def remove_duplicates(self, df, subset=None):
+        if subset is None:
+            subset = ['title', 'description', 'city', 'district', 'price', 'property-area']
+
+        return df.drop_duplicates(subset=subset, keep='first')
+
+    def identify_outliers(self, df, threshold=1.5, min_objects_number=4, min_median_price=0.1, min_IQR=3.0):
         # Рассчитываем цену за квадратный метр для каждого объекта
         df['price_per_sqm'] = df['price'] / df['property-area']
 
-        # Функция для рассчета средней цены за квадратный метр в районе без учета текущего объекта
-        def calculate_mean_price_without_current(row):
+        def calculate_median_price_without_current(row):
             district_data = df[(df['city'] == row['city']) & (df['district'] == row['district'])]
+
             if district_data.shape[0] <= min_objects_number:
                 return row['price_per_sqm']
             else:
-                return (district_data['price'].sum() - row['price']) / (district_data['property-area'].sum() - row['property-area'])
+                return district_data['price_per_sqm'].median()
 
-        # Применяем функцию к датафрейму
-        df['mean_price_per_sqm_without_current'] = df.apply(calculate_mean_price_without_current, axis=1)
+        df['median_price_per_sqm_without_current'] = df.apply(calculate_median_price_without_current, axis=1)
 
-        # Идентифицируем выбросы
-        df['is_outlier'] = df['price_per_sqm'] > threshold * df['mean_price_per_sqm_without_current']
+        for city, district in df[['city', 'district']].drop_duplicates().values:
+            subset = df[(df['city'] == city) & (df['district'] == district)]
 
-        # Считаем количество выбросов по районам
+            Q1 = subset['price_per_sqm'].quantile(0.25)
+            Q3 = subset['price_per_sqm'].quantile(0.75)
+            IQR = max(Q3 - Q1, min_IQR)
+
+            lower_bound = max(Q1 - threshold * IQR, min_median_price)
+            upper_bound = Q3 + threshold * IQR
+
+            df.loc[(df['city'] == city) & (df['district'] == district), 'IQR'] = IQR
+            df.loc[(df['city'] == city) & (df['district'] == district), 'lower_bound'] = lower_bound
+            df.loc[(df['city'] == city) & (df['district'] == district), 'upper_bound'] = upper_bound
+
+        # Определяем выбросы
+        df['is_outlier'] = (df['price_per_sqm'] < df['lower_bound']) | (df['price_per_sqm'] > df['upper_bound'])
+
         outlier_counts = df[df['is_outlier']].groupby(['city', 'district']).size().to_dict()
-
-        # Сохраняем датафрейм удаленных выбросов
         removed_outliers_df = df[df['is_outlier']]
+        cleaned_df = df[~df['is_outlier']].drop(columns=['is_outlier', 'price_per_sqm', 'median_price_per_sqm_without_current', 'lower_bound', 'upper_bound', 'IQR'])
 
-        # Удаляем выбросы из основного датафрейма
-        cleaned_df = df[~df['is_outlier']].drop(columns=['is_outlier', 'price_per_sqm', 'mean_price_per_sqm_without_current'])
-
-        # Возвращаем очищенный датафрейм, количество выбросов по районам и датафрейм удаленных выбросов
         return cleaned_df, outlier_counts, removed_outliers_df
 
     def field_analysis(self, df, ignored_fields):
@@ -265,44 +309,59 @@ class DataAnalyser:
         for value, count in counts.items():
             print(f"{value}: {count}")
 
-    async def analyse(self):
-        cursor = self.collection.find({
-            "$or": [
-                {
-                    "active_dates": {
-                        "$elemMatch": {
-                            "$gte": self.start_date,
-                            "$lte": self.end_date
-                        }
-                    }
-                },
-                {
-                    "_id": {
-                        "$gte": ObjectId.from_datetime(self.start_date),
-                        "$lte": ObjectId.from_datetime(self.end_date)
-                    }
-                },
-                {
-                    "publish_date": {
-                        "$gte": self.start_date,
-                        "$lte": self.end_date
-                    }
-                }
-            ]
-        })
+    def print_outlier_counts(self, outlier_counts):
+        print("\nSummary of outliers by city and district:\n")
 
-        data = await cursor.to_list(length=None)
+        for (city, district), count in outlier_counts.items():
+            print(f"City: {city}, District: {district} - {count} outliers")
+
+    def print_detailed_outliers(self, removed_outliers_df):
+        # Добавляем новые колонки для красивого отображения числовых данных
+        removed_outliers_df['  Median Price/sqm  '] = removed_outliers_df['median_price_per_sqm_without_current'].apply(lambda x: f"{x:.2f}")
+        removed_outliers_df['  Outlier Price/sqm  '] = removed_outliers_df['price_per_sqm'].apply(lambda x: f"{x:.2f}")
+        removed_outliers_df['  Lw. Bound  '] = removed_outliers_df['lower_bound'].apply(lambda x: f"{x:.2f}")
+        removed_outliers_df['  IQR  '] = removed_outliers_df['IQR'].apply(lambda x: f"{x:.2f}")
+        removed_outliers_df['  Up. Bound  '] = removed_outliers_df['upper_bound'].apply(lambda x: f"{x:.2f}")
+        removed_outliers_df['  Area  '] = removed_outliers_df['property-area']
+
+        # Выбираем нужные колонки для отображения
+        columns_to_show = ['city', 'district', '  Median Price/sqm  ', '  Outlier Price/sqm  ', 'price', '  Area  ', '  Lw. Bound  ', '  IQR  ', '  Up. Bound  ']
+
+        print("\nDetailed outliers information:\n")
+        print(removed_outliers_df[columns_to_show].to_string(index=False))
+
+    def print_city_district(self, df, city, district):
+        # Фильтрация датафрейма по городу и району
+        filtered_df = df[(df['city'] == city) & (df['district'] == district)]
+
+        # Проверка на наличие записей после фильтрации
+        if filtered_df.empty:
+            print(f"No records found for {city} - {district}.")
+            return
+
+        print(f"\nListing for {city} - {district}:\n")
+
+        for index, row in filtered_df.iterrows():
+            price_per_sqm = row['price'] / row['property-area']
+            print(f"{city} - {district}: {price_per_sqm:.2f} per sqm, {row['price']} Euro total, {row['property-area']} sqm")
+
+        print('\n')
+
+    async def analyse(self):
+        data = await self.get_db_data()
 
         # Создаем датафрейм из собранных данных
         df = pd.DataFrame(data)
 
         fields_to_exclude = [
-            'url', 'ad_id', 'title', 'description', 'currency',
-            'reference-number', 'registration-number', 'registration-block',
+            'url', 'ad_id',  'currency', 'reference-number',
+            'registration-number', 'registration-block',
             'property-area-unit', 'coords', 'mode', '__v',
             'plot-area-unit', 'square-meter-price' ]
 
         df = self.remove_fields(df, fields_to_exclude)
+        df = self.remove_duplicates(df)
+        df = self.remove_fields(df, [ 'title', 'description' ])
 
         # Создаем маску, где каждое значение True, если соответствующий элемент в 'district' является строкой, и False в противном случае
         mask = df['district'].apply(lambda x: isinstance(x, str))
@@ -355,10 +414,22 @@ class DataAnalyser:
 
         field_analysis_result, columns_to_drop = self.field_analysis(df, ignored_fields)
         df = df.drop(columns=columns_to_drop)
-        self.print_field_analysis(field_analysis_result)
+
+        # self.print_city_district(df, 'Limassol', 'Germasogeia')
+        # self.print_city_district(df, 'Limassol', 'Ag. Tychon')
+        # self.print_city_district(df, 'Larnaca', 'Aglantzia')
+        # self.print_city_district(df, 'Larnaca', 'Xylofagou')
+
         # self.print_value_counts_for_column(df, 'construction-year', 40)
 
-        df, outlier_counts, removed_outliers_df = self.identify_outliers(df, 1.5, 4)
+        field_analysis_result, columns_to_drop = self.field_analysis(df, ignored_fields)
+        # self.print_field_analysis(field_analysis_result)
+
+        df, outlier_counts, removed_outliers_df = self.identify_outliers(df, 1.8, 4)
+
+        # self.print_outlier_counts(outlier_counts)
+        # self.print_detailed_outliers(removed_outliers_df)
+        self.analyse_city_district(df)
 
         # Выведем первые 5 строк датафрейма
         print(df.head())
