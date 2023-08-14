@@ -1,0 +1,14 @@
+version: '3.2'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/analysis
+    command: make start
+    deploy:
+      resources:
+        limits:
+          memory: 2g
