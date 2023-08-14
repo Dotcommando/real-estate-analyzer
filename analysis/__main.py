@@ -69,25 +69,25 @@ for collection in collections:
 async def analyse_day():
     print(f"Starting day analysis at {datetime.now()}")
     for collection in collections:
-        await analysers[collection]["day"].analyse()
+        await analysers[collection]["day"].prepare()
 
 
 async def analyse_week():
     print(f"Starting week analysis at {datetime.now()}")
     for collection in collections:
-        await analysers[collection]["week"].analyse()
+        await analysers[collection]["week"].prepare()
 
 
 async def analyse_month():
     print(f"Starting month analysis at {datetime.now()}")
     for collection in collections:
-        await analysers[collection]["month"].analyse()
+        await analysers[collection]["month"].prepare()
 
 
 async def analyse_dynamic_month():
     print(f"Starting dynamic month analysis at {datetime.now()}")
     for collection in collections:
-        await analysers[collection]["dynamic_month"].analyse()
+        await analysers[collection]["dynamic_month"].prepare()
 
 
 # Создание задач по расписанию

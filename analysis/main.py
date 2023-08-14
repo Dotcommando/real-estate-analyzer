@@ -3,7 +3,13 @@ import ast
 from fastapi import FastAPI
 from datetime import datetime
 from motor.motor_asyncio import AsyncIOMotorClient
-from classes.data_analyser import DataAnalyser
+
+from classes.median_price_calculator import MedianPriceCalculator
+from classes.data_preparer import DataPreparer
+
+mode = os.getenv("MODE", "prod")
+if mode not in ("prod", "dev"):
+    raise ValueError(f"Invalid mode: {mode}")
 
 mongo_username = os.getenv("MONGO_INITDB_ROOT_USERNAME")
 mongo_password = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
@@ -43,7 +49,9 @@ async def startup_event():
     for collection_name in collections_to_analyse:
         mongo_db = client[mongo_db_name]
         collection = mongo_db[collection_name]
-        analyser = DataAnalyser(start_date, end_date, collection)
-        df, median_prices_city_district_df = await analyser.analyse()
+        data_preparer = DataPreparer(start_date, end_date, collection, mode)
+        df = await data_preparer.prepare()
+        median_price_calculator = MedianPriceCalculator(df, collection, mode)
+        median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
 
         # print(df)

@@ -1,16 +1,16 @@
 import re
-import numpy as np
 import pandas as pd
 from datetime import datetime
 from bson.objectid import ObjectId
 from motor.motor_asyncio import AsyncIOMotorCollection
 
 
-class DataAnalyser:
-    def __init__(self, start_date: datetime, end_date: datetime, collection: AsyncIOMotorCollection):
+class DataPreparer:
+    def __init__(self, start_date: datetime, end_date: datetime, collection: AsyncIOMotorCollection, mode: str):
         self.start_date = start_date
         self.end_date = end_date
         self.collection = collection
+        self.mode = mode
 
     async def get_db_data(self):
         start_datetime = self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -125,48 +125,6 @@ class DataAnalyser:
         # Замена NaN на False и преобразование 1 и 0 в True и False
         for column in included_dummies.columns:
             df[column] = df[column].fillna(0).astype(bool)
-
-        return df
-
-    def analyse_city_district(self, df):
-        # Группировка по городу и району и подсчёт медианной и средней цены за квадратный метр
-        stats = df.groupby(['city', 'district'])['price_per_sqm'].agg(['median', 'mean', 'count']).reset_index()
-
-        # Сортировка по городу и медианной цене за квадратный метр в порядке убывания
-        stats = stats.sort_values(['city', 'median'], ascending=[True, False])
-
-        return stats
-
-    def print_analysis_of_city_district(self, median_prices_df, min_objects_threshold=0):
-        temp_df = median_prices_df.copy()
-        temp_df['  City'] = temp_df['city']
-        temp_df['  District'] = temp_df['district']
-        temp_df['  Median price/sqm'] = temp_df['median'].apply(lambda x: f"{x:.2f}")
-        temp_df['  Avg price/sqm'] = temp_df['mean'].apply(lambda x: f"{x:.2f}")
-        temp_df['  Objects'] = temp_df['count']
-
-        temp_df = temp_df[temp_df['  Objects'] >= min_objects_threshold]
-
-        columns_to_show = ['  City', '  District', '  Median price/sqm', '  Avg price/sqm', '  Objects']
-
-        print(f"\nDetailed prices for City-Districts in {self.collection.name}:\n")
-        print(temp_df[columns_to_show].to_string(index=False))
-
-        del temp_df
-
-    def analyse_boolean_columns(self, df):
-        # Число строк в датафрейме
-        total_count = df.shape[0]
-
-        # Фильтруем только колонки с булевыми значениями
-        bool_df = df.select_dtypes(include=[bool])
-
-        # Получаем сумму значений в каждой колонке и преобразуем в словарь
-        column_counts = bool_df.sum().to_dict()
-
-        # Печатаем отношение количества True значений к общему количеству для каждой колонки
-        for column, count in column_counts.items():
-            print(f"{column}: {count}/{total_count}")
 
         return df
 
@@ -298,7 +256,10 @@ class DataAnalyser:
 
         return results, columns_to_drop
 
-    def print_field_analysis(self, analysis_results):
+    def print_field_analysis(self, analysis_results, mode: str = "prod"):
+        if mode == "prod":
+            return
+
         print(f'\n')
         print(f'\nAnalysis of collection {self.collection.name}:')
         print(f'\nColumn name - type(s) - diff. values/empty values/common notes number')
@@ -309,14 +270,17 @@ class DataAnalyser:
             else:
                 print(f"{result[0]} - {result[1]} - {result[2]}/{result[3]}/{result[4]}")
 
-    def print_value_counts_for_column(self, df, column_name, top_n=10):
+    def print_value_counts_for_column(self, df, column_name, top_n = 10, mode: str = "prod"):
         """
         Печатает частоту уникальных значений для заданной колонки.
 
         :param df: DataFrame, содержащий данные.
         :param column_name: Название колонки для анализа.
         :param top_n: Максимальное количество выводимых значений.
+        :param mode: В режиме "prod" ничего не выводим в консоль
         """
+        if mode == "prod":
+            return
 
         if column_name not in df.columns:
             print(f"Column '{column_name}' not found in the dataframe.")
@@ -330,13 +294,19 @@ class DataAnalyser:
         for value, count in counts.items():
             print(f"{value}: {count}")
 
-    def print_outlier_counts(self, outlier_counts):
+    def print_outlier_counts(self, outlier_counts, mode: str = "prod"):
+        if mode == "prod":
+            return
+
         print("\nSummary of outliers by city and district:\n")
 
         for (city, district), count in outlier_counts.items():
             print(f"City: {city}, District: {district} - {count} outliers")
 
-    def print_detailed_outliers(self, removed_outliers_df):
+    def print_detailed_outliers(self, removed_outliers_df, mode: str = "prod"):
+        if mode == "prod":
+            return
+
         # Создаем временный датафрейм для красивого отображения
         temp_df = removed_outliers_df.copy()
 
@@ -355,7 +325,10 @@ class DataAnalyser:
 
         del temp_df
 
-    def print_city_district(self, df, city, district):
+    def print_city_district(self, df, city, district, mode: str = "prod"):
+        if mode == "prod":
+            return
+
         # Фильтрация датафрейма по городу и району
         filtered_df = df[(df['city'] == city) & (df['district'] == district)]
 
@@ -379,7 +352,7 @@ class DataAnalyser:
 
         print('\n')
 
-    async def analyse(self):
+    async def prepare(self):
         data = await self.get_db_data()
 
         # Создаем датафрейм из собранных данных
@@ -461,10 +434,8 @@ class DataAnalyser:
 
         # self.print_outlier_counts(outlier_counts)
         # self.print_detailed_outliers(removed_outliers_df)
-        median_prices_city_district_df = self.analyse_city_district(df)
-        self.print_analysis_of_city_district(median_prices_city_district_df, 5)
 
         # Выведем первые 5 строк датафрейма
         # print(df.head())
 
-        return df, median_prices_city_district_df
+        return df
