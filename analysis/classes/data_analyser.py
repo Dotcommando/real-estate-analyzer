@@ -13,30 +13,54 @@ class DataAnalyser:
         self.collection = collection
 
     async def get_db_data(self):
-        cursor = self.collection.find({
-            "$or": [
-                {
-                    "active_dates": {
-                        "$elemMatch": {
+        start_datetime = self.start_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_datetime = self.start_date.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        if self.start_date == self.end_date:
+            cursor = self.collection.find({
+                "$or": [
+                    {
+                        "active_dates": self.start_date
+                    },
+                    {
+                        "_id": {
+                            "$gte": ObjectId.from_datetime(start_datetime),
+                            "$lte": ObjectId.from_datetime(end_datetime)
+                        }
+                    },
+                    {
+                        "publish_date": {
+                            "$gte": start_datetime,
+                            "$lte": end_datetime
+                        }
+                    }
+                ]
+            })
+        else:
+            cursor = self.collection.find({
+                "$or": [
+                    {
+                        "active_dates": {
+                            "$elemMatch": {
+                                "$gte": self.start_date,
+                                "$lte": self.end_date
+                            }
+                        }
+                    },
+                    {
+                        "_id": {
+                            "$gte": ObjectId.from_datetime(self.start_date),
+                            "$lte": ObjectId.from_datetime(self.end_date)
+                        }
+                    },
+                    {
+                        "publish_date": {
                             "$gte": self.start_date,
                             "$lte": self.end_date
                         }
                     }
-                },
-                {
-                    "_id": {
-                        "$gte": ObjectId.from_datetime(self.start_date),
-                        "$lte": ObjectId.from_datetime(self.end_date)
-                    }
-                },
-                {
-                    "publish_date": {
-                        "$gte": self.start_date,
-                        "$lte": self.end_date
-                    }
-                }
-            ]
-        })
+                ]
+            })
 
         return await cursor.to_list(length=None)
 
@@ -431,7 +455,7 @@ class DataAnalyser:
         # self.print_field_analysis(field_analysis_result)
 
         if 'rent' in self.collection.name:
-            df, outlier_counts, removed_outliers_df = self.identify_outliers(df, 1.8, 5, 0.1, 3)
+            df, outlier_counts, removed_outliers_df = self.identify_outliers(df, 1.8, 5, 2.5, 3)
         else:
             df, outlier_counts, removed_outliers_df = self.identify_outliers(df, 2.5, 5, 100, 800)
 
