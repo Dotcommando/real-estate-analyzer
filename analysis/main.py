@@ -1,11 +1,18 @@
 import os
 import ast
-from fastapi import FastAPI
-from datetime import datetime
+import pytz
+import asyncio
+from dotenv import load_dotenv
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from motor.motor_asyncio import AsyncIOMotorClient
-
+from apscheduler.triggers.cron import CronTrigger
 from classes.median_price_calculator import MedianPriceCalculator
 from classes.data_preparer import DataPreparer
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+
+load_dotenv()
 
 mode = os.getenv("MODE", "prod")
 if mode not in ("prod", "dev"):
@@ -20,7 +27,17 @@ mongo_db_name = os.getenv("MONGO_INITDB_DATABASE")
 mongo_rs = os.getenv("MONGO_RS")
 collections_to_analyse_env = os.getenv("MONGO_COLLECTIONS_FOR_ANALYSIS")
 
-app = FastAPI()
+current_day_intermediary_hour = os.getenv("CURRENT_DAY_INTERMEDIARY_HOUR")
+
+current_month_intermediary_hour = int(os.getenv("CURRENT_MONTH_INTERMEDIARY_HOUR"))
+current_month_intermediary_minute = int(os.getenv("CURRENT_MONTH_INTERMEDIARY_MINUTE"))
+
+daily_total_hour = int(os.getenv("DAILY_TOTAL_HOUR"))
+daily_total_minute = int(os.getenv("DAILY_TOTAL_MINUTE"))
+
+monthly_total_day = int(os.getenv("MONTHLY_TOTAL_DAY"))
+monthly_total_hour = int(os.getenv("MONTHLY_TOTAL_HOUR"))
+monthly_total_minute = int(os.getenv("MONTHLY_TOTAL_MINUTE"))
 
 if collections_to_analyse_env is not None:
     collections_to_analyse = ast.literal_eval(collections_to_analyse_env)
@@ -32,19 +49,14 @@ mongo_dsn = f"{mongo_protocol}://{mongo_username}:{mongo_password}@{mongo_host}:
 if mongo_rs:
     mongo_dsn += f"?replicaSet={mongo_rs}"
 
-# Analysis period
-start_date = datetime(2023, 7, 1)
-end_date = datetime(2023, 7, 31)
+client = AsyncIOMotorClient(mongo_dsn)
 
+async def analyse_current_day_intermediary():
+    print(f"{datetime.now()}: current day intermediary analysis has started")
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.on_event("startup")
-async def startup_event():
-    client = AsyncIOMotorClient(mongo_dsn)
+    now = datetime.now()
+    start_date = datetime(now.year, now.month, now.day, 0, 0, 0)
+    end_date = datetime(now.year, now.month, now.day, 23, 59, 59)
 
     for collection_name in collections_to_analyse:
         mongo_db = client[mongo_db_name]
@@ -54,4 +66,77 @@ async def startup_event():
         median_price_calculator = MedianPriceCalculator(df, collection, mode)
         median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
 
-        # print(df)
+async def analyse_current_month_intermediary():
+    print(f"{datetime.now()}: current month intermediary analysis has started")
+
+    now = datetime.now()
+    first_day_of_current_month = datetime(now.year, now.month, 1, 0, 0, 0)
+    last_day_of_current_month = first_day_of_current_month + relativedelta(months=1) - timedelta(seconds=1)
+    start_date = first_day_of_current_month
+    end_date = last_day_of_current_month
+
+    for collection_name in collections_to_analyse:
+        mongo_db = client[mongo_db_name]
+        collection = mongo_db[collection_name]
+        data_preparer = DataPreparer(start_date, end_date, collection, mode)
+        df = await data_preparer.prepare()
+        median_price_calculator = MedianPriceCalculator(df, collection, mode)
+        median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
+
+async def analyse_daily_total():
+    print(f"{datetime.now()}: started analysis of previous day's total")
+
+    yesterday = datetime.now() - timedelta(1)
+    start_date = datetime(yesterday.year, yesterday.month, yesterday.day, 0, 0, 0)
+    end_date = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
+
+    for collection_name in collections_to_analyse:
+        mongo_db = client[mongo_db_name]
+        collection = mongo_db[collection_name]
+        data_preparer = DataPreparer(start_date, end_date, collection, mode)
+        df = await data_preparer.prepare()
+        median_price_calculator = MedianPriceCalculator(df, collection, mode)
+        median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
+
+async def analyse_monthly_total():
+    print(f"{datetime.now()}: started analysis of previous month's total")
+
+    now = datetime.now()
+    first_day_of_current_month = datetime(now.year, now.month, 1, 0, 0, 0)
+    first_day_of_previous_month = first_day_of_current_month - relativedelta(months=1)
+    last_day_of_previous_month = first_day_of_current_month - timedelta(seconds=1)
+    start_date = first_day_of_previous_month
+    end_date = last_day_of_previous_month
+
+    for collection_name in collections_to_analyse:
+        mongo_db = client[mongo_db_name]
+        collection = mongo_db[collection_name]
+        data_preparer = DataPreparer(start_date, end_date, collection, mode)
+        df = await data_preparer.prepare()
+        median_price_calculator = MedianPriceCalculator(df, collection, mode)
+        median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
+
+async def main():
+    local_tz = pytz.timezone('Europe/Nicosia')
+    scheduler = AsyncIOScheduler(timezone=local_tz)
+
+    scheduler.add_job(analyse_current_day_intermediary, CronTrigger(hour=current_day_intermediary_hour))
+    scheduler.add_job(analyse_current_month_intermediary, CronTrigger(hour=current_month_intermediary_hour, minute=current_month_intermediary_minute))
+    scheduler.add_job(analyse_daily_total, CronTrigger(hour=daily_total_hour, minute=daily_total_minute))
+    scheduler.add_job(analyse_monthly_total, CronTrigger(day=monthly_total_day, hour=monthly_total_hour, minute=monthly_total_minute))
+
+    scheduler.start()
+
+    try:
+        while True:
+            await asyncio.sleep(10)
+
+    except (KeyboardInterrupt, asyncio.exceptions.CancelledError):
+        print('Stopping the script...')
+
+    finally:
+        if client:
+            client.close()
+
+if __name__ == '__main__':
+    asyncio.run(main())
