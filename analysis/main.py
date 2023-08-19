@@ -86,7 +86,7 @@ async def analyse_current_day_intermediary():
     end_date = datetime(now.year, now.month, now.day, 23, 59, 59)
 
     for collection_name in collections_to_analyse:
-        median_avg_price_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+        stats_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
 
 
 async def analyse_current_month_intermediary():
@@ -99,7 +99,7 @@ async def analyse_current_month_intermediary():
     end_date = last_day_of_current_month
 
     for collection_name in collections_to_analyse:
-        median_avg_price_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+        stats_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
 
 
 async def analyse_daily_total():
@@ -110,7 +110,7 @@ async def analyse_daily_total():
     end_date = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
 
     for collection_name in collections_to_analyse:
-        median_avg_price_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+        stats_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
 
 
 async def analyse_monthly_total():
@@ -124,7 +124,7 @@ async def analyse_monthly_total():
     end_date = last_day_of_previous_month
 
     for collection_name in collections_to_analyse:
-        median_avg_price_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+        stats_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
 
 
 async def main():
