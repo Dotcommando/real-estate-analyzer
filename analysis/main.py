@@ -54,6 +54,16 @@ client = AsyncIOMotorClient(mongo_dsn)
 is_processing = False
 
 
+async def prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode = "prod"):
+    mongo_db = client[mongo_db_name]
+    collection = mongo_db[collection_name]
+    data_preparer = DataPreparer(start_date, end_date, collection, mode)
+    df = await data_preparer.prepare()
+    median_price_calculator = MedianPriceCalculator(df, collection, mode)
+
+    return median_price_calculator.calculate_median_avg_prices()
+
+
 async def run_scheduled_task(task):
     global is_processing
 
@@ -69,23 +79,18 @@ async def run_scheduled_task(task):
 
 
 async def analyse_current_day_intermediary():
-    print(f"{datetime.now()}: current day intermediary analysis has started")
+    print(f"\n\n{datetime.now()}: current day intermediary analysis has started")
 
     now = datetime.now()
     start_date = datetime(now.year, now.month, now.day, 0, 0, 0)
     end_date = datetime(now.year, now.month, now.day, 23, 59, 59)
 
     for collection_name in collections_to_analyse:
-        mongo_db = client[mongo_db_name]
-        collection = mongo_db[collection_name]
-        data_preparer = DataPreparer(start_date, end_date, collection, mode)
-        df = await data_preparer.prepare()
-        median_price_calculator = MedianPriceCalculator(df, collection, mode)
-        median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
+        median_avg_price_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
 
 
 async def analyse_current_month_intermediary():
-    print(f"{datetime.now()}: current month intermediary analysis has started")
+    print(f"\n\n{datetime.now()}: current month intermediary analysis has started")
 
     now = datetime.now()
     first_day_of_current_month = datetime(now.year, now.month, 1, 0, 0, 0)
@@ -94,32 +99,22 @@ async def analyse_current_month_intermediary():
     end_date = last_day_of_current_month
 
     for collection_name in collections_to_analyse:
-        mongo_db = client[mongo_db_name]
-        collection = mongo_db[collection_name]
-        data_preparer = DataPreparer(start_date, end_date, collection, mode)
-        df = await data_preparer.prepare()
-        median_price_calculator = MedianPriceCalculator(df, collection, mode)
-        median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
+        median_avg_price_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
 
 
 async def analyse_daily_total():
-    print(f"{datetime.now()}: started analysis of previous day's total")
+    print(f"\n\n{datetime.now()}: started analysis of previous day's total")
 
     yesterday = datetime.now() - timedelta(1)
     start_date = datetime(yesterday.year, yesterday.month, yesterday.day, 0, 0, 0)
     end_date = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
 
     for collection_name in collections_to_analyse:
-        mongo_db = client[mongo_db_name]
-        collection = mongo_db[collection_name]
-        data_preparer = DataPreparer(start_date, end_date, collection, mode)
-        df = await data_preparer.prepare()
-        median_price_calculator = MedianPriceCalculator(df, collection, mode)
-        median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
+        median_avg_price_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
 
 
 async def analyse_monthly_total():
-    print(f"{datetime.now()}: started analysis of previous month's total")
+    print(f"\n\n{datetime.now()}: started analysis of previous month's total")
 
     now = datetime.now()
     first_day_of_current_month = datetime(now.year, now.month, 1, 0, 0, 0)
@@ -129,12 +124,7 @@ async def analyse_monthly_total():
     end_date = last_day_of_previous_month
 
     for collection_name in collections_to_analyse:
-        mongo_db = client[mongo_db_name]
-        collection = mongo_db[collection_name]
-        data_preparer = DataPreparer(start_date, end_date, collection, mode)
-        df = await data_preparer.prepare()
-        median_price_calculator = MedianPriceCalculator(df, collection, mode)
-        median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
+        median_avg_price_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
 
 
 async def main():
