@@ -127,10 +127,10 @@ class MedianPriceCalculator:
         del temp_df
 
     def calculate_median_avg_prices(self):
-        stats_df = self.analyse_city_district(self.df)
-        self.print_analysis_of_city_district(stats_df, 5, self.mode)
+        district_df = self.analyse_city_district(self.df)
+        self.print_analysis_of_city_district(district_df, 5, self.mode)
 
         city_df = self.analyse_city(self.df)
         self.print_analysis_of_city(city_df, self.mode)
 
-        return stats_df, city_df
+        return district_df, city_df

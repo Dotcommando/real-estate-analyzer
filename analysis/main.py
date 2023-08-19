@@ -2,6 +2,7 @@ import os
 import ast
 import pytz
 import asyncio
+from pandas import DataFrame
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -9,6 +10,8 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from apscheduler.triggers.cron import CronTrigger
 from classes.median_price_calculator import MedianPriceCalculator
 from classes.data_preparer import DataPreparer
+from constants.analysis_type import AnalysisType
+from constants.analysis_period import AnalysisPeriod
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 
@@ -78,15 +81,46 @@ async def run_scheduled_task(task):
         print(f"Task {task.__name__} is already running!")
 
 
+async def save_stats_to_db(
+        collection_name: str,
+        stats_df: DataFrame,
+        start_date: datetime,
+        end_date: datetime,
+        analysis_type: AnalysisType,
+        analysis_period: AnalysisPeriod,
+        analysis_version: str
+) -> None:
+    collection_name += "_analysis"
+    mongo_db = client[mongo_db_name]
+    collection = mongo_db[collection_name]
+
+    # Конвертируем DataFrame в список словарей
+    data = stats_df.to_dict(orient="records")
+
+    document = {
+        'start_date': start_date,
+        'end_date': end_date,
+        'analysis_type': analysis_type.value,
+        'analysis_period': analysis_period.value,
+        'analysis_version': analysis_version,
+        'data': data
+    }
+
+    await collection.insert_one(document)
+
+
 async def analyse_current_day_intermediary():
     print(f"\n\n{datetime.now()}: current day intermediary analysis has started")
 
     now = datetime.now()
     start_date = datetime(now.year, now.month, now.day, 0, 0, 0)
-    end_date = datetime(now.year, now.month, now.day, now.hour, now.minute, 59)
+    end_date = datetime(now.year, now.month, now.day, now.hour, 0, 0)
 
     for collection_name in collections_to_analyse:
-        stats_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+        district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+
+        await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.DAILY_INTERMEDIARY, '1.0.0')
+        await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.DAILY_INTERMEDIARY, '1.0.0')
 
 
 async def analyse_current_month_intermediary():
@@ -103,7 +137,10 @@ async def analyse_current_month_intermediary():
     end_date = datetime(today.year, today.month, today.day, 0, 0, 0) - timedelta(seconds=1)
 
     for collection_name in collections_to_analyse:
-        stats_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+        district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+
+        await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.MONTHLY_INTERMEDIARY, '1.0.0')
+        await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.MONTHLY_INTERMEDIARY, '1.0.0')
 
 
 async def analyse_daily_total():
@@ -114,7 +151,10 @@ async def analyse_daily_total():
     end_date = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
 
     for collection_name in collections_to_analyse:
-        stats_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+        district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+
+        await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.DAILY_TOTAL, '1.0.0')
+        await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.DAILY_TOTAL, '1.0.0')
 
 
 async def analyse_monthly_total():
@@ -128,7 +168,10 @@ async def analyse_monthly_total():
     end_date = last_day_of_previous_month
 
     for collection_name in collections_to_analyse:
-        stats_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+        district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+
+        await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.MONTHLY_TOTAL, '1.0.0')
+        await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.MONTHLY_TOTAL, '1.0.0')
 
 
 async def main():
