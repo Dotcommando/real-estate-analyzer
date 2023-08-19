@@ -83,7 +83,7 @@ async def analyse_current_day_intermediary():
 
     now = datetime.now()
     start_date = datetime(now.year, now.month, now.day, 0, 0, 0)
-    end_date = datetime(now.year, now.month, now.day, 23, 59, 59)
+    end_date = datetime(now.year, now.month, now.day, now.hour, now.minute, 59)
 
     for collection_name in collections_to_analyse:
         stats_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
@@ -92,11 +92,15 @@ async def analyse_current_day_intermediary():
 async def analyse_current_month_intermediary():
     print(f"\n\n{datetime.now()}: current month intermediary analysis has started")
 
-    now = datetime.now()
-    first_day_of_current_month = datetime(now.year, now.month, 1, 0, 0, 0)
-    last_day_of_current_month = first_day_of_current_month + relativedelta(months=1) - timedelta(seconds=1)
-    start_date = first_day_of_current_month
-    end_date = last_day_of_current_month
+    today = datetime.now()
+
+    if today.day == 1:
+        yesterday = today - timedelta(1)
+        start_date = datetime(yesterday.year, yesterday.month, 1, 0, 0, 0)
+    else:
+        start_date = datetime(today.year, today.month, 1, 0, 0, 0)
+
+    end_date = datetime(today.year, today.month, today.day, 0, 0, 0) - timedelta(seconds=1)
 
     for collection_name in collections_to_analyse:
         stats_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
