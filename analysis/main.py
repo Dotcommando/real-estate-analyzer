@@ -51,6 +51,23 @@ if mongo_rs:
 
 client = AsyncIOMotorClient(mongo_dsn)
 
+is_processing = False
+
+
+async def run_scheduled_task(task):
+    global is_processing
+
+    if not is_processing:
+        is_processing = True
+
+        try:
+            await task()
+        finally:
+            is_processing = False
+    else:
+        print(f"Task {task.__name__} is already running!")
+
+
 async def analyse_current_day_intermediary():
     print(f"{datetime.now()}: current day intermediary analysis has started")
 
@@ -65,6 +82,7 @@ async def analyse_current_day_intermediary():
         df = await data_preparer.prepare()
         median_price_calculator = MedianPriceCalculator(df, collection, mode)
         median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
+
 
 async def analyse_current_month_intermediary():
     print(f"{datetime.now()}: current month intermediary analysis has started")
@@ -83,6 +101,7 @@ async def analyse_current_month_intermediary():
         median_price_calculator = MedianPriceCalculator(df, collection, mode)
         median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
 
+
 async def analyse_daily_total():
     print(f"{datetime.now()}: started analysis of previous day's total")
 
@@ -97,6 +116,7 @@ async def analyse_daily_total():
         df = await data_preparer.prepare()
         median_price_calculator = MedianPriceCalculator(df, collection, mode)
         median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
+
 
 async def analyse_monthly_total():
     print(f"{datetime.now()}: started analysis of previous month's total")
@@ -116,14 +136,15 @@ async def analyse_monthly_total():
         median_price_calculator = MedianPriceCalculator(df, collection, mode)
         median_avg_price_df = median_price_calculator.calculate_median_avg_prices()
 
+
 async def main():
     local_tz = pytz.timezone('Europe/Nicosia')
     scheduler = AsyncIOScheduler(timezone=local_tz)
 
-    scheduler.add_job(analyse_current_day_intermediary, CronTrigger(hour=current_day_intermediary_hour))
-    scheduler.add_job(analyse_current_month_intermediary, CronTrigger(hour=current_month_intermediary_hour, minute=current_month_intermediary_minute))
-    scheduler.add_job(analyse_daily_total, CronTrigger(hour=daily_total_hour, minute=daily_total_minute))
-    scheduler.add_job(analyse_monthly_total, CronTrigger(day=monthly_total_day, hour=monthly_total_hour, minute=monthly_total_minute))
+    scheduler.add_job(run_scheduled_task, args=[analyse_current_day_intermediary], trigger=CronTrigger(hour=current_day_intermediary_hour))
+    scheduler.add_job(run_scheduled_task, args=[analyse_current_month_intermediary], trigger=CronTrigger(hour=current_month_intermediary_hour, minute=current_month_intermediary_minute))
+    scheduler.add_job(run_scheduled_task, args=[analyse_daily_total], trigger=CronTrigger(hour=daily_total_hour, minute=daily_total_minute))
+    scheduler.add_job(run_scheduled_task, args=[analyse_monthly_total], trigger=CronTrigger(day=monthly_total_day, hour=monthly_total_hour, minute=monthly_total_minute))
 
     scheduler.start()
 
