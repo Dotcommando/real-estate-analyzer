@@ -13,4 +13,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN apt-get update && apt-get install -y make && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Команда для запуска приложения
-CMD ["make", "start"]
+CMD sh -c "make primary_analysis && make start"
+# CMD ["tail", "-f", "/dev/null"]

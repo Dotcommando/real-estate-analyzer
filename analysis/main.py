@@ -146,11 +146,12 @@ async def entry_exists(
     return bool(entry)
 
 
-async def analyse_current_day_intermediary():
+async def analyse_current_day_intermediary(current_datetime: datetime = None):
     try:
-        print(f"\n\n{datetime.now()}: current day intermediary analysis has started")
+        now = current_datetime or datetime.now()
 
-        now = datetime.now()
+        print(f"\n\n{now}: current day intermediary analysis has started")
+
         start_date = datetime(now.year, now.month, now.day, 0, 0, 0)
         end_date = datetime(now.year, now.month, now.day, now.hour - 1, 59, 59)
 
@@ -159,13 +160,13 @@ async def analyse_current_day_intermediary():
             city_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.DAILY_INTERMEDIARY, '1.0.0')
 
             if district_exists and city_exists:
-                print(f"Entry already exists for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                print(f"\nEntry already exists for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
                 continue
 
             district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
 
             if district_df.empty and city_df.empty:
-                print(f"No data for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                print(f"\nNo data for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
                 continue
 
             if not district_exists and not district_df.empty:
@@ -176,35 +177,35 @@ async def analyse_current_day_intermediary():
 
     except Exception as e:
         function_name = get_current_function_name()
-        print(f"Error during {function_name}:\n{e}")
+        print(f"\nError during {function_name}:\n{e}")
 
 
-async def analyse_current_month_intermediary():
+async def analyse_current_month_intermediary(current_datetime: datetime = None):
     try:
-        print(f"\n\n{datetime.now()}: current month intermediary analysis has started")
+        now = current_datetime or datetime.now()
 
-        today = datetime.now()
+        print(f"\n\n{now}: current month intermediary analysis has started")
 
-        if today.day == 1:
-            yesterday = today - timedelta(1)
+        if now.day == 1:
+            yesterday = now - timedelta(1)
             start_date = datetime(yesterday.year, yesterday.month, 1, 0, 0, 0)
         else:
-            start_date = datetime(today.year, today.month, 1, 0, 0, 0)
+            start_date = datetime(now.year, now.month, 1, 0, 0, 0)
 
-        end_date = datetime(today.year, today.month, today.day, 0, 0, 0) - timedelta(seconds=1)
+        end_date = datetime(now.year, now.month, now.day, 0, 0, 0) - timedelta(seconds=1)
 
         for collection_name in collections_to_analyse:
             district_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.MONTHLY_INTERMEDIARY, '1.0.0')
             city_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.MONTHLY_INTERMEDIARY, '1.0.0')
 
             if district_exists and city_exists:
-                print(f"Entry already exists for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                print(f"\nEntry already exists for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
                 continue
 
             district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
 
             if district_df.empty and city_df.empty:
-                print(f"No data for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                print(f"\nNo data for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
                 continue
 
             if not district_exists and not district_df.empty:
@@ -215,14 +216,16 @@ async def analyse_current_month_intermediary():
 
     except Exception as e:
         function_name = get_current_function_name()
-        print(f"Error during {function_name}:\n{e}")
+        print(f"\nError during {function_name}:\n{e}")
 
 
-async def analyse_daily_total():
+async def analyse_daily_total(current_datetime: datetime = None):
     try:
-        print(f"\n\n{datetime.now()}: started analysis of previous day's total")
+        now = current_datetime or datetime.now()
 
-        yesterday = datetime.now() - timedelta(1)
+        print(f"\n\n{now}: started analysis of previous day's total")
+
+        yesterday = now - timedelta(1)
         start_date = datetime(yesterday.year, yesterday.month, yesterday.day, 0, 0, 0)
         end_date = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
 
@@ -231,13 +234,13 @@ async def analyse_daily_total():
             city_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.DAILY_TOTAL, '1.0.0')
 
             if district_exists and city_exists:
-                print(f"Entry already exists for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                print(f"\nEntry already exists for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
                 continue
 
             district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
 
             if district_df.empty and city_df.empty:
-                print(f"No data for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                print(f"\nNo data for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
                 continue
 
             if not district_exists and not district_df.empty:
@@ -248,14 +251,15 @@ async def analyse_daily_total():
 
     except Exception as e:
         function_name = get_current_function_name()
-        print(f"Error during {function_name}:\n{e}")
+        print(f"\nError during {function_name}:\n{e}")
 
 
-async def analyse_monthly_total():
+async def analyse_monthly_total(current_datetime: datetime = None):
     try:
-        print(f"\n\n{datetime.now()}: started analysis of previous month's total")
+        now = current_datetime or datetime.now()
 
-        now = datetime.now()
+        print(f"\n\n{now}: started analysis of previous month's total")
+
         first_day_of_current_month = datetime(now.year, now.month, 1, 0, 0, 0)
         first_day_of_previous_month = first_day_of_current_month - relativedelta(months=1)
         last_day_of_previous_month = first_day_of_current_month - timedelta(seconds=1)
@@ -267,13 +271,13 @@ async def analyse_monthly_total():
             city_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.MONTHLY_TOTAL, '1.0.0')
 
             if district_exists and city_exists:
-                print(f"Entry already exists for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                print(f"\nEntry already exists for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
                 continue
 
             district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
 
             if district_df.empty and city_df.empty:
-                print(f"No data for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                print(f"\nNo data for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
                 continue
 
             if not district_exists and not district_df.empty:
@@ -284,7 +288,7 @@ async def analyse_monthly_total():
 
     except Exception as e:
         function_name = get_current_function_name()
-        print(f"Error during {function_name}:\n{e}")
+        print(f"\nError during {function_name}:\n{e}")
 
 
 async def main():

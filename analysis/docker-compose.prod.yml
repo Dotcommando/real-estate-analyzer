@@ -7,8 +7,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/analysis
-    command: make start
     deploy:
       resources:
         limits:
-          memory: 2g
+          memory: 3g
