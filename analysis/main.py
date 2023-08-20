@@ -1,6 +1,7 @@
 import os
 import ast
 import pytz
+import inspect
 import asyncio
 from pandas import DataFrame
 from dotenv import load_dotenv
@@ -57,6 +58,14 @@ client = AsyncIOMotorClient(mongo_dsn)
 is_processing = False
 
 
+async def clear_console():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
+def get_current_function_name():
+    return inspect.stack()[1][3]
+
+
 async def prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode = "prod"):
     mongo_db = client[mongo_db_name]
     collection = mongo_db[collection_name]
@@ -109,75 +118,180 @@ async def save_stats_to_db(
     await collection.insert_one(document)
 
 
+async def entry_exists(
+        collection_name: str,
+        start_date: datetime,
+        end_date: datetime,
+        analysis_type: AnalysisType,
+        analysis_period: AnalysisPeriod,
+        analysis_version: str
+) -> bool:
+    """
+    Проверяет существование записи с указанными параметрами в базе данных.
+    """
+    mongo_db = client[mongo_db_name]
+    collection_name += "_analysis"
+    collection = mongo_db[collection_name]
+
+    filter_query = {
+        'start_date': start_date,
+        'end_date': end_date,
+        'analysis_type': analysis_type.value,
+        'analysis_period': analysis_period.value,
+        'analysis_version': analysis_version
+    }
+
+    entry = await collection.find_one(filter_query)
+
+    return bool(entry)
+
+
 async def analyse_current_day_intermediary():
-    print(f"\n\n{datetime.now()}: current day intermediary analysis has started")
+    try:
+        print(f"\n\n{datetime.now()}: current day intermediary analysis has started")
 
-    now = datetime.now()
-    start_date = datetime(now.year, now.month, now.day, 0, 0, 0)
-    end_date = datetime(now.year, now.month, now.day, now.hour, 0, 0)
+        now = datetime.now()
+        start_date = datetime(now.year, now.month, now.day, 0, 0, 0)
+        end_date = datetime(now.year, now.month, now.day, now.hour - 1, 59, 59)
 
-    for collection_name in collections_to_analyse:
-        district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+        for collection_name in collections_to_analyse:
+            district_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.DAILY_INTERMEDIARY, '1.0.0')
+            city_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.DAILY_INTERMEDIARY, '1.0.0')
 
-        await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.DAILY_INTERMEDIARY, '1.0.0')
-        await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.DAILY_INTERMEDIARY, '1.0.0')
+            if district_exists and city_exists:
+                print(f"Entry already exists for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                continue
+
+            district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+
+            if district_df.empty and city_df.empty:
+                print(f"No data for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                continue
+
+            if not district_exists and not district_df.empty:
+                await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.DAILY_INTERMEDIARY, '1.0.0')
+
+            if not city_exists and not city_df.empty:
+                await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.DAILY_INTERMEDIARY, '1.0.0')
+
+    except Exception as e:
+        function_name = get_current_function_name()
+        print(f"Error during {function_name}:\n{e}")
 
 
 async def analyse_current_month_intermediary():
-    print(f"\n\n{datetime.now()}: current month intermediary analysis has started")
+    try:
+        print(f"\n\n{datetime.now()}: current month intermediary analysis has started")
 
-    today = datetime.now()
+        today = datetime.now()
 
-    if today.day == 1:
-        yesterday = today - timedelta(1)
-        start_date = datetime(yesterday.year, yesterday.month, 1, 0, 0, 0)
-    else:
-        start_date = datetime(today.year, today.month, 1, 0, 0, 0)
+        if today.day == 1:
+            yesterday = today - timedelta(1)
+            start_date = datetime(yesterday.year, yesterday.month, 1, 0, 0, 0)
+        else:
+            start_date = datetime(today.year, today.month, 1, 0, 0, 0)
 
-    end_date = datetime(today.year, today.month, today.day, 0, 0, 0) - timedelta(seconds=1)
+        end_date = datetime(today.year, today.month, today.day, 0, 0, 0) - timedelta(seconds=1)
 
-    for collection_name in collections_to_analyse:
-        district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+        for collection_name in collections_to_analyse:
+            district_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.MONTHLY_INTERMEDIARY, '1.0.0')
+            city_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.MONTHLY_INTERMEDIARY, '1.0.0')
 
-        await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.MONTHLY_INTERMEDIARY, '1.0.0')
-        await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.MONTHLY_INTERMEDIARY, '1.0.0')
+            if district_exists and city_exists:
+                print(f"Entry already exists for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                continue
+
+            district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+
+            if district_df.empty and city_df.empty:
+                print(f"No data for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                continue
+
+            if not district_exists and not district_df.empty:
+                await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.MONTHLY_INTERMEDIARY, '1.0.0')
+
+            if not city_exists and not city_df.empty:
+                await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.MONTHLY_INTERMEDIARY, '1.0.0')
+
+    except Exception as e:
+        function_name = get_current_function_name()
+        print(f"Error during {function_name}:\n{e}")
 
 
 async def analyse_daily_total():
-    print(f"\n\n{datetime.now()}: started analysis of previous day's total")
+    try:
+        print(f"\n\n{datetime.now()}: started analysis of previous day's total")
 
-    yesterday = datetime.now() - timedelta(1)
-    start_date = datetime(yesterday.year, yesterday.month, yesterday.day, 0, 0, 0)
-    end_date = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
+        yesterday = datetime.now() - timedelta(1)
+        start_date = datetime(yesterday.year, yesterday.month, yesterday.day, 0, 0, 0)
+        end_date = datetime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59)
 
-    for collection_name in collections_to_analyse:
-        district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+        for collection_name in collections_to_analyse:
+            district_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.DAILY_TOTAL, '1.0.0')
+            city_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.DAILY_TOTAL, '1.0.0')
 
-        await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.DAILY_TOTAL, '1.0.0')
-        await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.DAILY_TOTAL, '1.0.0')
+            if district_exists and city_exists:
+                print(f"Entry already exists for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                continue
+
+            district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+
+            if district_df.empty and city_df.empty:
+                print(f"No data for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                continue
+
+            if not district_exists and not district_df.empty:
+                await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.DAILY_TOTAL, '1.0.0')
+
+            if not city_exists and not city_df.empty:
+                await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.DAILY_TOTAL, '1.0.0')
+
+    except Exception as e:
+        function_name = get_current_function_name()
+        print(f"Error during {function_name}:\n{e}")
 
 
 async def analyse_monthly_total():
-    print(f"\n\n{datetime.now()}: started analysis of previous month's total")
+    try:
+        print(f"\n\n{datetime.now()}: started analysis of previous month's total")
 
-    now = datetime.now()
-    first_day_of_current_month = datetime(now.year, now.month, 1, 0, 0, 0)
-    first_day_of_previous_month = first_day_of_current_month - relativedelta(months=1)
-    last_day_of_previous_month = first_day_of_current_month - timedelta(seconds=1)
-    start_date = first_day_of_previous_month
-    end_date = last_day_of_previous_month
+        now = datetime.now()
+        first_day_of_current_month = datetime(now.year, now.month, 1, 0, 0, 0)
+        first_day_of_previous_month = first_day_of_current_month - relativedelta(months=1)
+        last_day_of_previous_month = first_day_of_current_month - timedelta(seconds=1)
+        start_date = first_day_of_previous_month
+        end_date = last_day_of_previous_month
 
-    for collection_name in collections_to_analyse:
-        district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+        for collection_name in collections_to_analyse:
+            district_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.MONTHLY_TOTAL, '1.0.0')
+            city_exists = await entry_exists(collection_name, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.MONTHLY_TOTAL, '1.0.0')
 
-        await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.MONTHLY_TOTAL, '1.0.0')
-        await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.MONTHLY_TOTAL, '1.0.0')
+            if district_exists and city_exists:
+                print(f"Entry already exists for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                continue
+
+            district_df, city_df = await prepare_data(mongo_db_name, collection_name, start_date, end_date, client, mode)
+
+            if district_df.empty and city_df.empty:
+                print(f"No data for collection: {collection_name} for start_date: {start_date} and end_date: {end_date}. Skipping...")
+                continue
+
+            if not district_exists and not district_df.empty:
+                await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.MONTHLY_TOTAL, '1.0.0')
+
+            if not city_exists and not city_df.empty:
+                await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.MONTHLY_TOTAL, '1.0.0')
+
+    except Exception as e:
+        function_name = get_current_function_name()
+        print(f"Error during {function_name}:\n{e}")
 
 
 async def main():
     local_tz = pytz.timezone('Europe/Nicosia')
     scheduler = AsyncIOScheduler(timezone=local_tz)
 
+    scheduler.add_job(clear_console, trigger=CronTrigger(day='1', hour='0', minute='0'))
     scheduler.add_job(run_scheduled_task, args=[analyse_current_day_intermediary], trigger=CronTrigger(hour=current_day_intermediary_hour))
     scheduler.add_job(run_scheduled_task, args=[analyse_current_month_intermediary], trigger=CronTrigger(hour=current_month_intermediary_hour, minute=current_month_intermediary_minute))
     scheduler.add_job(run_scheduled_task, args=[analyse_daily_total], trigger=CronTrigger(hour=daily_total_hour, minute=daily_total_minute))
