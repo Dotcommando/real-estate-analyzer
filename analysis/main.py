@@ -22,6 +22,7 @@ mode = os.getenv("MODE", "prod")
 if mode not in ("prod", "dev"):
     raise ValueError(f"Invalid mode: {mode}")
 
+mongo_connection_timeout = int(os.getenv("MONGO_CONNECTION_TIMEOUT", 5000))
 mongo_username = os.getenv("MONGO_INITDB_ROOT_USERNAME")
 mongo_password = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
 mongo_protocol = os.getenv("MONGO_PROTOCOL")
@@ -53,9 +54,50 @@ mongo_dsn = f"{mongo_protocol}://{mongo_username}:{mongo_password}@{mongo_host}:
 if mongo_rs:
     mongo_dsn += f"?replicaSet={mongo_rs}"
 
-client = AsyncIOMotorClient(mongo_dsn)
+client = AsyncIOMotorClient(mongo_dsn, serverSelectionTimeoutMS=mongo_connection_timeout)
 
 is_processing = False
+
+
+async def test_db_connection():
+    """
+    Пытается записать, прочитать и затем удалить тестовую запись в БД.
+    Выводит результат в консоль.
+    """
+    # Берем первую коллекцию из списка для тестирования (если она есть)
+    if not collections_to_analyse:
+        print("MONGO_COLLECTIONS_FOR_ANALYSIS is empty!")
+        return
+
+    test_collection_name = collections_to_analyse[0]
+    mongo_db = client[mongo_db_name]
+    collection = mongo_db[test_collection_name]
+
+    test_document = {
+        "test_field": "test_value"
+    }
+
+    try:
+        # Вставка тестовой записи
+        result = await collection.insert_one(test_document)
+        if not result.inserted_id:
+            print("Failed to insert test document!")
+            return
+
+        # Проверяем, что запись успешно вставлена
+        fetched_document = await collection.find_one({"_id": result.inserted_id})
+        if not fetched_document:
+            print("Failed to read test document after insertion!")
+            return
+        else:
+            print(f"Successfully read test document: {fetched_document}")
+
+        # Удаляем тестовую запись
+        await collection.delete_one({"_id": result.inserted_id})
+        print(f"Successfully deleted test document with _id: {result.inserted_id}")
+
+    except Exception as e:
+        print(f"\nAn error occurred during running test_db_connection:\n{e}")
 
 
 async def clear_console():
