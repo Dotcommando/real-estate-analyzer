@@ -9,6 +9,8 @@ import { IAnalysisDoc, ICityStats, ICityStatsDoc } from '../types';
 
 function safeValue(doc, ret: { [key: string]: unknown }) {
   delete ret.id;
+  delete ret._id;
+  delete ret.analysis_version;
 }
 
 export const AnalysisCityStatsSchema = new Schema<IAnalysisDoc<Types.ObjectId, ICityStats>, mongoose.Model<IAnalysisDoc<Types.ObjectId, ICityStats>>>(

@@ -7,4 +7,5 @@ export interface IAnalysisParams {
   analysisType: AnalysisType;
   analysisPeriod: AnalysisPeriod;
   ads: AdsEnum;
+  analysisVersion?: string;
 }

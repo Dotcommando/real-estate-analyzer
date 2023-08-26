@@ -3,7 +3,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { StatsDto } from './dto';
 import { queryStatsToStats } from './mappers';
 import { AppService } from './services';
-import { IAnalysis, IDistrictStats, IResponse } from './types';
+import { IAnalysisResult, ICityStats, IDistrictStats, IResponse } from './types';
 
 
 @Controller()
@@ -13,7 +13,7 @@ export class AppController {
   ) {
   }
 
-  @Get()
+  @Get('/check-alive')
   getHello(): IResponse<string> {
     return this.appService.getHello();
   }
@@ -21,7 +21,7 @@ export class AppController {
   @Get('/stats')
   public async getStats(
     @Query() query: StatsDto,
-  ): Promise<IResponse<IAnalysis<string, IDistrictStats>>> {
+  ): Promise<IResponse<IAnalysisResult<ICityStats>[] | IAnalysisResult<IDistrictStats>[]>> {
     return this.appService.getAnalysis(queryStatsToStats(query));
   }
 }

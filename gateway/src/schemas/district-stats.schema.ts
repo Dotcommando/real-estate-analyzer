@@ -6,6 +6,7 @@ import { IDistrictStatsDoc } from '../types';
 
 function safeValue(doc, ret: { [key: string]: unknown }) {
   delete ret.id;
+  delete ret._id;
 }
 
 export const DistrictStatsSchema = new Schema<IDistrictStatsDoc<Types.ObjectId>, mongoose.Model<IDistrictStatsDoc<Types.ObjectId>>>(

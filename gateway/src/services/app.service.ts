@@ -1,10 +1,20 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, LoggerService } from '@nestjs/common';
 
-import { IAnalysis, IAnalysisParams, IDistrictStats, IResponse } from '../types';
+import { DbAccessService } from './db-access.service';
+
+import { LOGGER } from '../constants';
+import { roundNumbersInReport } from '../mappers';
+import { IAnalysisParams, IAnalysisResult, ICityStats, IDistrictStats, IResponse } from '../types';
 
 
 @Injectable()
 export class AppService {
+  constructor(
+    @Inject(LOGGER) private readonly logger: LoggerService,
+    private readonly dbAccessService: DbAccessService,
+  ) {
+  }
+
   getHello(): IResponse<string> {
     return {
       status: HttpStatus.OK,
@@ -12,18 +22,43 @@ export class AppService {
     };
   }
 
-  public async getAnalysis(params: IAnalysisParams): Promise<IResponse<IAnalysis<string, IDistrictStats>>> {
-    if (params.startDate.getTime() > params.endDate.getTime()) {
+  public async getAnalysis(params: IAnalysisParams): Promise<IResponse<IAnalysisResult<ICityStats>[] | IAnalysisResult<IDistrictStats>[]>> {
+    try {
+      if (params.startDate.getTime() > params.endDate.getTime()) {
+        return {
+          status: HttpStatus.BAD_REQUEST,
+          data: null,
+          errors: [ 'The End date is less than the Start date' ],
+        };
+      }
+
+      const docs: IAnalysisResult<ICityStats>[] | IAnalysisResult<IDistrictStats>[] = await this.dbAccessService.getAnalysis(params);
+      const docsWithRoundedNumbers = roundNumbersInReport<IAnalysisResult<ICityStats> | IAnalysisResult<IDistrictStats>>(docs) as IAnalysisResult<ICityStats>[] | IAnalysisResult<IDistrictStats>[];
+
       return {
-        status: HttpStatus.BAD_REQUEST,
+        status: HttpStatus.OK,
+        data: docsWithRoundedNumbers,
+      };
+    } catch (e) {
+      this.logger.error('Error occurred in AppService.getAnalysis with parameters:');
+
+      if (params) {
+        for (const key in params) {
+          this.logger.error(`    ${key}: ${params[key]},`);
+        }
+      } else {
+        this.logger.error(`    params === ${params}, typeof params === ${typeof params}.`);
+      }
+
+      this.logger.error(e);
+
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
         data: null,
-        errors: [ 'The End date is less than the Start date' ],
+        errors: [
+          'Cannot get statistics',
+        ],
       };
     }
-
-    return {
-      status: HttpStatus.OK,
-      data: [],
-    } as unknown as IResponse<IAnalysis<string, IDistrictStats>>;
   }
 }

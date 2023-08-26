@@ -4,3 +4,5 @@ export enum AdsEnum {
   SaleFlats = 'saleapartmentsflats',
   SaleHouses = 'salehouses',
 }
+
+export const AdsEnumArray = Object.values(AdsEnum);

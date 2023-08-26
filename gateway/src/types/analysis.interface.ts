@@ -10,3 +10,6 @@ export interface IAnalysis<Id = string, T = unknown> {
   analysis_version: string;
   data: T[];
 }
+
+export interface IAnalysisResult<T = unknown> extends Omit<IAnalysis<any, T>, '_id' | 'analysis_version'> {
+}

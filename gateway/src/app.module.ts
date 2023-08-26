@@ -3,8 +3,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AppController } from './app.controller';
+import { LOGGER } from './constants';
 import { AnalysisCityStatsSchema, AnalysisDistrictStatsSchema } from './schemas';
-import { AppService, DummyLoggerService, LoggerService, MongoConfigService } from './services';
+import { AppService, DbAccessService, DummyLoggerService, LoggerService, MongoConfigService } from './services';
 
 
 @Module({
@@ -61,8 +62,9 @@ import { AppService, DummyLoggerService, LoggerService, MongoConfigService } fro
   controllers: [ AppController ],
   providers: [
     AppService,
+    DbAccessService,
     {
-      provide: LoggerService,
+      provide: LOGGER,
       useFactory: (configService: ConfigService) => {
         const environment = configService.get('MODE');
 
