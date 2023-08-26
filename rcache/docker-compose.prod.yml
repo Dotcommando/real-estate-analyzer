@@ -1,6 +1,8 @@
-version: "3"
+version: "3.8"
+
 services:
-  RCache:
+
+  r-cache:
     image: redis:7.0
     ports:
       - "${REDIS_PORT}:6379"
@@ -8,7 +10,20 @@ services:
       - ./local_data/:/data/
     env_file:
       - .env
+    container_name: rcache
     deploy:
       resources:
         limits:
-          memory: 512M
+          memory: 1g
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:r-cache:6379
+    ports:
+      - "${REDIS_COMMANDER_PORT}:8081"
+
+networks:
+  common-net:
+    name: parser-network-1
+    external: true

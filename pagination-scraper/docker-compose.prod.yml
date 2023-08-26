@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+
+  pagination-scraper:
+    image: node:18-alpine
+    working_dir: /pagination-scraper
+    command: sh -c "npm i && npm run build && npm run start:prod"
+    volumes:
+      - .:/pagination-scraper
+    hostname: localhost
+    ports:
+      - "${MANAGER_SERVICE_PORT}:${MANAGER_SERVICE_PORT}"
+    env_file:
+      - .env
+    container_name: pagination-scraper
+
+networks:
+  common-net:
+    name: parser-network-1
+    external: true

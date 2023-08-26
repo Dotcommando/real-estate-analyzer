@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+
+  page-scraper:
+    image: node:18-alpine
+    working_dir: /page-scraper
+    command: sh -c "npm i && npm run build && npm run start:prod"
+    volumes:
+      - .:/page-scraper
+    hostname: localhost
+    ports:
+      - "${RUNNER_SERVICE_PORT}:${RUNNER_SERVICE_PORT}"
+    env_file:
+      - .env
+    container_name: page-scraper
+
+networks:
+  common-net:
+    name: parser-network-1
+    external: true

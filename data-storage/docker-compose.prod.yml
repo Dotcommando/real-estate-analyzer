@@ -1,13 +1,13 @@
-version: '3.1'
+version: '3.8'
 
 services:
 
-  bazaraki-data-storage:
+  bazaraki-mongodb:
     image: mongo:6.0
     command: [ "--bind_ip", "0.0.0.0", "--port", "${MONGO_PORT}", "--wiredTigerCacheSizeGB", "1" ]
     restart: always
     env_file: .env
-    container_name: bazaraki-data-storage-mongodb
+    container_name: bazaraki-mongodb
     volumes:
       - "./mongodb/db:/data/db"
       - "./dist/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js"
@@ -18,3 +18,8 @@ services:
       resources:
         limits:
           memory: 2G
+
+networks:
+  common-net:
+    name: parser-network-1
+    external: true

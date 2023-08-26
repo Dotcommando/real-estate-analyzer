@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+
+  gateway:
+    image: node:18-alpine
+    working_dir: /gateway
+    command: sh -c "npm i && npm run build && npm run start:prod"
+    volumes:
+      - .:/gateway
+    hostname: localhost
+    ports:
+      - "80:${GATEWAY_PORT}"
+    env_file:
+      - .env
+    container_name: gateway
+
+networks:
+  common-net:
+    name: parser-network-1
