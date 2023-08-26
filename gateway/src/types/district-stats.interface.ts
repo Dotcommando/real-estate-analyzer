@@ -1,4 +1,4 @@
-export interface IAvgMean {
+export interface IDistrictStats {
   city: string;
   district: string;
   'median-sqm': number;

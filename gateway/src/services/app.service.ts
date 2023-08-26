@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 
-import { IAnalysis, IAnalysisParams, IAvgMean, IResponse } from '../types';
+import { IAnalysis, IAnalysisParams, IDistrictStats, IResponse } from '../types';
 
 
 @Injectable()
@@ -12,7 +12,7 @@ export class AppService {
     };
   }
 
-  public async getAnalysis(params: IAnalysisParams): Promise<IResponse<IAnalysis<string, IAvgMean>>> {
+  public async getAnalysis(params: IAnalysisParams): Promise<IResponse<IAnalysis<string, IDistrictStats>>> {
     if (params.startDate.getTime() > params.endDate.getTime()) {
       return {
         status: HttpStatus.BAD_REQUEST,
@@ -24,6 +24,6 @@ export class AppService {
     return {
       status: HttpStatus.OK,
       data: [],
-    } as unknown as IResponse<IAnalysis<string, IAvgMean>>;
+    } as unknown as IResponse<IAnalysis<string, IDistrictStats>>;
   }
 }
