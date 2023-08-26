@@ -4,3 +4,5 @@ export enum AnalysisPeriod {
   MONTHLY_INTERMEDIARY = 'monthly_intermediary',
   MONTHLY_TOTAL = 'monthly_total',
 }
+
+export const AnalysisPeriodArray = Object.values(AnalysisPeriod);
