@@ -1,7 +1,9 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 
+import { StatsDto } from './dto';
+import { queryStatsToStats } from './mappers';
 import { AppService } from './services';
-import { IResponse } from './types';
+import { IAnalysis, IAvgMean, IResponse } from './types';
 
 
 @Controller()
@@ -14,5 +16,12 @@ export class AppController {
   @Get()
   getHello(): IResponse<string> {
     return this.appService.getHello();
+  }
+
+  @Get('/stats')
+  public async getStats(
+    @Query() query: StatsDto,
+  ): Promise<IResponse<IAnalysis<string, IAvgMean>>> {
+    return this.appService.getAnalysis(queryStatsToStats(query));
   }
 }
