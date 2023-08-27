@@ -11,6 +11,8 @@ services:
     volumes:
       - .:/analysis
     hostname: localhost
+    networks:
+      - common-net
 
 networks:
   common-net:

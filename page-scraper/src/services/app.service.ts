@@ -1,12 +1,10 @@
 import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { HttpStatus, Injectable, LoggerService } from '@nestjs/common';
-import { Inject } from '@nestjs/common/decorators/core/inject.decorator';
+import { HttpStatus, Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { AxiosResponse } from 'axios';
-import { Cache } from 'cache-manager';
 
+import { CacheService } from './cache.service';
 import { DbAccessService } from './db-access.service';
 import { DelayService } from './delay.service';
 import { ParseService } from './parse.service';
@@ -25,8 +23,8 @@ import { getArrayIterator, roundDate } from '../utils';
 @Injectable()
 export class AppService {
   constructor(
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(LOGGER) private readonly logger: LoggerService,
+    private readonly cacheManager: CacheService,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly dbAccessService: DbAccessService,
@@ -141,7 +139,9 @@ export class AppService {
       if (!fromDB.ad && !fromCache) {
         return await this.parseAndSave(urlData.url);
       } else if (!fromDB.ad && fromCache) {
-        return await this.moveFromCacheToDB(urlData.url, fromCache as [ Partial<IRealEstate>, string ]);
+        const parsedCachedValue: [ Partial<IRealEstate>, string ] = JSON.parse(fromCache);
+
+        return await this.moveFromCacheToDB(urlData.url, parsedCachedValue);
       } else {
         // (fromDB && !fromCache) || (fromDB && fromCache)
         return await this.updateActiveDate(urlData.category, urlData.url);

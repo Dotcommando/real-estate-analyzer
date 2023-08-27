@@ -1,15 +1,14 @@
 import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { HttpStatus, Inject, Injectable, LoggerService, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy } from '@nestjs/microservices';
 import { Cron } from '@nestjs/schedule';
 
 import { AxiosResponse } from 'axios';
-import { Cache } from 'cache-manager';
 import { config } from 'dotenv';
 import { lastValueFrom, timeout } from 'rxjs';
 
+import { CacheService } from './cache.service';
 import { DelayService } from './delay.service';
 import { ParseService } from './parse.service';
 
@@ -24,8 +23,8 @@ config();
 export class AppService implements OnModuleInit {
   constructor(
     @Inject('RUNNER_SERVICE') private readonly runnerServiceClient: ClientProxy,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(LOGGER) private readonly logger: LoggerService,
+    private readonly cacheManager: CacheService,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly delayService: DelayService,
@@ -35,7 +34,6 @@ export class AppService implements OnModuleInit {
   }
 
   private readonly baseUrl = this.configService.get('BASE_URL');
-  private readonly prefix = this.configService.get('MCACHE_PREFIX');
   private readonly tcpTimeout = this.configService.get('TCP_TIMEOUT')
     ? parseInt(this.configService.get('TCP_TIMEOUT'))
     : 6000;
@@ -121,18 +119,18 @@ export class AppService implements OnModuleInit {
     return await this.parseIndexBySchedule(this.depthShallow);
   };
 
-  @Cron(process.env.CLEAR_MCACHE, {
-    name: 'pagination_clear_mcache',
+  @Cron(process.env.CLEAR_CACHE, {
+    name: 'pagination_clear_cache',
     timeZone: 'Asia/Nicosia',
   })
-  public async clearMCache() {
-    const mcacheKeys = await this.cacheManager.store.keys(this.prefix + '*');
+  public async clearCache() {
+    const cacheKeys = await this.cacheManager.keysStartsWith();
 
-    for (const key of mcacheKeys) {
+    for (const key of cacheKeys) {
       await this.cacheManager.del(key);
     }
 
-    this.logger.log(' *** MCACHE storage cleared');
+    this.logger.log(' *** CACHE storage cleared');
   }
 
   public async parseIndexBySchedule(maxPaginationNumber = 0) {
@@ -229,7 +227,7 @@ export class AppService implements OnModuleInit {
   }
 
   public getKeyByUrl(url: string): string {
-    return this.prefix + url.replace(this.baseUrl, '');
+    return url.replace(this.baseUrl, '');
   }
 
   public getMaxNumberOfPagination(setOfUrls: Set<string>): number {

@@ -1,10 +1,7 @@
 import { HttpModule } from '@nestjs/axios';
-import { CacheModule } from '@nestjs/cache-manager';
 import { LoggerService, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-
-import * as redisStore from 'cache-manager-ioredis';
 
 import { AppController } from './app.controller';
 import { LOGGER, USER_AGENTS } from './constants';
@@ -20,6 +17,7 @@ import {
 } from './schemas';
 import {
   AppService,
+  CacheService,
   DbAccessService,
   DelayService,
   DummyLogger,
@@ -33,17 +31,6 @@ import { getRandomElement } from './utils';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    CacheModule.registerAsync({
-      imports: [ ConfigModule ],
-      inject: [ ConfigService ],
-      useFactory: async (configService: ConfigService) => ({
-        store: redisStore,
-        host: configService.get('REDIS_HOST'),
-        port: configService.get('REDIS_PORT'),
-        ttl: configService.get('RCACHE_TTL'),
-        max: configService.get('RCACHE_MAX_ITEMS'),
-      }),
-    }),
     MongooseModule.forRootAsync({
       imports: [ ConfigModule ],
       useClass: MongoConfigService,
@@ -117,6 +104,7 @@ import { getRandomElement } from './utils';
   ],
   providers: [
     AppService,
+    CacheService,
     ParseService,
     DelayService,
     DbAccessService,
