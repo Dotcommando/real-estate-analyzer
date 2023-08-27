@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@nestjs/axios": "2.0.0",
-    "@nestjs/cache-manager": "1.0.0",
+    "@nestjs/cache-manager": "2.1.0",
     "@nestjs/common": "9.4.0",
     "@nestjs/config": "2.3.2",
     "@nestjs/core": "9.4.0",
@@ -23,7 +23,7 @@
     "@nestjs/platform-express": "9.4.0",
     "@nestjs/schedule": "2.2.3",
     "axios": "1.4.0",
-    "cache-manager": "5.2.1",
+    "cache-manager": "5.2.3",
     "cache-manager-ioredis": "2.1.0",
     "cheerio": "^1.0.0-rc.12",
     "reflect-metadata": "0.1.13",

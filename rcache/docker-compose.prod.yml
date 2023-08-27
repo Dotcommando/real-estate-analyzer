@@ -8,9 +8,12 @@ services:
       - "${REDIS_PORT}:6379"
     volumes:
       - ./local_data/:/data/
+    hostname: localhost
     env_file:
       - .env
     container_name: rcache
+    networks:
+      - common-net
     deploy:
       resources:
         limits:

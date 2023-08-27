@@ -10,10 +10,12 @@ services:
       - .:/gateway
     hostname: localhost
     ports:
-      - "80:${GATEWAY_PORT}"
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     env_file:
       - .env
     container_name: gateway
+    networks:
+      - common-net
 
 networks:
   common-net:

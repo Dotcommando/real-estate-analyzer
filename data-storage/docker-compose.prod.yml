@@ -14,6 +14,8 @@ services:
     hostname: localhost
     ports:
       - "${MONGO_PORT}:${MONGO_PORT}"
+    networks:
+      - common-net
     deploy:
       resources:
         limits:

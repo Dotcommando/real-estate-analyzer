@@ -174,7 +174,7 @@ export class AppService implements OnModuleInit {
           .pipe(timeout(this.tcpTimeout)),
       );
     } catch (e) {
-      this.logger.log('An error occurred in \'parseIndexBySchedule\' method.');
+      this.logger.error('An error occurred in \'parseIndexBySchedule\' method.');
       this.logger.error(e.message);
     } finally {
       this.delayService.setThreadStatus(false);

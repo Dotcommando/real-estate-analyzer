@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: localhost
+    ports:
+      - "80:80"
+    env_file:
+      - .env
+    container_name: nginx
+    networks:
+       - common-net
+
+networks:
+  common-net:
+    name: parser-network-1
+    external: true
