@@ -118,6 +118,35 @@ async def prepare_data(mongo_db_name, collection_name, start_date, end_date, cli
     return median_price_calculator.calculate_median_avg_prices()
 
 
+async def delete_reports(
+        client,
+        mongo_db_name,
+        collection_name,
+        start_date,
+        analysis_type: AnalysisType,
+        analysis_period="daily_intermediary"
+) -> None:
+    mongo_db = client[mongo_db_name]
+    collection = mongo_db[f"{collection_name}_analysis"]
+
+    query = {
+        "start_date": start_date,
+        "analysis_period": analysis_period,
+        "analysis_type": analysis_type.value
+    }
+
+    print(f"Query: {query}")
+
+    cursor = collection.find(query)
+
+    async for document in cursor:
+        print(document)
+
+    result = await collection.delete_many(query)
+
+    print(f"Deleted {result.deleted_count} intermediary reports.")
+
+
 async def run_scheduled_task(task):
     global is_processing
 
@@ -287,9 +316,11 @@ async def analyse_daily_total(current_datetime: datetime = None):
 
             if not district_exists and not district_df.empty:
                 await save_stats_to_db(collection_name, district_df, start_date, end_date, AnalysisType.DISTRICT_AVG_MEAN, AnalysisPeriod.DAILY_TOTAL, '1.0.0')
+                await delete_reports(client, mongo_db_name, collection_name, start_date, AnalysisType.DISTRICT_AVG_MEAN)
 
             if not city_exists and not city_df.empty:
                 await save_stats_to_db(collection_name, city_df, start_date, end_date, AnalysisType.CITY_AVG_MEAN, AnalysisPeriod.DAILY_TOTAL, '1.0.0')
+                await delete_reports(client, mongo_db_name, collection_name, start_date, AnalysisType.CITY_AVG_MEAN)
 
     except Exception as e:
         function_name = get_current_function_name()
@@ -339,9 +370,16 @@ async def main():
 
     scheduler.add_job(clear_console, trigger=CronTrigger(day='1', hour='0', minute='0'))
     scheduler.add_job(run_scheduled_task, args=[analyse_current_day_intermediary], trigger=CronTrigger(hour=current_day_intermediary_hour))
+    print('Intermediary day analysis planned')
+
     scheduler.add_job(run_scheduled_task, args=[analyse_current_month_intermediary], trigger=CronTrigger(hour=current_month_intermediary_hour, minute=current_month_intermediary_minute))
+    print('Intermediary month analysis planned')
+
     scheduler.add_job(run_scheduled_task, args=[analyse_daily_total], trigger=CronTrigger(hour=daily_total_hour, minute=daily_total_minute))
+    print('Total daily analysis planned')
+
     scheduler.add_job(run_scheduled_task, args=[analyse_monthly_total], trigger=CronTrigger(day=monthly_total_day, hour=monthly_total_hour, minute=monthly_total_minute))
+    print('Total monthly analysis planned')
 
     scheduler.start()
 
