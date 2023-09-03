@@ -16,9 +16,11 @@ export class AppController {
   @EventPattern(Messages.ADD_TO_PARSING_QUEUE)
   public async getPageData(
     @Payload() urlData: IUrlData[],
-  ): Promise<ITcpResponse> {
-    console.log(urlData);
+  ): Promise<any> {
+    const result = this.appService.addPagesToQueue(urlData);
 
-    return await this.appService.addPageToQueue(urlData);
+    console.log(result);
+
+    return result;
   }
 }

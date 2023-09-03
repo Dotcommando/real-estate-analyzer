@@ -6,5 +6,6 @@ export interface IUrlData {
   url: string;
   urlType: UrlTypes;
   category: string;
+  queueName?: string;
   cacheTtl?: number;
 }

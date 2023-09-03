@@ -1,7 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 
 import { ErrorResponse } from '../classes';
-import { getExceptionsMessages } from '../helpers';
+import { getExceptionsMessages } from '../utils';
 
 
 @Catch()
