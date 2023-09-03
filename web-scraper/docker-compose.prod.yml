@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+
+  web-scraper:
+    image: node:18-alpine
+    working_dir: /web-scraper
+    command: sh -c "npm i && npm run build && npm run start:prod"
+    volumes:
+      - .:/web-scraper
+    hostname: localhost
+    ports:
+      - "${WEB_SCRAPER_SERVICE_PORT}:${WEB_SCRAPER_SERVICE_PORT}"
+    env_file:
+      - .env
+    container_name: web-scraper
+    networks:
+      - common-net
+
+networks:
+  common-net:
+    name: parser-network-1
+    external: true
