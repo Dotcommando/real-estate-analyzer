@@ -1,8 +1,8 @@
 import { IUrlData } from './url-data.interface';
 
 
-export interface ITcpResponse<T = string> {
+export interface ITcpMessageResult<T = string> {
   success: boolean;
   data: T;
-  urlData: IUrlData[];
+  urlData: IUrlData;
 }
