@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { EventPattern, Payload } from '@nestjs/microservices';
 
-import { Messages } from './constants';
+import { WebScraperMessages } from './constants';
 import { AppService } from './services';
 import { IUrlData } from './types';
 
@@ -13,10 +13,10 @@ export class AppController {
   ) {
   }
 
-  @EventPattern(Messages.ADD_TO_PARSING_QUEUE)
+  @EventPattern(WebScraperMessages.ADD_TO_PARSING_QUEUE)
   public async getPageData(
     @Payload() urlData: IUrlData[],
-  ): Promise< { [url: string]: boolean }[]> {
+  ): Promise<{ [url: string]: boolean }[]> {
     return this.appService.addPagesToQueue(urlData);
   }
 }
