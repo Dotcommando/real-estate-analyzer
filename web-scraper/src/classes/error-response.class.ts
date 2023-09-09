@@ -1,9 +1,9 @@
 import { HttpStatus } from '@nestjs/common';
 
-import { ITcpMessageResult, IUrlData } from '../types';
+import { ITcpResponse, IUrlData } from '../types';
 
 
-export class ErrorResponse implements ITcpMessageResult<null> {
+export class ErrorResponse implements ITcpResponse<null> {
   public success: boolean;
   public data: null;
   public urlData: IUrlData;

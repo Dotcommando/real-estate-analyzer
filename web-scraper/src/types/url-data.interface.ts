@@ -5,7 +5,8 @@ export interface IUrlData {
   priority: number; // Higher - better
   url: string;
   urlType: UrlTypes;
-  category: string;
+  collection: string;
   queueName?: string;
   cacheTtl?: number;
+  depth?: number;
 }

@@ -3,7 +3,7 @@ import { EventPattern, Payload } from '@nestjs/microservices';
 
 import { WebScraperMessages } from './constants';
 import { AppService } from './services';
-import { IUrlData } from './types';
+import { ITcpResponse, IUrlData } from './types';
 
 
 @Controller()
@@ -16,7 +16,7 @@ export class AppController {
   @EventPattern(WebScraperMessages.ADD_TO_PARSING_QUEUE)
   public async getPageData(
     @Payload() urlData: IUrlData[],
-  ): Promise<{ [url: string]: boolean }[]> {
+  ): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
     return this.appService.addPagesToQueue(urlData);
   }
 }

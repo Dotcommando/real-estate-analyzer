@@ -1,14 +1,17 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Inject, Injectable, LoggerService, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ClientProxy } from '@nestjs/microservices';
 
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { lastValueFrom, timeout } from 'rxjs';
 
 import { CacheService } from './cache.service';
 import { DelayService } from './delay.service';
+import { ProxyFactoryService } from './proxy-factory.service';
 
-import { LOGGER, UrlTypes } from '../constants';
-import { IQueue, IQueueElement, ITcpMessageResult, IUrlData } from '../types';
+import { DataParserMessages, LOGGER, UrlTypes } from '../constants';
+import { IQueue, IQueueElement, ITcpResponse, IUrlData, IWebScrapingResponse } from '../types';
 
 
 @Injectable()
@@ -19,6 +22,7 @@ export class AppService implements OnModuleInit {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     private readonly delayService: DelayService,
+    private readonly proxyFactory: ProxyFactoryService,
   ) {
   }
 
@@ -27,10 +31,13 @@ export class AppService implements OnModuleInit {
   private queues: { [key: string]: IQueue } = {};
   private maxAttempts: number;
   private axiosConfig: AxiosRequestConfig;
+  private dataParserClient: ClientProxy;
+  private tcpTimeout = parseInt(this.configService.get<string>('TCP_TIMEOUT'));
 
   public async onModuleInit(): Promise<void> {
+    this.dataParserClient = this.proxyFactory.getClientProxy();
     this.initAxiosConfigData();
-    this.initQueues();
+    this.initQueuesDefaults();
 
     for (const queueName of this.queuesNames) {
       this.queues[queueName] = {
@@ -57,7 +64,7 @@ export class AppService implements OnModuleInit {
     }
   }
 
-  private initQueues(): void {
+  private initQueuesDefaults(): void {
     try {
       this.defaultQueueName = this.configService.get('DEFAULT_QUEUE_NAME') ?? 'DEFAULT';
     } catch (e) {
@@ -114,23 +121,14 @@ export class AppService implements OnModuleInit {
   }
 
   private async processQueueElement(queue: IQueue, element: IQueueElement): Promise<void> {
+    let pageDataResponse: AxiosResponse;
+
     try {
-      const pageDataResponse: AxiosResponse = await this.httpService.axiosRef
+      pageDataResponse = await this.httpService.axiosRef
         .get(element.url, this.axiosConfig);
-
-      if (pageDataResponse.status === HttpStatus.OK) {
-        const tcpMessageResult: ITcpMessageResult = {
-          success: true,
-          data: pageDataResponse.data,
-          urlData: { ...element },
-        };
-
-        // Send tcpResponse here to microservice which processes it.
-
-        this.removeElementFromQueueByUrl(queue, element.url, element.priority);
-      }
     } catch (e) {
       this.logger.error(' ');
+      this.logger.error('Error occurred in AppService.processQueueElement, phase: scraping data');
 
       if (e.response?.status === HttpStatus.NOT_FOUND) {
         this.logger.error(`Not found: ${element.url}`);
@@ -144,9 +142,37 @@ export class AppService implements OnModuleInit {
 
         this.moveElementToEndOfQueue(queue, element);
       }
+
+      return;
     }
 
-    this.cacheManager.set(element.url, true);
+    try {
+      if (pageDataResponse.status === HttpStatus.OK) {
+        const scrapingResult: IWebScrapingResponse = {
+          success: true,
+          data: pageDataResponse.data,
+          urlData: { ...element },
+        };
+
+        await lastValueFrom(
+          this.dataParserClient
+            .send(DataParserMessages.PARSE_PAGE, scrapingResult)
+            .pipe(timeout(this.tcpTimeout)),
+        );
+
+        this.removeElementFromQueueByUrl(queue, element.url, element.priority);
+        this.cacheManager.set(element.url, true);
+      }
+    } catch (e) {
+      this.logger.error(' ');
+      this.logger.error('Error occurred in AppService.processQueueElement, phase: sending data for parsing');
+
+      if (e.message) {
+        this.logger.error(e.message);
+      }
+
+      this.moveElementToEndOfQueue(queue, element);
+    }
   }
 
   private getFirstElementWithMaxPriority(queue: IQueue): IQueueElement | null {
@@ -205,14 +231,17 @@ export class AppService implements OnModuleInit {
     }
   }
 
-  public addPagesToQueue(tasks: IUrlData[]): { [url: string]: boolean }[] {
+  public addPagesToQueue(tasks: IUrlData[]): ITcpResponse<{ [url: string]: boolean }[]> {
     const result = [];
 
     for (const task of tasks) {
       result.push(this.addPageToQueue(task));
     }
 
-    return result;
+    return {
+      success: true,
+      data: result,
+    };
   }
 
   private findTaskDuplicate(taskToFind: IUrlData): IUrlData | null {
@@ -281,52 +310,52 @@ export class AppService implements OnModuleInit {
         priority: 1,
         url: 'https://www.bazaraki.com/adv/4743488_2-bedroom-apartment-to-rent/',
         urlType: UrlTypes.Ad,
-        category: 'rentapartmentsflats',
+        collection: 'rentapartmentsflats',
         queueName: this.defaultQueueName,
       },
       {
         priority: 10,
         url: 'https://www.bazaraki.com/real-estate-to-rent/apartments-flats/',
         urlType: UrlTypes.Index,
-        category: 'rentapartmentsflats',
+        collection: 'rentapartmentsflats',
         queueName: this.defaultQueueName,
       },
       {
         priority: 10,
         url: 'https://www.bazaraki.com/real-estate-to-rent/houses/',
         urlType: UrlTypes.Index,
-        category: 'renthouses',
+        collection: 'renthouses',
         queueName: 'ANOTHER_QUEUE',
       },
       {
         priority: 5,
         url: 'https://www.bazaraki.com/real-estate-to-rent/houses/?page=2',
         urlType: UrlTypes.Pagination,
-        category: 'renthouses',
+        collection: 'renthouses',
       },
       {
         priority: 5,
         url: 'https://www.bazaraki.com/real-estate-to-rent/houses/?page=3',
         urlType: UrlTypes.Pagination,
-        category: 'renthouses',
+        collection: 'renthouses',
       },
       {
         priority: 1,
         url: 'https://www.bazaraki.com/adv/4734899_2-bedroom-apartment-to-rent/',
         urlType: UrlTypes.Ad,
-        category: 'rentapartmentsflats',
+        collection: 'rentapartmentsflats',
       },
       {
         priority: 1,
         url: 'https://www.bazaraki.com/adv/4743091_5-bedroom-detached-house-for-sale/',
         urlType: UrlTypes.Ad,
-        category: 'salehouses',
+        collection: 'salehouses',
       },
       {
         priority: 5,
         url: 'https://www.bazaraki.com/real-estate-to-rent/houses/?page=3',
         urlType: UrlTypes.Pagination,
-        category: 'renthouses',
+        collection: 'renthouses',
       },
     ];
 
