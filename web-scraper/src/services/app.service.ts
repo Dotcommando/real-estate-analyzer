@@ -33,7 +33,10 @@ export class AppService implements OnModuleInit {
     this.initQueues();
 
     for (const queueName of this.queuesNames) {
-      this.queues[queueName] = {};
+      this.queues[queueName] = {
+        priorities: {},
+        lastLaunchMsec: 0,
+      };
     }
 
     this.addMockTasks();
@@ -87,14 +90,19 @@ export class AppService implements OnModuleInit {
   }
 
   private async runQueue(queue: IQueue, queueName: string): Promise<void> {
-    console.timeEnd(queueName);
-    console.log(' ');
-    console.time(queueName);
-    console.log(queue);
+    this.logger.log(' ');
+    this.logger.log(`Queue name: ${queueName}, last run: ${(Date.now() - queue.lastLaunchMsec) / 1000} s ago`);
+
+    if (Object.keys(queue.priorities).length) {
+      this.logger.log('Priorities:');
+      this.logger.log(queue.priorities);
+    } else {
+      this.logger.log('No priorities found in the queue.');
+    }
+
+    queue.lastLaunchMsec = Date.now();
 
     const elementWithMaxPriority: IQueueElement | null = this.getFirstElementWithMaxPriority(queue);
-
-    // console.log('elementWithMaxPriority', elementWithMaxPriority);
 
     if (elementWithMaxPriority) {
       try {
@@ -113,6 +121,8 @@ export class AppService implements OnModuleInit {
           this.removeElementFromQueueByUrl(queue, elementWithMaxPriority.url, elementWithMaxPriority.priority);
         }
       } catch (e) {
+        this.logger.error(' ');
+
         if (e.response?.status === HttpStatus.NOT_FOUND) {
           this.logger.error(`Not found: ${elementWithMaxPriority.url}`);
           this.removeElementFromQueueByUrl(queue, elementWithMaxPriority.url, elementWithMaxPriority.priority);
@@ -126,17 +136,18 @@ export class AppService implements OnModuleInit {
           this.moveElementToEndOfQueue(queue, elementWithMaxPriority);
         }
       }
+
+      this.cacheManager.set(elementWithMaxPriority.url, true);
     }
 
     await this.delayService.delay();
-
-    // this.logger.log(queueName);
 
     await this.runQueue(queue, queueName);
   }
 
   private getFirstElementWithMaxPriority(queue: IQueue): IQueueElement | null {
-    const availablePriorities = Object.keys(queue).map((key: string) => parseInt(key));
+    const availablePriorities = Object.keys(queue.priorities)
+      .map((key: string) => parseInt(key));
 
     if (!availablePriorities.length) {
       return null;
@@ -144,11 +155,11 @@ export class AppService implements OnModuleInit {
 
     const maxPriority = Math.max(...availablePriorities);
 
-    return queue[String(maxPriority)][0];
+    return queue.priorities[String(maxPriority)][0];
   }
 
   private removeElementFromQueueByUrl(queue: IQueue, url: string, priority: number): void {
-    const priorityArray: IQueueElement[] = queue[String(priority)];
+    const priorityArray: IQueueElement[] = queue.priorities[String(priority)];
     const foundElementIndex = priorityArray.findIndex((el: IQueueElement) => el.url === url);
 
     if (foundElementIndex === -1) {
@@ -158,12 +169,12 @@ export class AppService implements OnModuleInit {
     priorityArray.splice(foundElementIndex, 1);
 
     if (!priorityArray.length) {
-      delete queue[String(priority)];
+      delete queue.priorities[String(priority)];
     }
   }
 
   private moveElementToEndOfQueue(queue: IQueue, element: IQueueElement): void {
-    const priorityArray: IQueueElement[] = queue[String(element.priority)];
+    const priorityArray: IQueueElement[] = queue.priorities[String(element.priority)];
     const foundElementIndex = priorityArray.findIndex((el: IQueueElement) => el.url === element.url);
 
     if (foundElementIndex === -1) {
@@ -178,7 +189,7 @@ export class AppService implements OnModuleInit {
         attempt: element.attempt ? element.attempt + 1 : 1,
       });
     } else if (!priorityArray.length) {
-      delete queue[String(element.priority)];
+      delete queue.priorities[String(element.priority)];
     }
   }
 
@@ -200,7 +211,7 @@ export class AppService implements OnModuleInit {
       return null;
     }
 
-    const priorityArray: IQueueElement[] = queue[taskToFind.priority];
+    const priorityArray: IQueueElement[] = queue.priorities[taskToFind.priority];
 
     if (!priorityArray || !priorityArray.length) {
       return null;
@@ -217,18 +228,19 @@ export class AppService implements OnModuleInit {
       throw new Error(`No such queue name found: ${typeof queueName === 'object' ? JSON.stringify(queueName) : String(queueName)}`);
     }
 
-    if (!queue[priority]) {
+    if (!queue.priorities[priority]) {
       // There is priority transformed to string
-      // If priority was 1 (as number), then `queue['1'] = [];`
-      queue[priority] = [];
+      // If priority was 1 (as number), then `queue.priorities['1'] = [];`
+      queue.priorities[priority] = [];
     }
 
-    return queue[priority];
+    return queue.priorities[priority];
   }
 
   public addPageToQueue(urlData: IUrlData): boolean {
     try {
-      const found: IUrlData = this.findTaskDuplicate(urlData);
+      const found: boolean = Boolean(this.findTaskDuplicate(urlData))
+        || Boolean(this.cacheManager.get(urlData.url));
 
       if (!found) {
         const priorityArray: IQueueElement[] = this.getPriorityArray(urlData.priority, urlData.queueName);
@@ -308,16 +320,6 @@ export class AppService implements OnModuleInit {
 
     for (const task of mockTasks) {
       this.addPageToQueue(task);
-    }
-
-    for (const priority in this.queues[this.defaultQueueName]) {
-      this.logger.log(' ');
-      this.logger.log(' ');
-      this.logger.log(`Priority ${priority}:`);
-
-      for (const task of this.queues[this.defaultQueueName][priority]) {
-        this.logger.log(task);
-      }
     }
   }
 }

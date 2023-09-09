@@ -6,5 +6,6 @@ export interface IQueueElement extends Omit<IUrlData, 'queueName'> {
 }
 
 export interface IQueue {
-  [priority: string]: IQueueElement[];
+  priorities: Record<string, IQueueElement[]>;
+  lastLaunchMsec: number;
 }
