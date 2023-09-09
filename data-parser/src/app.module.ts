@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { LOGGER } from './constants';
-import { AppService, CacheService, DummyLoggerService, LoggerService } from './services';
+import { AppService, CacheService, DummyLoggerService, LoggerService, ProxyFactoryService } from './services';
 
 
 @Module({
@@ -14,6 +14,7 @@ import { AppService, CacheService, DummyLoggerService, LoggerService } from './s
   providers: [
     AppService,
     CacheService,
+    ProxyFactoryService,
     {
       provide: LOGGER,
       useFactory: (configService: ConfigService) => {

@@ -4,7 +4,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AppController } from './app.controller';
 import { LOGGER, USER_AGENTS } from './constants';
-import { AppService, CacheService, DelayService, DummyLoggerService, LoggerService } from './services';
+import {
+  AppService,
+  CacheService,
+  DelayService,
+  DummyLoggerService,
+  LoggerService,
+  ProxyFactoryService,
+} from './services';
 import { getRandomElement } from './utils';
 
 
@@ -26,6 +33,7 @@ import { getRandomElement } from './utils';
     AppService,
     CacheService,
     DelayService,
+    ProxyFactoryService,
     {
       provide: LOGGER,
       useFactory: (configService: ConfigService) => {
