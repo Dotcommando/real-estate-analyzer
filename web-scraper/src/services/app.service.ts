@@ -91,7 +91,7 @@ export class AppService implements OnModuleInit {
 
   private async runQueue(queue: IQueue, queueName: string): Promise<void> {
     this.logger.log(' ');
-    this.logger.log(`Queue name: ${queueName}, last run: ${(Date.now() - queue.lastLaunchMsec) / 1000} s ago`);
+    this.logger.log(`Queue name: ${queueName}, last run: ${(Date.now() - queue.lastLaunchMsec) / 1000} s ago.`);
 
     if (Object.keys(queue.priorities).length) {
       this.logger.log('Priorities:');
@@ -105,39 +105,7 @@ export class AppService implements OnModuleInit {
     const elementWithMaxPriority: IQueueElement | null = this.getFirstElementWithMaxPriority(queue);
 
     if (elementWithMaxPriority) {
-      try {
-        const pageDataResponse: AxiosResponse = await this.httpService.axiosRef
-          .get(elementWithMaxPriority.url, this.axiosConfig);
-
-        if (pageDataResponse.status === HttpStatus.OK) {
-          const tcpMessageResult: ITcpMessageResult = {
-            success: true,
-            data: pageDataResponse.data,
-            urlData: { ...elementWithMaxPriority },
-          };
-
-          // Send tcpResponse here to microservice which processes it.
-
-          this.removeElementFromQueueByUrl(queue, elementWithMaxPriority.url, elementWithMaxPriority.priority);
-        }
-      } catch (e) {
-        this.logger.error(' ');
-
-        if (e.response?.status === HttpStatus.NOT_FOUND) {
-          this.logger.error(`Not found: ${elementWithMaxPriority.url}`);
-          this.removeElementFromQueueByUrl(queue, elementWithMaxPriority.url, elementWithMaxPriority.priority);
-        } else {
-          this.logger.error(`Unknown error: ${elementWithMaxPriority.url}`);
-
-          if (e.message) {
-            this.logger.error(e.message);
-          }
-
-          this.moveElementToEndOfQueue(queue, elementWithMaxPriority);
-        }
-      }
-
-      this.cacheManager.set(elementWithMaxPriority.url, true);
+      await this.processQueueElement(queue, elementWithMaxPriority);
     }
 
     await this.delayService.delay();
@@ -145,17 +113,61 @@ export class AppService implements OnModuleInit {
     await this.runQueue(queue, queueName);
   }
 
-  private getFirstElementWithMaxPriority(queue: IQueue): IQueueElement | null {
-    const availablePriorities = Object.keys(queue.priorities)
-      .map((key: string) => parseInt(key));
+  private async processQueueElement(queue: IQueue, element: IQueueElement): Promise<void> {
+    try {
+      const pageDataResponse: AxiosResponse = await this.httpService.axiosRef
+        .get(element.url, this.axiosConfig);
 
-    if (!availablePriorities.length) {
-      return null;
+      if (pageDataResponse.status === HttpStatus.OK) {
+        const tcpMessageResult: ITcpMessageResult = {
+          success: true,
+          data: pageDataResponse.data,
+          urlData: { ...element },
+        };
+
+        // Send tcpResponse here to microservice which processes it.
+
+        this.removeElementFromQueueByUrl(queue, element.url, element.priority);
+      }
+    } catch (e) {
+      this.logger.error(' ');
+
+      if (e.response?.status === HttpStatus.NOT_FOUND) {
+        this.logger.error(`Not found: ${element.url}`);
+        this.removeElementFromQueueByUrl(queue, element.url, element.priority);
+      } else {
+        this.logger.error(`Unknown error: ${element.url}`);
+
+        if (e.message) {
+          this.logger.error(e.message);
+        }
+
+        this.moveElementToEndOfQueue(queue, element);
+      }
     }
 
-    const maxPriority = Math.max(...availablePriorities);
+    this.cacheManager.set(element.url, true);
+  }
 
-    return queue.priorities[String(maxPriority)][0];
+  private getFirstElementWithMaxPriority(queue: IQueue): IQueueElement | null {
+    try {
+      const availablePriorities = Object.keys(queue.priorities)
+        .map((key: string) => parseInt(key));
+
+      if (!availablePriorities.length) {
+        return null;
+      }
+
+      const maxPriority = Math.max(...availablePriorities);
+
+      return queue.priorities[String(maxPriority)][0];
+    } catch (e) {
+      this.logger.error(' ');
+      this.logger.error('Error occurred in AppService.getFirstElementWithMaxPriority');
+      this.logger.error(e);
+
+      return null;
+    }
   }
 
   private removeElementFromQueueByUrl(queue: IQueue, url: string, priority: number): void {
