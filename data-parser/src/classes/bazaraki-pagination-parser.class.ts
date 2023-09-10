@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 import Root = cheerio.Root;
 
 
-export class BazarakiPaginationScraper<T> {
+export class BazarakiPaginationParser<T> {
   private pageContent: string;
   private $: Root;
 

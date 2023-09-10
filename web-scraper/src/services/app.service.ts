@@ -10,7 +10,7 @@ import { CacheService } from './cache.service';
 import { DelayService } from './delay.service';
 import { ProxyFactoryService } from './proxy-factory.service';
 
-import { DataParserMessages, LOGGER, UrlTypes } from '../constants';
+import { DataParserMessages, LOGGER, mockTasks, UrlTypes } from '../constants';
 import { IQueue, IQueueElement, ITcpResponse, IUrlData, IWebScrapingResponse } from '../types';
 
 
@@ -102,7 +102,13 @@ export class AppService implements OnModuleInit {
 
     if (Object.keys(queue.priorities).length) {
       this.logger.log('Priorities:');
-      this.logger.log(queue.priorities);
+      // this.logger.log(queue.priorities);
+
+      for (const priority in queue.priorities) {
+        const taskNumber = queue.priorities[priority].length;
+
+        this.logger.log(`[${priority}]: ${taskNumber} ${taskNumber === 1 ? 'task' : 'tasks'}.`);
+      }
     } else {
       this.logger.log('No priorities found in the queue.');
     }
@@ -308,60 +314,6 @@ export class AppService implements OnModuleInit {
   }
 
   private addMockTasks() {
-    const mockTasks: IUrlData[] = [
-      {
-        priority: 1,
-        url: 'https://www.bazaraki.com/adv/4743488_2-bedroom-apartment-to-rent/',
-        urlType: UrlTypes.Ad,
-        collection: 'rentapartmentsflats',
-        queueName: this.defaultQueueName,
-      },
-      {
-        priority: 10,
-        url: 'https://www.bazaraki.com/real-estate-to-rent/apartments-flats/',
-        urlType: UrlTypes.Index,
-        collection: 'rentapartmentsflats',
-        queueName: this.defaultQueueName,
-      },
-      {
-        priority: 10,
-        url: 'https://www.bazaraki.com/real-estate-to-rent/houses/',
-        urlType: UrlTypes.Index,
-        collection: 'renthouses',
-        queueName: 'ANOTHER_QUEUE',
-      },
-      {
-        priority: 5,
-        url: 'https://www.bazaraki.com/real-estate-to-rent/houses/?page=2',
-        urlType: UrlTypes.Pagination,
-        collection: 'renthouses',
-      },
-      {
-        priority: 5,
-        url: 'https://www.bazaraki.com/real-estate-to-rent/houses/?page=3',
-        urlType: UrlTypes.Pagination,
-        collection: 'renthouses',
-      },
-      {
-        priority: 1,
-        url: 'https://www.bazaraki.com/adv/4734899_2-bedroom-apartment-to-rent/',
-        urlType: UrlTypes.Ad,
-        collection: 'rentapartmentsflats',
-      },
-      {
-        priority: 1,
-        url: 'https://www.bazaraki.com/adv/4743091_5-bedroom-detached-house-for-sale/',
-        urlType: UrlTypes.Ad,
-        collection: 'salehouses',
-      },
-      {
-        priority: 5,
-        url: 'https://www.bazaraki.com/real-estate-to-rent/houses/?page=3',
-        urlType: UrlTypes.Pagination,
-        collection: 'renthouses',
-      },
-    ];
-
     for (const task of mockTasks) {
       this.addPageToQueue(task);
     }

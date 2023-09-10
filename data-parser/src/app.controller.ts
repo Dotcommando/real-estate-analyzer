@@ -17,14 +17,6 @@ export class AppController {
   public async parsePage(
     @Payload() scrapingResult: IWebScrapingResponse,
   ): Promise<ITcpResponse> {
-    console.log('scrapingResult');
-    console.log({
-      ...scrapingResult,
-      data: scrapingResult.data && typeof scrapingResult.data === 'string'
-        ? scrapingResult.data.substring(0, 50)
-        : scrapingResult.data,
-    });
-
     if (!scrapingResult.success) {
       return {
         success: true,
@@ -36,6 +28,8 @@ export class AppController {
       this.appService.processIndexPage(scrapingResult.data, scrapingResult.urlData);
     } else if (scrapingResult.urlData.urlType === UrlTypes.Pagination) {
       this.appService.processPaginationPage(scrapingResult.data, scrapingResult.urlData);
+    } else if (scrapingResult.urlData.urlType === UrlTypes.Ad) {
+      this.appService.processAdPage(scrapingResult.data, scrapingResult.urlData);
     }
 
     return {

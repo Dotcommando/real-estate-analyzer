@@ -7,12 +7,13 @@ import { config } from 'dotenv';
 import { lastValueFrom, timeout } from 'rxjs';
 
 import { CacheService } from './cache.service';
+import { DbAccessService } from './db-access.service';
 import { DbUrlRelationService } from './db-url-relation.service';
 import { ProxyFactoryService } from './proxy-factory.service';
 
-import { BazarakiPaginationScraper } from '../classes';
+import { BazarakiAdPageParser, BazarakiPaginationParser } from '../classes';
 import { LOGGER, UrlTypes, WebScraperMessages } from '../constants';
-import { ITcpResponse, IUrlData } from '../types';
+import { IRealEstate, ITcpResponse, IUrlData } from '../types';
 
 
 config();
@@ -47,6 +48,7 @@ export class AppService implements OnModuleInit {
   constructor(
     @Inject(LOGGER) private readonly logger: LoggerService,
     private readonly cacheManager: CacheService,
+    private readonly dbAccessService: DbAccessService,
     private readonly dbUrlRelationService: DbUrlRelationService,
     private readonly configService: ConfigService,
     private readonly proxyFactory: ProxyFactoryService,
@@ -138,7 +140,7 @@ export class AppService implements OnModuleInit {
 
   public async processIndexPage(dataToParse: string, urlData: IUrlData): Promise<void> {
     try {
-      const parsedPagination: [ Set<string>, Set<string> ] = new BazarakiPaginationScraper(dataToParse, urlData.url)
+      const parsedPagination: [ Set<string>, Set<string> ] = new BazarakiPaginationParser(dataToParse, urlData.url)
         .getPaginationAndAds();
 
       const maxPaginationNumber: number = this.getMaxNumberOfPagination(parsedPagination[0]);
@@ -177,8 +179,9 @@ export class AppService implements OnModuleInit {
 
   public async processPaginationPage(dataToParse: string, urlData: IUrlData): Promise<void> {
     try {
-      const parsedAds: Set<string> = new BazarakiPaginationScraper(dataToParse, urlData.url).getAdsUrls();
-      const adsPagesTasks: IUrlData[] = Array.from(parsedAds)
+      const parsedAdUrls: Set<string> = new BazarakiPaginationParser(dataToParse, urlData.url).getAdsUrls();
+      const adsPagesUrls: string[] = this.dbUrlRelationService.addBaseUrlToSetOfPaths(parsedAdUrls);
+      const adsPagesTasks: IUrlData[] = adsPagesUrls
         .map((url: string) => ({
           priority: this.adPagePriority,
           url,
@@ -194,6 +197,21 @@ export class AppService implements OnModuleInit {
     } catch (e) {
       this.logger.error(' ');
       this.logger.error('Error occurred in AppService.processPaginationPage');
+      this.logger.error('urlData:');
+      this.logger.error(urlData);
+      this.logger.error(e);
+    }
+  }
+
+  public async processAdPage(dataToParse: string, urlData: IUrlData): Promise<void> {
+    try {
+      const parsedAdPage: Partial<IRealEstate> = new BazarakiAdPageParser(dataToParse, urlData.url).getPageData();
+      const typeCastedPageData: Partial<IRealEstate> = this.dbAccessService.typecastingFields(parsedAdPage);
+
+      await this.dbAccessService.saveNewAnnouncement(urlData.collection, typeCastedPageData);
+    } catch (e) {
+      this.logger.error(' ');
+      this.logger.error('Error occurred in AppService.processAdPage');
       this.logger.error('urlData:');
       this.logger.error(urlData);
       this.logger.error(e);
