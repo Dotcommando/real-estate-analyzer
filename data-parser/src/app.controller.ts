@@ -34,6 +34,8 @@ export class AppController {
 
     if (scrapingResult.urlData.urlType === UrlTypes.Index) {
       this.appService.processIndexPage(scrapingResult.data, scrapingResult.urlData);
+    } else if (scrapingResult.urlData.urlType === UrlTypes.Pagination) {
+      this.appService.processPaginationPage(scrapingResult.data, scrapingResult.urlData);
     }
 
     return {

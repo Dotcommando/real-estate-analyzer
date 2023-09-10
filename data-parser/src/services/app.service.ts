@@ -147,9 +147,9 @@ export class AppService implements OnModuleInit {
           ? maxPaginationNumber
           : Math.min(urlData.depth, maxPaginationNumber)
         : maxPaginationNumber;
-      const categoryIndexURL = this.dbUrlRelationService.getUrlByCollection(urlData.collection);
+      const categoryIndexURL: string = this.dbUrlRelationService.getUrlByCollection(urlData.collection);
       const setOfPaginationUrls: Set<string> = this.getPaginationUrlsSet(2, depth, categoryIndexURL);
-      const adsPagesUrls = this.dbUrlRelationService.addBaseUrlToSetOfPaths(parsedPagination[1]);
+      const adsPagesUrls: string[] = this.dbUrlRelationService.addBaseUrlToSetOfPaths(parsedPagination[1]);
       const paginationPagesTasks: IUrlData[] = Array.from(setOfPaginationUrls)
         .map((url: string) => ({
           priority: this.paginationPagePriority,
@@ -157,7 +157,7 @@ export class AppService implements OnModuleInit {
           urlType: UrlTypes.Pagination,
           collection: urlData.collection,
         }));
-      const adsPagesTasks = adsPagesUrls
+      const adsPagesTasks: IUrlData[] = adsPagesUrls
         .map((url: string) => ({
           priority: this.adPagePriority,
           url,
@@ -177,7 +177,20 @@ export class AppService implements OnModuleInit {
 
   public async processPaginationPage(dataToParse: string, urlData: IUrlData): Promise<void> {
     try {
+      const parsedAds: Set<string> = new BazarakiPaginationScraper(dataToParse, urlData.url).getAdsUrls();
+      const adsPagesTasks: IUrlData[] = Array.from(parsedAds)
+        .map((url: string) => ({
+          priority: this.adPagePriority,
+          url,
+          urlType: UrlTypes.Ad,
+          collection: urlData.collection,
+        }));
 
+      if (!adsPagesTasks.length) {
+        return;
+      }
+
+      await this.sendTaskForWebScraper(adsPagesTasks);
     } catch (e) {
       this.logger.error(' ');
       this.logger.error('Error occurred in AppService.processPaginationPage');
