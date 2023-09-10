@@ -46,7 +46,7 @@ export class AppService implements OnModuleInit {
       };
     }
 
-    this.addMockTasks();
+    // this.addMockTasks();
     this.runQueues();
   }
 
@@ -161,7 +161,10 @@ export class AppService implements OnModuleInit {
         );
 
         this.removeElementFromQueueByUrl(queue, element.url, element.priority);
-        this.cacheManager.set(element.url, true);
+
+        if (element.urlType === UrlTypes.Ad) {
+          this.cacheManager.set(element.url, true);
+        }
       }
     } catch (e) {
       this.logger.error(' ');

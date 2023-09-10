@@ -97,6 +97,30 @@ export class DbUrlRelationService implements OnModuleInit {
     }
   }
 
+  private addBaseUrl(baseUrl: string, urlSet: Set<string>): Set<string> {
+    if (urlSet.size === 0) {
+      return new Set<string>();
+    }
+
+    const baseUrlEndedWithSlash = baseUrl.substring(baseUrl.length - 1) === '/';
+    const arr = Array.from(urlSet);
+    const result = new Set<string>();
+
+    for (const path of arr) {
+      const urlStartedWithSlash = path.substring(0, 1) === '/';
+
+      if (path.startsWith(baseUrl)) {
+        result.add(path);
+      } else if ((!baseUrlEndedWithSlash && urlStartedWithSlash) || (baseUrlEndedWithSlash && !urlStartedWithSlash)) {
+        result.add(baseUrl + path);
+      } else if (!baseUrlEndedWithSlash && !urlStartedWithSlash) {
+        result.add(baseUrl + '/' + path);
+      }
+    }
+
+    return result;
+  }
+
   public getPathByCollection(collectionName: string): string {
     return this.collectionToPathMap.get(collectionName);
   }
@@ -123,5 +147,9 @@ export class DbUrlRelationService implements OnModuleInit {
 
   public getUrlList(): string[] {
     return [ ...this.urlList ];
+  }
+
+  public addBaseUrlToSetOfPaths(paths: Set<string>): string[] {
+    return (Array.from(this.addBaseUrl(this.sourceUrl, paths)));
   }
 }

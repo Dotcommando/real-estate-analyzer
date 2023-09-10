@@ -149,15 +149,40 @@ export class AppService implements OnModuleInit {
         : maxPaginationNumber;
       const categoryIndexURL = this.dbUrlRelationService.getUrlByCollection(urlData.collection);
       const setOfPaginationUrls: Set<string> = this.getPaginationUrlsSet(2, depth, categoryIndexURL);
+      const adsPagesUrls = this.dbUrlRelationService.addBaseUrlToSetOfPaths(parsedPagination[1]);
+      const paginationPagesTasks: IUrlData[] = Array.from(setOfPaginationUrls)
+        .map((url: string) => ({
+          priority: this.paginationPagePriority,
+          url,
+          urlType: UrlTypes.Pagination,
+          collection: urlData.collection,
+        }));
+      const adsPagesTasks = adsPagesUrls
+        .map((url: string) => ({
+          priority: this.adPagePriority,
+          url,
+          urlType: UrlTypes.Ad,
+          collection: urlData.collection,
+        }));
 
-      console.log('depth', depth);
-      console.log('setOfPaginationUrls');
-      console.log(setOfPaginationUrls);
-
-      // TODO: continue
+      await this.sendTaskForWebScraper([ ...paginationPagesTasks, ...adsPagesTasks ]);
     } catch (e) {
       this.logger.error(' ');
       this.logger.error('Error occurred in AppService.processIndexPage');
+      this.logger.error('urlData:');
+      this.logger.error(urlData);
+      this.logger.error(e);
+    }
+  }
+
+  public async processPaginationPage(dataToParse: string, urlData: IUrlData): Promise<void> {
+    try {
+
+    } catch (e) {
+      this.logger.error(' ');
+      this.logger.error('Error occurred in AppService.processPaginationPage');
+      this.logger.error('urlData:');
+      this.logger.error(urlData);
       this.logger.error(e);
     }
   }
