@@ -1,0 +1,10 @@
+.best-prices {
+  height: 100%;
+  padding-bottom: var(--space-2xl);
+
+  &__cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: var(--space-m);
+  }
+}

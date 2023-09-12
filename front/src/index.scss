@@ -1,0 +1,103 @@
+@import './styles/mixins/index';
+
+blockquote,
+body,
+code,
+dd,
+div,
+dl,
+dt,
+fieldset,
+form,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+input,
+li,
+p,
+pre,
+td,
+textarea,
+th,
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+input {
+  border: none;
+  outline: none;
+}
+
+main {
+}
+
+html, body, #root, main {
+  height: 100%;
+  background-color: #22272b;
+}
+
+body {
+  margin: 0;
+
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  color: var(--color-control-typo-primary);
+}
+
+button {
+  margin: 0;
+  padding: 0;
+
+  background-color: inherit;
+  border: none;
+  outline: none;
+}
+
+.container {
+  padding: 0 var(--space-s);
+
+  @include tablet {
+    padding: 0 var(--space-m);
+  }
+
+  @include desktop {
+    margin: 0 auto;
+
+    max-width: 1500px;
+  }
+}
+
+.vertical-container {
+  margin-bottom: var(--space-s);
+
+  @include tablet {
+    margin-bottom: var(--space-m);
+  }
+
+  @include desktop {
+    margin-bottom: var(--space-l);
+  }
+}
+
+.align-self {
+  &-end {
+    align-self: flex-end;
+  }
+}
+
+.white-space {
+  &_pre-line {
+    white-space: pre-line;
+  }
+}
+
+.h-100 {
+  height: 100%;
+}
