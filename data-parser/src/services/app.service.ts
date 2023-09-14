@@ -80,6 +80,14 @@ export class AppService implements OnModuleInit {
     return await this.sendTaskForWebScraper(tasksToScrape);
   }
 
+  @Cron(process.env.CLEAR_CACHE, {
+    name: 'clear_cache',
+    timeZone: 'Asia/Nicosia',
+  })
+  public clearCache() {
+    this.cacheManager.clear();
+  }
+
   @Cron(process.env.PAGINATION_SCRAPING_FULL, {
     name: 'pagination_scraping_full',
     timeZone: 'Asia/Nicosia',
@@ -167,7 +175,36 @@ export class AppService implements OnModuleInit {
           collection: urlData.collection,
         }));
 
-      await this.sendTaskForWebScraper([ ...paginationPagesTasks, ...adsPagesTasks ]);
+      const paginationPagesNumber = paginationPagesTasks.length;
+      const adsPagesNumber = adsPagesTasks.length;
+      const indexPageProcessingResult: ITcpResponse<{ [url: string]: boolean }[]> = await this
+        .sendTaskForWebScraper([ ...paginationPagesTasks, ...adsPagesTasks ]);
+      let addedPaginationPagesToQueue = 0;
+      let addedAdsPagesToQueue = 0;
+      const resultLength = indexPageProcessingResult.data?.length ?? 0;
+
+      this.logger.log(' ');
+      this.logger.log('Index page processing result:');
+
+      if (resultLength) {
+        for (let i = 0; i < resultLength; i++) {
+          if (i < paginationPagesNumber) {
+            if (indexPageProcessingResult.data[i]) {
+              addedPaginationPagesToQueue++;
+            }
+          } else {
+            if (indexPageProcessingResult.data[i]) {
+              addedAdsPagesToQueue++;
+            }
+          }
+        }
+
+        this.logger.log(`Pagination pages added to Queue ${ addedPaginationPagesToQueue } / ${ paginationPagesNumber }`);
+        this.logger.log(`Ads pages added to Queue ${ addedAdsPagesToQueue } / ${ adsPagesNumber }`);
+      } else {
+        this.logger.log(`No Pagination pages added to Queue, sent ${ paginationPagesNumber }`);
+        this.logger.log(`No Ads pages added to Queue, sent ${ adsPagesNumber }`);
+      }
     } catch (e) {
       this.logger.error(' ');
       this.logger.error('Error occurred in AppService.processIndexPage');
@@ -193,7 +230,18 @@ export class AppService implements OnModuleInit {
         return;
       }
 
-      await this.sendTaskForWebScraper(adsPagesTasks);
+      const adsPagesTasksNumber = adsPagesTasks.length;
+      const paginationPageProcessingResult: ITcpResponse<{ [url: string]: boolean }[]> = await this
+        .sendTaskForWebScraper(adsPagesTasks);
+
+      this.logger.log(' ');
+      this.logger.log('Pagination page processing result:');
+
+      if (paginationPageProcessingResult.data?.length) {
+        this.logger.log(`Ads pages added to Queue ${ paginationPageProcessingResult.data.filter(Boolean).length } / ${ adsPagesTasksNumber }`);
+      } else {
+        this.logger.log(`No ads pages added, sent ${adsPagesTasksNumber}.`);
+      }
     } catch (e) {
       this.logger.error(' ');
       this.logger.error('Error occurred in AppService.processPaginationPage');
