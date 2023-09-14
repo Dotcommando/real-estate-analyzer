@@ -33,6 +33,7 @@ export class AppService implements OnModuleInit {
   private axiosConfig: AxiosRequestConfig;
   private dataParserClient: ClientProxy;
   private tcpTimeout = parseInt(this.configService.get<string>('TCP_TIMEOUT'));
+  private minDelay = parseInt(this.configService.get('MIN_DELAY'));
 
   public async onModuleInit(): Promise<void> {
     this.dataParserClient = this.proxyFactory.getClientProxy();
@@ -121,7 +122,7 @@ export class AppService implements OnModuleInit {
       await this.processQueueElement(queue, elementWithMaxPriority);
     }
 
-    await this.delayService.delay();
+    await this.delayService.delay(queue.lastLaunchMsec);
 
     await this.runQueue(queue, queueName);
   }

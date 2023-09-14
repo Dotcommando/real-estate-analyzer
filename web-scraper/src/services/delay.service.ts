@@ -18,7 +18,15 @@ export class DelayService {
     return from + Math.random() * (to - from);
   }
 
-  public async delay() {
-    return await delay(this.getRandomInRangeTimeMs(this.from, this.to));
+  public async delay(lastCallMsec: number): Promise<number> {
+    const timePassed = Date.now() - lastCallMsec;
+
+    if (timePassed > this.from) {
+      return Promise.resolve(0);
+    }
+
+    const randomDelayMsec = this.getRandomInRangeTimeMs(this.from, this.to);
+
+    return await delay(randomDelayMsec - timePassed);
   }
 }
