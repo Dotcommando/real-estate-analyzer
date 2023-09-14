@@ -71,4 +71,10 @@ export class CacheService implements OnModuleInit {
   public get(key: string): string {
     return this.cacheMap.get(key) as string;
   }
+
+  public clear(): void {
+    this.logger.log('Cache fully cleared');
+    this.cacheMap.clear();
+    this.cacheKeys.clear();
+  }
 }

@@ -2,8 +2,10 @@ import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Inject, Injectable, LoggerService, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy } from '@nestjs/microservices';
+import { Cron } from '@nestjs/schedule';
 
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { config } from 'dotenv';
 import { lastValueFrom, timeout } from 'rxjs';
 
 import { CacheService } from './cache.service';
@@ -13,6 +15,8 @@ import { ProxyFactoryService } from './proxy-factory.service';
 import { DataParserMessages, LOGGER, mockTasks, UrlTypes } from '../constants';
 import { IQueue, IQueueElement, ITcpResponse, IUrlData, IWebScrapingResponse } from '../types';
 
+
+config();
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -33,7 +37,6 @@ export class AppService implements OnModuleInit {
   private axiosConfig: AxiosRequestConfig;
   private dataParserClient: ClientProxy;
   private tcpTimeout = parseInt(this.configService.get<string>('TCP_TIMEOUT'));
-  private minDelay = parseInt(this.configService.get('MIN_DELAY'));
 
   public async onModuleInit(): Promise<void> {
     this.dataParserClient = this.proxyFactory.getClientProxy();
@@ -49,6 +52,14 @@ export class AppService implements OnModuleInit {
 
     // this.addMockTasks();
     this.runQueues();
+  }
+
+  @Cron(process.env.CLEAR_CACHE, {
+    name: 'clear_cache',
+    timeZone: 'Asia/Nicosia',
+  })
+  public clearCache() {
+    this.cacheManager.clear();
   }
 
   private getEnvVariableAsInteger(varName: string, defaultValue: number): number {
