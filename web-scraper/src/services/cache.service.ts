@@ -13,7 +13,7 @@ export class CacheService implements OnModuleInit {
     this.del = this.del.bind(this);
   }
 
-  private readonly ttl = parseInt(this.configService.get('CACHE_TTL'));
+  private readonly ttl = parseInt(this.configService.get('CACHE_TTL')) * 1000;
   private readonly maxItems = parseInt(this.configService.get('CACHE_MAX_ITEMS'));
   private cacheMap = new Map<string, unknown>();
   private cacheKeys = new Set<string>();
@@ -73,8 +73,9 @@ export class CacheService implements OnModuleInit {
   }
 
   public clear(): void {
-    this.logger.log('Cache fully cleared');
     this.cacheMap.clear();
     this.cacheKeys.clear();
+    this.logger.log(' ');
+    this.logger.log('    >>>>    Cache fully cleared');
   }
 }
