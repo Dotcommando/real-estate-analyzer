@@ -24,6 +24,7 @@ import {
   LoggerService,
   MongoConfigService,
   ProxyFactoryService,
+  StatusMonitorService,
 } from './services';
 
 
@@ -101,16 +102,20 @@ import {
     CacheService,
     ProxyFactoryService,
     SchedulerRegistry,
+    StatusMonitorService,
     {
       provide: LOGGER,
-      useFactory: (configService: ConfigService) => {
+      useFactory: (
+        configService: ConfigService,
+        statusMonitorService: StatusMonitorService,
+      ) => {
         const environment = configService.get('MODE');
 
         return environment === 'prod'
-          ? new DummyLoggerService()
-          : new LoggerService();
+          ? new DummyLoggerService(statusMonitorService)
+          : new LoggerService(statusMonitorService);
       },
-      inject: [ ConfigService ],
+      inject: [ ConfigService, StatusMonitorService ],
     },
   ],
 })

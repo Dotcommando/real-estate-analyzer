@@ -6,3 +6,4 @@ export * from './dummy-logger.service';
 export * from './logger.service';
 export * from './mongoose-config.service';
 export * from './proxy-factory.service';
+export * from './status-monitor.service';

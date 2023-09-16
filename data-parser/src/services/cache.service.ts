@@ -18,8 +18,8 @@ export class CacheService implements OnModuleInit {
   private cacheMap = new Map<string, unknown>();
   private cacheKeys = new Set<string>();
 
-  public onModuleInit() {
-    this.logger.log('Cache Service initialized');
+  public async onModuleInit(): Promise<void> {
+    await this.logger.log('Cache Service initialized');
   }
 
   private add(key: string, value: string): void {
@@ -72,10 +72,12 @@ export class CacheService implements OnModuleInit {
     return this.cacheMap.get(key) as string;
   }
 
-  public clear(): void {
+  public async clear(): Promise<void> {
     this.cacheMap.clear();
     this.cacheKeys.clear();
-    this.logger.log(' ');
-    this.logger.log('    >>>>    Cache fully cleared');
+    await this.logger.log(' ');
+    await this.logger.log('    >>>>===========================<<<<');
+    await this.logger.log('    >>>>    Cache fully cleared    <<<<');
+    await this.logger.log('    >>>>===========================<<<<');
   }
 }

@@ -10,6 +10,7 @@ import { CacheService } from './cache.service';
 import { DbAccessService } from './db-access.service';
 import { DbUrlRelationService } from './db-url-relation.service';
 import { ProxyFactoryService } from './proxy-factory.service';
+import { StatusMonitorService } from './status-monitor.service';
 
 import { BazarakiAdPageParser, BazarakiPaginationParser } from '../classes';
 import { LOGGER, UrlTypes, WebScraperMessages } from '../constants';
@@ -47,12 +48,18 @@ export class AppService implements OnModuleInit {
 
   constructor(
     @Inject(LOGGER) private readonly logger: LoggerService,
+    private readonly statusMonitorService: StatusMonitorService,
     private readonly cacheManager: CacheService,
     private readonly dbAccessService: DbAccessService,
     private readonly dbUrlRelationService: DbUrlRelationService,
     private readonly configService: ConfigService,
     private readonly proxyFactory: ProxyFactoryService,
   ) {
+    this.print = this.print.bind(this);
+  }
+
+  public async print(id: string, msg: string): Promise<void> {
+    await this.statusMonitorService.write(id, msg);
   }
 
   async onModuleInit(): Promise<void> {
@@ -60,10 +67,19 @@ export class AppService implements OnModuleInit {
       this.webScraperClient = this.proxyFactory.getClientProxy();
 
       await this.initScraping(this.firstRunDepth);
+
+      let i = 0;
+
+      setInterval(async () => {
+        i++;
+
+        await this.print('break_line_1', ' ');
+        await this.print('counter_message', `Counter: ${i}`);
+      }, 1000);
     } catch (e) {
-      this.logger.error(' ');
-      this.logger.error('Error occurred in AppService.onModuleInit');
-      this.logger.error(e);
+      await this.logger.error(' ');
+      await this.logger.error('Error occurred in AppService.onModuleInit');
+      await this.logger.error(e);
     }
   }
 
@@ -93,7 +109,7 @@ export class AppService implements OnModuleInit {
     timeZone: 'Asia/Nicosia',
   })
   public async runnerFull(): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
-    this.logger.log('Full scraping initialized');
+    await this.logger.log('Full scraping initialized');
 
     return await this.initScraping(this.depthFull);
   };
@@ -103,7 +119,7 @@ export class AppService implements OnModuleInit {
     timeZone: 'Asia/Nicosia',
   })
   public async runnerDeep(): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
-    this.logger.log('Deep scraping initialized');
+    await this.logger.log('Deep scraping initialized');
 
     return await this.initScraping(this.depthDeep);
   };
@@ -113,7 +129,7 @@ export class AppService implements OnModuleInit {
     timeZone: 'Asia/Nicosia',
   })
   public async runnerModerate(): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
-    this.logger.log('Moderate scraping initialized');
+    await this.logger.log('Moderate scraping initialized');
 
     return await this.initScraping(this.depthModerate);
   };
@@ -123,7 +139,7 @@ export class AppService implements OnModuleInit {
     timeZone: 'Asia/Nicosia',
   })
   public async runnerSuperficial(): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
-    this.logger.log('Superficial scraping initialized');
+    await this.logger.log('Superficial scraping initialized');
 
     return await this.initScraping(this.depthSuperficial);
   };
@@ -133,7 +149,7 @@ export class AppService implements OnModuleInit {
     timeZone: 'Asia/Nicosia',
   })
   public async runnerShallow(): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
-    this.logger.log('Shallow scraping initialized');
+    await this.logger.log('Shallow scraping initialized');
 
     return await this.initScraping(this.depthShallow);
   };
@@ -183,8 +199,8 @@ export class AppService implements OnModuleInit {
       let addedAdsPagesToQueue = 0;
       const resultLength = indexPageProcessingResult.data?.length ?? 0;
 
-      this.logger.log(' ');
-      this.logger.log('Index page processing result:');
+      await this.logger.log(' ');
+      await this.logger.log('Index page processing result:');
 
       if (resultLength) {
         for (let i = 0; i < resultLength; i++) {
@@ -199,18 +215,18 @@ export class AppService implements OnModuleInit {
           }
         }
 
-        this.logger.log(`Pagination pages added to Queue ${ addedPaginationPagesToQueue } / ${ paginationPagesNumber }`);
-        this.logger.log(`Ads pages added to Queue ${ addedAdsPagesToQueue } / ${ adsPagesNumber }`);
+        await this.logger.log(`Pagination pages added to Queue ${ addedPaginationPagesToQueue } / ${ paginationPagesNumber }`);
+        await this.logger.log(`Ads pages added to Queue ${ addedAdsPagesToQueue } / ${ adsPagesNumber }`);
       } else {
-        this.logger.log(`No Pagination pages added to Queue, sent ${ paginationPagesNumber }`);
-        this.logger.log(`No Ads pages added to Queue, sent ${ adsPagesNumber }`);
+        await this.logger.log(`No Pagination pages added to Queue, sent ${ paginationPagesNumber }`);
+        await this.logger.log(`No Ads pages added to Queue, sent ${ adsPagesNumber }`);
       }
     } catch (e) {
-      this.logger.error(' ');
-      this.logger.error('Error occurred in AppService.processIndexPage');
-      this.logger.error('urlData:');
-      this.logger.error(urlData);
-      this.logger.error(e);
+      await this.logger.error(' ');
+      await this.logger.error('Error occurred in AppService.processIndexPage');
+      await this.logger.error('urlData:');
+      await this.logger.error(urlData);
+      await this.logger.error(e);
     }
   }
 
@@ -234,20 +250,20 @@ export class AppService implements OnModuleInit {
       const paginationPageProcessingResult: ITcpResponse<{ [url: string]: boolean }[]> = await this
         .sendTaskForWebScraper(adsPagesTasks);
 
-      this.logger.log(' ');
-      this.logger.log('Pagination page processing result:');
+      await this.logger.log(' ');
+      await this.logger.log('Pagination page processing result:');
 
       if (paginationPageProcessingResult.data?.length) {
-        this.logger.log(`Ads pages added to Queue ${ paginationPageProcessingResult.data.filter(Boolean).length } / ${ adsPagesTasksNumber }`);
+        await this.logger.log(`Ads pages added to Queue ${ paginationPageProcessingResult.data.filter(Boolean).length } / ${ adsPagesTasksNumber }`);
       } else {
-        this.logger.log(`No ads pages added, sent ${adsPagesTasksNumber}.`);
+        await this.logger.log(`No ads pages added, sent ${adsPagesTasksNumber}.`);
       }
     } catch (e) {
-      this.logger.error(' ');
-      this.logger.error('Error occurred in AppService.processPaginationPage');
-      this.logger.error('urlData:');
-      this.logger.error(urlData);
-      this.logger.error(e);
+      await this.logger.error(' ');
+      await this.logger.error('Error occurred in AppService.processPaginationPage');
+      await this.logger.error('urlData:');
+      await this.logger.error(urlData);
+      await this.logger.error(e);
     }
   }
 
@@ -258,11 +274,11 @@ export class AppService implements OnModuleInit {
 
       await this.dbAccessService.saveNewAnnouncement(urlData.collection, typeCastedPageData);
     } catch (e) {
-      this.logger.error(' ');
-      this.logger.error('Error occurred in AppService.processAdPage');
-      this.logger.error('urlData:');
-      this.logger.error(urlData);
-      this.logger.error(e);
+      await this.logger.error(' ');
+      await this.logger.error('Error occurred in AppService.processAdPage');
+      await this.logger.error('urlData:');
+      await this.logger.error(urlData);
+      await this.logger.error(e);
     }
   }
 

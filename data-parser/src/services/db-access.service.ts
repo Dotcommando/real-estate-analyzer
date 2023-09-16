@@ -131,7 +131,8 @@ export class DbAccessService {
 
         if (
           !existingAnnouncement.active_dates
-            .map(date => date.toString()).includes(roundedDateAsString)
+            .map(date => date.toString())
+            .includes(roundedDateAsString)
         ) {
           existingAnnouncement.active_dates.push(roundedDate);
           await existingAnnouncement.save();
