@@ -25,8 +25,17 @@ import {
   SlugByCollection,
 } from '../constants';
 import { IAdDBOperationResult, IRealEstate, IRealEstateDoc } from '../types';
-import { castToNumber, dateInHumanReadableFormat, roundDate } from '../utils';
+import { castToNumber, roundDate } from '../utils';
 
+
+export enum AdProcessingStatus {
+  ADDED = 'added',
+  AD_FOUND = 'ad_found',
+  AD_NOT_FOUND = 'ad_not_found',
+  ACTIVE_DATE_ADDED = 'active_date',
+  NO_CHANGES = 'no_changes',
+  ERROR = 'error',
+}
 
 @Injectable()
 export class DbAccessService {
@@ -119,7 +128,7 @@ export class DbAccessService {
       const Model = this.getModelByCollection(collectionName);
 
       if (!Model) {
-        return { ad: null, status: `Model not found for collection: ${ collectionName }.` };
+        return { ad: null, status: AdProcessingStatus.ERROR, errorMsg: `Model not found for collection ${collectionName}` };
       }
 
       const existingAnnouncement = await Model.findOne({ ad_id: announcementData.ad_id });
@@ -131,14 +140,15 @@ export class DbAccessService {
 
         if (
           !existingAnnouncement.active_dates
-            .map(date => date.toString()).includes(roundedDateAsString)
+            .map(date => date.toString())
+            .includes(roundedDateAsString)
         ) {
           existingAnnouncement.active_dates.push(roundedDate);
           await existingAnnouncement.save();
 
-          status = `Has a duplicate in DB. Added active date: ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY')}. Collection: ${Model.collection.name}.`;
+          status = AdProcessingStatus.ACTIVE_DATE_ADDED;
         } else {
-          status = `Has a duplicate in DB. No active date added. Collection: ${Model.collection.name}.`;
+          status = AdProcessingStatus.NO_CHANGES;
         }
 
         return { ad: existingAnnouncement.toObject(), status };
@@ -151,15 +161,15 @@ export class DbAccessService {
         newAnnouncement.active_dates = [ roundDate(new Date()) ];
         await newAnnouncement.save();
 
-        status = `Saved in DB. Collection: ${Model.collection.name}.`;
+        status = AdProcessingStatus.ADDED;
 
         return { ad: newAnnouncement.toObject(), status };
       }
     } catch (e) {
       return {
         ad: null,
-        status: typeof e.message === 'string' ? e.message : String(e),
-        error: true,
+        status: AdProcessingStatus.ERROR,
+        errorMsg: typeof e.message !== 'object' ? String(e.message) : JSON.stringify(e.message),
       };
     }
   }
@@ -169,21 +179,21 @@ export class DbAccessService {
       const Model = this.getModelByCollection(categoryUrl);
 
       if (!Model) {
-        return { ad: null, status: `model not found for category: ${ categoryUrl }.` };
+        return { ad: null, status: AdProcessingStatus.ERROR, errorMsg: `Model not found for collection ${categoryUrl}` };
       }
 
       const existingAnnouncement: IRealEstateDoc = await Model.findOne({ url: url });
 
       if (!existingAnnouncement) {
-        return { ad: null, status: `Ad not found for url: ${ url }.` };
+        return { ad: null, status: AdProcessingStatus.AD_NOT_FOUND };
       }
 
-      return { ad: existingAnnouncement, status: '' };
+      return { ad: existingAnnouncement, status: AdProcessingStatus.AD_FOUND };
     } catch (e) {
       return {
         ad: null,
-        status: typeof e.message === 'string' ? e.message : String(e),
-        error: true,
+        status: AdProcessingStatus.ERROR,
+        errorMsg: typeof e.message !== 'object' ? String(e.message) : JSON.stringify(e.message),
       };
     }
   }
@@ -196,7 +206,7 @@ export class DbAccessService {
       return {
         ad: null,
         status: existingAnnouncementResponse.status,
-        ...(existingAnnouncementResponse.error && { error: true }),
+        ...(existingAnnouncementResponse.errorMsg && { errorMsg: existingAnnouncementResponse.errorMsg }),
       };
     }
 
@@ -208,7 +218,7 @@ export class DbAccessService {
       !existingAnnouncement.active_dates
         .map(date => date.toISOString()).includes(roundedDateAsString)
     ) {
-      status = `Added active date ${dateInHumanReadableFormat(roundedDate, 'DD.MM.YYYY')}. Collection: ${existingAnnouncement.collection.name}.`;
+      status = AdProcessingStatus.ACTIVE_DATE_ADDED;
 
       existingAnnouncement.active_dates.push(roundedDate);
       await existingAnnouncement.save();
@@ -216,6 +226,6 @@ export class DbAccessService {
       return { ad: existingAnnouncement.toObject(), status };
     }
 
-    return { ad: existingAnnouncement.toObject(), status: 'Current date already added.' };
+    return { ad: existingAnnouncement.toObject(), status: AdProcessingStatus.NO_CHANGES };
   }
 }
