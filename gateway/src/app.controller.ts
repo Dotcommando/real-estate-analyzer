@@ -1,9 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
 
-import { StatsDto } from './dto';
-import { queryStatsToStats } from './mappers';
+import { AdsDto, StatsDto } from './dto';
+import { queryAdsToAds, queryStatsToStats } from './mappers';
 import { AppService } from './services';
 import { IAnalysisResult, ICityStats, IDistrictStats, IResponse } from './types';
+import { IAdsResult } from './types/ads';
 
 
 @Controller()
@@ -23,5 +24,12 @@ export class AppController {
     @Query() query: StatsDto,
   ): Promise<IResponse<IAnalysisResult<ICityStats>[] | IAnalysisResult<IDistrictStats>[]>> {
     return this.appService.getAnalysis(queryStatsToStats(query));
+  }
+
+  @Get('/ads')
+  public async getAds(
+    @Query() query: AdsDto,
+  ): Promise<IResponse<IAdsResult>> {
+    return this.appService.getAds(queryAdsToAds(query));
   }
 }

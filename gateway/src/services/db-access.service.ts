@@ -7,12 +7,15 @@ import { Model } from 'mongoose';
 import { AdsEnum, AdsEnumArray, AnalysisType, AnalysisTypeArray, LOGGER } from '../constants';
 import { analysisMapper, cityReportMapper, districtReportMapper } from '../mappers';
 import {
+  IAdsParams,
+  IAdsResult,
   IAnalysisParams,
   IAnalysisResult,
   ICityStats,
   ICityStatsDoc,
   IDistrictStats,
   IDistrictStatsDoc,
+  ISaleHousesDoc,
 } from '../types';
 
 
@@ -28,6 +31,7 @@ export class DbAccessService {
     @InjectModel('DistrictStatsRentHouses') private readonly districtStatsRentHousesModel: Model<IDistrictStatsDoc>,
     @InjectModel('DistrictStatsSaleFlats') private readonly districtStatsSaleFlatsModel: Model<IDistrictStatsDoc>,
     @InjectModel('DistrictStatsSaleHouses') private readonly districtStatsSaleHousesModel: Model<IDistrictStatsDoc>,
+    @InjectModel('SaleHouses') private readonly SaleHousesModel: Model<ISaleHousesDoc>,
     private readonly configService: ConfigService,
   ) {
   }
@@ -124,5 +128,21 @@ export class DbAccessService {
     return params.analysisType === AnalysisType.CITY_AVG_MEAN
       ? await this.getCityAnalysis(params)
       : await this.getDistrictAnalysis(params);
+  }
+
+
+  public async getAds(params: IAdsParams): Promise<IAdsResult> {
+    const filter = {
+      $and: [
+        {
+          start_date: { $gte: params.startDate },
+        },
+        {
+          end_date: { $lte: params.endDate },
+        },
+      ],
+    };
+    
+    return await this.SaleHousesModel.find(filter);
   }
 }
