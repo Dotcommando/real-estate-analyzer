@@ -15,6 +15,9 @@ import {
   ICityStatsDoc,
   IDistrictStats,
   IDistrictStatsDoc,
+  IRentApartmentsFlats,
+  IRentHouses,
+  ISaleApartmentsFlats,
   ISaleHousesDoc,
 } from '../types';
 
@@ -32,6 +35,9 @@ export class DbAccessService {
     @InjectModel('DistrictStatsSaleFlats') private readonly districtStatsSaleFlatsModel: Model<IDistrictStatsDoc>,
     @InjectModel('DistrictStatsSaleHouses') private readonly districtStatsSaleHousesModel: Model<IDistrictStatsDoc>,
     @InjectModel('SaleHouses') private readonly SaleHousesModel: Model<ISaleHousesDoc>,
+    @InjectModel('SaleFlats') private readonly SaleFlatsModel: Model<ISaleApartmentsFlats>,
+    @InjectModel('RentFlats') private readonly RentFlatsModel: Model<IRentApartmentsFlats>,
+    @InjectModel('RentHouses') private readonly RentHousesModel: Model<IRentHouses>,
     private readonly configService: ConfigService,
   ) {
   }
@@ -132,17 +138,6 @@ export class DbAccessService {
 
 
   public async getAds(params: IAdsParams): Promise<IAdsResult> {
-    const filter = {
-      $and: [
-        {
-          start_date: { $gte: params.startDate },
-        },
-        {
-          end_date: { $lte: params.endDate },
-        },
-      ],
-    };
-    
-    return await this.SaleHousesModel.find(filter);
+    return await this.SaleHousesModel.find().limit(1);
   }
 }
