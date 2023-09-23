@@ -21,7 +21,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new StatusInterceptor());
   app.setGlobalPrefix('api/v1');
   app.enableCors({
-    origin: `${process.env.GATWAY_PROTOCOL}://${process.env.GATWAY_HOST}${process.env.GATEWAY_PORT ? ':' + process.env.GATEWAY_PORT : ''}`,
+    origin: `${process.env.ORIGIN_PROTOCOL}://${process.env.ORIGIN_HOST}${process.env.ORIGIN_PORT && process.env.ORIGIN_PORT !== '80' ? ':' + process.env.ORIGIN_PORT : ''}`,
   });
 
   app.register(fastifyCookie);
