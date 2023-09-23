@@ -3,18 +3,18 @@ import { AdsDto, StatsDto } from '../dto';
 import { IAdsParams, IAnalysisParams } from '../types';
 
 
-export function queryAdsToAds(queryStats: AdsDto): IAdsParams {
+export function queryAdsToAds(queryAds: AdsDto): IAdsParams {
   const endOfDay = new Date();
 
   endOfDay.setUTCHours(23, 59, 59, 999);
 
-  const startDate = queryStats.start_date.getTime() < MINIMAL_START_DATE.getTime()
+  const startDate = queryAds.start_date.getTime() < MINIMAL_START_DATE.getTime()
     ? new Date(MINIMAL_START_DATE.getTime())
-    : queryStats.start_date;
-  const endDate = queryStats.end_date
-    ? queryStats.end_date.getTime() > endOfDay.getTime()
+    : queryAds.start_date;
+  const endDate = queryAds.end_date
+    ? queryAds.end_date.getTime() > endOfDay.getTime()
       ? endOfDay
-      : queryStats.end_date
+      : queryAds.end_date
     : endOfDay;
 
   endDate.setUTCHours(23, 59, 59, 999);
@@ -22,5 +22,9 @@ export function queryAdsToAds(queryStats: AdsDto): IAdsParams {
   return {
     startDate,
     endDate,
+    limit: queryAds.limit,
+    offset: queryAds.offset,
+    city: queryAds.city,
+    district: queryAds.district,
   };
 }

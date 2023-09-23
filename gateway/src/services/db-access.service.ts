@@ -138,6 +138,26 @@ export class DbAccessService {
 
 
   public async getAds(params: IAdsParams): Promise<IAdsResult> {
-    return await this.SaleHousesModel.find().limit(1);
+    const filter = {
+      $and: [
+        {
+          publish_date: { $gte: params.startDate, $lte: params.endDate },
+        },
+      ],
+    };
+
+    if (params.city) {
+      filter['city'] = params.city;
+    }
+    if (params.district) {
+      filter['district'] = params.district;
+    }
+
+    const saleHouses = await this.SaleHousesModel.find(filter);
+    const saleFlats = await this.SaleFlatsModel.find(filter);
+    const rentHouses = await this.RentHousesModel.find(filter);
+    const rentFlats = await this.RentFlatsModel.find(filter);
+
+    return await [ ...saleHouses, ...saleFlats, ...rentHouses, ...rentFlats ].slice(params.offset, params.offset + params.limit);
   }
 }

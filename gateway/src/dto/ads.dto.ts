@@ -1,9 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Type } from 'class-transformer';
-import { IsDefined, IsEnum, IsOptional } from 'class-validator';
+import { IsDefined, IsOptional } from 'class-validator';
 
-import { AdsEnum, AnalysisPeriod, AnalysisType } from '../constants';
 import { IsDate } from '../decorators';
 
 
@@ -27,4 +26,40 @@ export class AdsDto {
   @Type(() => Date)
   @IsDate({ optional: true })
   end_date?: Date;
+
+  @ApiProperty({
+    description: 'Limit',
+    required: false,
+    example: '20',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  limit?: number;
+
+  @ApiProperty({
+    description: 'Offset',
+    required: false,
+    example: '0',
+  })
+  @IsOptional()
+  @Type(() => Number)
+  offset?: number;
+
+  @ApiProperty({
+    description: 'City',
+    required: false,
+    example: 'Nicosia',
+  })
+  @IsOptional()
+  @Type(() => String)
+  city?: string;
+
+  @ApiProperty({
+    description: 'District',
+    required: false,
+    example: 'Egkomi',
+  })
+  @IsOptional()
+  @Type(() => String)
+  district?: string;
 }
