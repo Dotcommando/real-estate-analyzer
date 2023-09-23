@@ -2,7 +2,8 @@ import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
+import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc } from 'src/schemas';
 
 import { AdsEnum, AdsEnumArray, AnalysisType, AnalysisTypeArray, LOGGER } from '../constants';
 import { analysisMapper, cityReportMapper, districtReportMapper } from '../mappers';
@@ -34,15 +35,15 @@ export class DbAccessService {
     @InjectModel('DistrictStatsRentHouses') private readonly districtStatsRentHousesModel: Model<IDistrictStatsDoc>,
     @InjectModel('DistrictStatsSaleFlats') private readonly districtStatsSaleFlatsModel: Model<IDistrictStatsDoc>,
     @InjectModel('DistrictStatsSaleHouses') private readonly districtStatsSaleHousesModel: Model<IDistrictStatsDoc>,
-    @InjectModel('SaleHouses') private readonly SaleHousesModel: Model<ISaleHousesDoc>,
-    @InjectModel('SaleFlats') private readonly SaleFlatsModel: Model<ISaleApartmentsFlats>,
-    @InjectModel('RentFlats') private readonly RentFlatsModel: Model<IRentApartmentsFlats>,
-    @InjectModel('RentHouses') private readonly RentHousesModel: Model<IRentHouses>,
+    @InjectModel('SaleHouses') private readonly saleHousesModel: Model<ISaleHousesDoc>,
+    @InjectModel('SaleFlats') private readonly saleFlatsModel: Model<ISaleApartmentsFlatsDoc>,
+    @InjectModel('RentFlats') private readonly rentFlatsModel: Model<IRentApartmentsFlatsDoc>,
+    @InjectModel('RentHouses') private readonly rentHousesModel: Model<IRentHousesDoc>,
     private readonly configService: ConfigService,
   ) {
   }
 
-  private getModel(analysisType: AnalysisType, ads: AdsEnum): Model<ICityStatsDoc | IDistrictStatsDoc> {
+  private getStatsModel(analysisType: AnalysisType, ads: AdsEnum): Model<ICityStatsDoc | IDistrictStatsDoc> {
     if (!AnalysisTypeArray.includes(analysisType)) {
       throw new Error(`Analysis type "${typeof analysisType === 'object' && analysisType !== null ? JSON.stringify(analysisType) : String(analysisType)}" is out of available values: ${AnalysisTypeArray.join(', ')}.`);
     }
@@ -74,8 +75,28 @@ export class DbAccessService {
     }
   }
 
+  private getAdsModel(ads: AdsEnum): Model<ISaleHousesDoc | ISaleApartmentsFlatsDoc | IRentApartmentsFlatsDoc | IRentHousesDoc> {
+    if (!AdsEnumArray.includes(ads)) {
+      throw new Error(`Variable "ads", which is equal "${typeof ads === 'object' && ads !== null ? JSON.stringify(ads) : String(ads)}", is out of available values: ${AdsEnumArray.join(', ')}.`);
+    }
+
+    switch (ads) {
+      case AdsEnum.RentFlats:
+        return this.rentFlatsModel;
+
+      case AdsEnum.RentHouses:
+        return this.rentHousesModel;
+
+      case AdsEnum.SaleFlats:
+        return this.saleFlatsModel;
+
+      case AdsEnum.SaleHouses:
+        return this.saleHousesModel;
+    }
+  }
+
   private async getCityAnalysis(params: IAnalysisParams): Promise<IAnalysisResult<ICityStats>[]> {
-    const model = this.getModel(params.analysisType, params.ads);
+    const model = this.getStatsModel(params.analysisType, params.ads);
     const filter = {
       $and: [
         {
@@ -103,7 +124,7 @@ export class DbAccessService {
   }
 
   private async getDistrictAnalysis(params: IAnalysisParams): Promise<IAnalysisResult<IDistrictStats>[]> {
-    const model = this.getModel(params.analysisType, params.ads);
+    const model = this.getStatsModel(params.analysisType, params.ads);
     const filter = {
       $and: [
         {
@@ -138,6 +159,8 @@ export class DbAccessService {
 
 
   public async getAds(params: IAdsParams): Promise<IAdsResult> {
+    const model = this.getAdsModel(params.ads);
+
     const filter = {
       $and: [
         {
@@ -153,11 +176,6 @@ export class DbAccessService {
       filter['district'] = params.district;
     }
 
-    const saleHouses = await this.SaleHousesModel.find(filter);
-    const saleFlats = await this.SaleFlatsModel.find(filter);
-    const rentHouses = await this.RentHousesModel.find(filter);
-    const rentFlats = await this.RentFlatsModel.find(filter);
-
-    return await [ ...saleHouses, ...saleFlats, ...rentHouses, ...rentFlats ].slice(params.offset, params.offset + params.limit);
+    return await model.find(filter).skip(params.offset).limit(params.limit);
   }
 }

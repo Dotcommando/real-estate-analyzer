@@ -26,5 +26,6 @@ export function queryAdsToAds(queryAds: AdsDto): IAdsParams {
     offset: queryAds.offset,
     city: queryAds.city,
     district: queryAds.district,
+    ads: queryAds.ads ?? AdsEnum.RentFlats,
   };
 }

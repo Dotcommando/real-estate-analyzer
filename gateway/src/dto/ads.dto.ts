@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Type } from 'class-transformer';
-import { IsDefined, IsOptional } from 'class-validator';
+import { IsDefined, IsEnum, IsOptional } from 'class-validator';
+import { AdsEnum } from 'src/constants';
 
 import { IsDate } from '../decorators';
 
@@ -62,4 +63,12 @@ export class AdsDto {
   @IsOptional()
   @Type(() => String)
   district?: string;
+
+  @ApiProperty({
+    description: `Type of ads, can be: ${Object.values(AdsEnum).join(', ')}`,
+    required: true,
+    example: AdsEnum.RentFlats,
+  })
+  @IsEnum(AdsEnum)
+  ads: AdsEnum;
 }
