@@ -11,7 +11,10 @@ class StatisticApi extends BaseApi {
   public getStatistic(
     params: StatisticGetParameters,
   ): Promise<AxiosResponse<StatisticResponse, unknown>> {
-    return this.get<StatisticResponse, StatisticGetParameters>('stats', params);
+    return this.get<StatisticResponse, StatisticGetParameters>(
+      '/stats',
+      params,
+    );
   }
 }
 

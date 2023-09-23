@@ -39,8 +39,30 @@ Instead, it will copy all the configuration files and the transitive dependencie
 
 You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
-## Learn More
+## Local Run with Gateway
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Create `.env` file in the `front` directory. Fill it with these values:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+    REACT_APP_MODE=dev
+    REACT_APP_ORIGIN_PROTOCOL=http   # http for local requests
+    REACT_APP_ORIGIN_HOST=localhost  # It's a host of gateway, technically there is a domain of the service expected
+    REACT_APP_ORIGIN_PORT=3332       # It's a port of gateway
+    REACT_APP_API_PREFIX=/api/v1     # Our API prefix
+    REACT_APP_FRONT_HOST=localhost   # host of the front app
+    REACT_APP_FRONT_PORT=3000        # port of the front app
+
+In `gateway` use these values for `.env`:
+
+    MODE=dev
+    MONGO_INITDB_DATABASE=data-storage
+    MONGO_INITDB_ROOT_USERNAME=alphared
+    MONGO_INITDB_ROOT_PASSWORD=jgNruNysQ8w5bN
+    MONGO_HOST=localhost        # Expects, that DB runs in Docker 
+    MONGO_PORT=27077
+    MONGO_COLLECTIONS=["rentapartmentsflats","renthouses","saleapartmentsflats","salehouses"]
+    GATEWAY_PROTOCOL=http
+    GATEWAY_HOST=localhost
+    GATEWAY_PORT=3332
+    ORIGIN_PROTOCOL=http        # http for local run
+    ORIGIN_HOST=localhost       # Front host
+    ORIGIN_PORT=3000            # Front port

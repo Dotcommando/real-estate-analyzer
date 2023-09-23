@@ -14,9 +14,23 @@ const translateResponseKeysToCamel = (
 });
 
 export class BaseApi {
+  private readonly protocol = process.env.REACT_APP_ORIGIN_PROTOCOL;
+
+  private readonly host = process.env.REACT_APP_ORIGIN_HOST;
+
+  // eslint-disable-next-line class-methods-use-this
+  private get port(): string {
+    return process.env.REACT_APP_ORIGIN_PORT &&
+      process.env.REACT_APP_ORIGIN_PORT !== '80'
+      ? `:${process.env.REACT_APP_ORIGIN_PORT}`
+      : '';
+  }
+
+  private readonly apiPrefix = process.env.REACT_APP_API_PREFIX;
+
   // eslint-disable-next-line class-methods-use-this
   private get baseUrl() {
-    return `${process.env.REACT_APP_BASE_API_URL}`;
+    return `${this.protocol}://${this.host}${this.port}`;
   }
 
   public get<Response, Params, Config = unknown>(
@@ -26,7 +40,7 @@ export class BaseApi {
   ): Promise<AxiosResponse<Response, Config>> {
     return axios
       .request<Response>({
-        url: `${this.baseUrl}${url}`,
+        url: `${this.baseUrl}${this.apiPrefix}${url}`,
         method: 'get',
         params: mapObjectKeysToCase('snake', params),
         ...options,
