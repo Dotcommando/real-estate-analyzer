@@ -1,10 +1,10 @@
 import type { PayloadAction } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 
-import { EstateObject } from './best-prices.type';
+import { RealEstateObject } from '../../types/real-estate.type';
 
 export type BestPricesStore = {
-  data: EstateObject[];
+  data: RealEstateObject[];
   selectedCity: string | null;
 };
 
@@ -20,7 +20,7 @@ export const bestPricesSlice = createSlice({
     initBestPrices: () => {},
     setBestPrices: (
       state: BestPricesStore,
-      action: PayloadAction<EstateObject[]>,
+      action: PayloadAction<RealEstateObject[]>,
     ) => {
       state.data = action.payload;
     },

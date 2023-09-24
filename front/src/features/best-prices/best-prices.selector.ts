@@ -1,8 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 
+import { RealEstateObject } from '../../types/real-estate.type';
 import { RootState } from '../../types/store.types';
-
-import { EstateObject } from './best-prices.type';
 
 export const selectBestPrices = createSelector(
   (state: RootState) => state['best-prices'],
@@ -21,8 +20,8 @@ export const selectBestPricesData = createSelector(
       return data;
     }
 
-    return data.filter((estateObject: EstateObject) => {
-      return estateObject.city === selectedCity;
+    return data.filter((realEstateObject: RealEstateObject) => {
+      return realEstateObject.city === selectedCity;
     });
   },
 );

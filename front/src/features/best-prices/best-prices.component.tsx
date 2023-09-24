@@ -7,15 +7,15 @@ import { Text } from '@consta/uikit/Text';
 import { block } from 'bem-cn';
 
 import i18n from '../../i18n';
+import { RealEstateObject } from '../../types/real-estate.type';
 import { selectLoaderBestPrices } from '../loader/loader.selector';
 
-import EstateObjectCardComponent from './components/estate-object-card/estate-object-card.components';
+import RealEstateObjectCardComponent from './components/estate-object-card/estate-object-card.components';
 import {
   selectBestPricesData,
   selectBestPricesSelectedCity,
 } from './best-prices.selector';
 import { initBestPrices, setBestPricesSelectedCity } from './best-prices.slice';
-import { EstateObject } from './best-prices.type';
 
 import './best-prices.scss';
 
@@ -63,11 +63,10 @@ const BestPricesComponent = () => {
           </Text>
 
           <div className={cn('cards')}>
-            {bestPricesData.map((estateObject: EstateObject) => (
-              <EstateObjectCardComponent
-                estateObject={estateObject}
-                selectedCity={selectedCity}
-                key={estateObject.id}
+            {bestPricesData.map((realEstateObject: RealEstateObject) => (
+              <RealEstateObjectCardComponent
+                realEstateObject={realEstateObject}
+                key={realEstateObject.ad_id}
               />
             ))}
           </div>
