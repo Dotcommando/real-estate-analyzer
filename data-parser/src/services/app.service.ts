@@ -6,15 +6,21 @@ import { Cron } from '@nestjs/schedule';
 import { config } from 'dotenv';
 import { lastValueFrom, timeout } from 'rxjs';
 
-import { CacheService } from './cache.service';
-import { DbAccessService } from './db-access.service';
+import { AdProcessingStatus, DbAccessService } from './db-access.service';
 import { DbUrlRelationService } from './db-url-relation.service';
+import { DynamicLoggerService } from './dynamic-logger.service';
 import { ProxyFactoryService } from './proxy-factory.service';
-import { StatusMonitorService } from './status-monitor.service';
+import {
+  AddToQueueEvent,
+  ProcessingEvent,
+  RunEvent,
+  STATISTIC_EVENT,
+  StatisticCollectorService,
+} from './statistic-collector.service';
 
 import { BazarakiAdPageParser, BazarakiPaginationParser } from '../classes';
 import { LOGGER, UrlTypes, WebScraperMessages } from '../constants';
-import { IRealEstate, ITcpResponse, IUrlData } from '../types';
+import { IAdDBOperationResult, IRealEstate, ITcpResponse, IUrlData } from '../types';
 
 
 config();
@@ -41,6 +47,12 @@ export class AppService implements OnModuleInit {
   private depthShallow = this.configService.get('DEPTH_SHALLOW')
     ? parseInt(this.configService.get('DEPTH_SHALLOW'))
     : 0;
+  private doNotRunFirst = this.configService.get('DO_NOT_RUN_FIRST') === 'true';
+  private doNotRunFull = this.configService.get('DO_NOT_RUN_FULL') === 'true';
+  private doNotRunDeep = this.configService.get('DO_NOT_RUN_DEEP') === 'true';
+  private doNotRunModerate = this.configService.get('DO_NOT_RUN_MODERATE') === 'true';
+  private doNotRunSuperficial = this.configService.get('DO_NOT_RUN_SUPERFICIAL') === 'true';
+  private doNotRunShallow = this.configService.get('DO_NOT_RUN_SHALLOW') === 'true';
 
   private indexPagePriority = parseInt(this.configService.get('PRIORITY_INDEX_PAGE'));
   private paginationPagePriority = parseInt(this.configService.get('PRIORITY_PAGINATION_PAGE'));
@@ -48,25 +60,33 @@ export class AppService implements OnModuleInit {
 
   constructor(
     @Inject(LOGGER) private readonly logger: LoggerService,
-    private readonly statusMonitorService: StatusMonitorService,
-    private readonly cacheManager: CacheService,
+    private readonly dynamicLogger: DynamicLoggerService,
     private readonly dbAccessService: DbAccessService,
     private readonly dbUrlRelationService: DbUrlRelationService,
     private readonly configService: ConfigService,
     private readonly proxyFactory: ProxyFactoryService,
+    private readonly statisticCollector: StatisticCollectorService,
   ) {
     this.print = this.print.bind(this);
   }
 
   public async print(id: string, msg: string): Promise<void> {
-    await this.statusMonitorService.write(id, msg);
+    await this.dynamicLogger.write(id, msg);
   }
 
   async onModuleInit(): Promise<void> {
     try {
       this.webScraperClient = this.proxyFactory.getClientProxy();
 
-      await this.initScraping(this.firstRunDepth);
+      if (!this.doNotRunFirst) {
+        await this.initScraping(this.firstRunDepth);
+      }
+
+      this.statisticCollector.add({
+        type: STATISTIC_EVENT.RUN,
+        ok: true,
+        runType: 'first_run',
+      } as Omit<RunEvent, 'dateMsec'>);
 
       let i = 0;
 
@@ -96,60 +116,92 @@ export class AppService implements OnModuleInit {
     return await this.sendTaskForWebScraper(tasksToScrape);
   }
 
-  @Cron(process.env.CLEAR_CACHE, {
-    name: 'clear_cache',
-    timeZone: 'Asia/Nicosia',
-  })
-  public clearCache() {
-    this.cacheManager.clear();
-  }
-
   @Cron(process.env.PAGINATION_SCRAPING_FULL, {
     name: 'pagination_scraping_full',
-    timeZone: 'Asia/Nicosia',
+    utcOffset: 180,
   })
-  public async runnerFull(): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
-    await this.logger.log('Full scraping initialized');
+  public async runnerFull(): Promise<ITcpResponse<{ [url: string]: boolean }[]> | void> {
+    if (this.doNotRunFull) {
+      return;
+    }
+
+    this.statisticCollector.add({
+      type: STATISTIC_EVENT.RUN,
+      ok: true,
+      runType: 'full',
+    } as Omit<RunEvent, 'dateMsec'>);
 
     return await this.initScraping(this.depthFull);
   };
 
   @Cron(process.env.PAGINATION_SCRAPING_DEEP, {
     name: 'pagination_scraping_deep',
-    timeZone: 'Asia/Nicosia',
+    utcOffset: 180,
   })
-  public async runnerDeep(): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
-    await this.logger.log('Deep scraping initialized');
+  public async runnerDeep(): Promise<ITcpResponse<{ [url: string]: boolean }[]> | void> {
+    if (this.doNotRunDeep) {
+      return;
+    }
+
+    this.statisticCollector.add({
+      type: STATISTIC_EVENT.RUN,
+      ok: true,
+      runType: 'deep',
+    } as Omit<RunEvent, 'dateMsec'>);
 
     return await this.initScraping(this.depthDeep);
   };
 
   @Cron(process.env.PAGINATION_SCRAPING_MODERATE, {
     name: 'pagination_scraping_moderate',
-    timeZone: 'Asia/Nicosia',
+    utcOffset: 180,
   })
-  public async runnerModerate(): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
-    await this.logger.log('Moderate scraping initialized');
+  public async runnerModerate(): Promise<ITcpResponse<{ [url: string]: boolean }[]> | void> {
+    if (this.doNotRunModerate) {
+      return;
+    }
+
+    this.statisticCollector.add({
+      type: STATISTIC_EVENT.RUN,
+      ok: true,
+      runType: 'moderate',
+    } as Omit<RunEvent, 'dateMsec'>);
 
     return await this.initScraping(this.depthModerate);
   };
 
   @Cron(process.env.PAGINATION_SCRAPING_SUPERFICIAL, {
     name: 'pagination_scraping_superficial',
-    timeZone: 'Asia/Nicosia',
+    utcOffset: 180,
   })
-  public async runnerSuperficial(): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
-    await this.logger.log('Superficial scraping initialized');
+  public async runnerSuperficial(): Promise<ITcpResponse<{ [url: string]: boolean }[]> | void> {
+    if (this.doNotRunSuperficial) {
+      return;
+    }
+
+    this.statisticCollector.add({
+      type: STATISTIC_EVENT.RUN,
+      ok: true,
+      runType: 'superficial',
+    } as Omit<RunEvent, 'dateMsec'>);
 
     return await this.initScraping(this.depthSuperficial);
   };
 
   @Cron(process.env.PAGINATION_SCRAPING_SHALLOW, {
     name: 'pagination_scraping_shallow',
-    timeZone: 'Asia/Nicosia',
+    utcOffset: 180,
   })
-  public async runnerShallow(): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
-    await this.logger.log('Shallow scraping initialized');
+  public async runnerShallow(): Promise<ITcpResponse<{ [url: string]: boolean }[]> | void> {
+    if (this.doNotRunShallow) {
+      return;
+    }
+
+    this.statisticCollector.add({
+      type: STATISTIC_EVENT.RUN,
+      ok: true,
+      runType: 'shallow',
+    } as Omit<RunEvent, 'dateMsec'>);
 
     return await this.initScraping(this.depthShallow);
   };
@@ -191,37 +243,14 @@ export class AppService implements OnModuleInit {
           collection: urlData.collection,
         }));
 
-      const paginationPagesNumber = paginationPagesTasks.length;
-      const adsPagesNumber = adsPagesTasks.length;
+      const tasks: IUrlData[] = [ ...paginationPagesTasks, ...adsPagesTasks ];
       const indexPageProcessingResult: ITcpResponse<{ [url: string]: boolean }[]> = await this
-        .sendTaskForWebScraper([ ...paginationPagesTasks, ...adsPagesTasks ]);
-      let addedPaginationPagesToQueue = 0;
-      let addedAdsPagesToQueue = 0;
-      const resultLength = indexPageProcessingResult.data?.length ?? 0;
+        .sendTaskForWebScraper(tasks);
 
-      await this.logger.log(' ');
-      await this.logger.log('Index page processing result:');
-
-      if (resultLength) {
-        for (let i = 0; i < resultLength; i++) {
-          if (i < paginationPagesNumber) {
-            if (indexPageProcessingResult.data[i]) {
-              addedPaginationPagesToQueue++;
-            }
-          } else {
-            if (indexPageProcessingResult.data[i]) {
-              addedAdsPagesToQueue++;
-            }
-          }
-        }
-
-        await this.logger.log(`Pagination pages added to Queue ${ addedPaginationPagesToQueue } / ${ paginationPagesNumber }`);
-        await this.logger.log(`Ads pages added to Queue ${ addedAdsPagesToQueue } / ${ adsPagesNumber }`);
-      } else {
-        await this.logger.log(`No Pagination pages added to Queue, sent ${ paginationPagesNumber }`);
-        await this.logger.log(`No Ads pages added to Queue, sent ${ adsPagesNumber }`);
-      }
+      this.addToDynamicLogAddingToQueueResult(urlData, tasks, indexPageProcessingResult);
     } catch (e) {
+      this.addToDynamicLogProcessingError(urlData, e.message);
+
       await this.logger.error(' ');
       await this.logger.error('Error occurred in AppService.processIndexPage');
       await this.logger.error('urlData:');
@@ -243,22 +272,24 @@ export class AppService implements OnModuleInit {
         }));
 
       if (!adsPagesTasks.length) {
+        this.statisticCollector.add({
+          ok: true,
+          type: STATISTIC_EVENT.PAGE_PROCESSING,
+          collection: urlData.collection,
+          urlType: urlData.urlType,
+          processing: 'pagination_parsed',
+        } as Omit<ProcessingEvent, 'dateMsec'>);
+
         return;
       }
 
-      const adsPagesTasksNumber = adsPagesTasks.length;
       const paginationPageProcessingResult: ITcpResponse<{ [url: string]: boolean }[]> = await this
         .sendTaskForWebScraper(adsPagesTasks);
 
-      await this.logger.log(' ');
-      await this.logger.log('Pagination page processing result:');
-
-      if (paginationPageProcessingResult.data?.length) {
-        await this.logger.log(`Ads pages added to Queue ${ paginationPageProcessingResult.data.filter(Boolean).length } / ${ adsPagesTasksNumber }`);
-      } else {
-        await this.logger.log(`No ads pages added, sent ${adsPagesTasksNumber}.`);
-      }
+      this.addToDynamicLogAddingToQueueResult(urlData, adsPagesTasks, paginationPageProcessingResult);
     } catch (e) {
+      this.addToDynamicLogProcessingError(urlData, e.message);
+
       await this.logger.error(' ');
       await this.logger.error('Error occurred in AppService.processPaginationPage');
       await this.logger.error('urlData:');
@@ -267,18 +298,76 @@ export class AppService implements OnModuleInit {
     }
   }
 
+  private addToDynamicLogAdSavingResult(urlData: IUrlData, saveAdResult: IAdDBOperationResult) {
+    this.statisticCollector.add({
+      ok: saveAdResult.status !== AdProcessingStatus.ERROR,
+      type: STATISTIC_EVENT.PAGE_PROCESSING,
+      collection: urlData.collection,
+      urlType: urlData.urlType,
+      processing: saveAdResult.status,
+      ...(saveAdResult.status === AdProcessingStatus.ERROR && { errorMsg: saveAdResult.errorMsg }),
+    } as Omit<ProcessingEvent, 'dateMsec'>);
+  }
+
   public async processAdPage(dataToParse: string, urlData: IUrlData): Promise<void> {
     try {
       const parsedAdPage: Partial<IRealEstate> = new BazarakiAdPageParser(dataToParse, urlData.url).getPageData();
       const typeCastedPageData: Partial<IRealEstate> = this.dbAccessService.typecastingFields(parsedAdPage);
 
-      await this.dbAccessService.saveNewAnnouncement(urlData.collection, typeCastedPageData);
+      const saveAdResult: IAdDBOperationResult = await this.dbAccessService.saveNewAnnouncement(urlData.collection, typeCastedPageData);
+
+      this.addToDynamicLogAdSavingResult(urlData, saveAdResult);
     } catch (e) {
+      this.addToDynamicLogProcessingError(urlData, e.message);
+
       await this.logger.error(' ');
       await this.logger.error('Error occurred in AppService.processAdPage');
       await this.logger.error('urlData:');
       await this.logger.error(urlData);
       await this.logger.error(e);
+    }
+  }
+
+  private addToDynamicLogProcessingError(urlData: IUrlData, errorMsg: unknown): void {
+    this.statisticCollector.add({
+      ok: false,
+      type: STATISTIC_EVENT.PAGE_PROCESSING,
+      collection: urlData.collection,
+      urlType: urlData.urlType,
+      processing: 'error',
+      errorMsg: typeof errorMsg !== 'object' ? String(errorMsg) : JSON.stringify(errorMsg),
+    } as Omit<ProcessingEvent, 'dateMsec'>);
+  }
+
+  private addToDynamicLogAddingToQueueResult(
+    urlData: IUrlData,
+    tasks: IUrlData[],
+    resultResponse: ITcpResponse<{ [url: string]: boolean }[]>,
+  ): void {
+    this.statisticCollector.add({
+      ok: true,
+      type: STATISTIC_EVENT.PAGE_PROCESSING,
+      collection: urlData.collection,
+      urlType: urlData.urlType,
+      processing: 'pagination_parsed',
+    } as Omit<ProcessingEvent, 'dateMsec'>);
+
+    const resultsReceived = resultResponse.data && resultResponse.data.length > 0;
+
+    for (let i = 0; i < tasks.length; i++) {
+      const url = tasks[i].url;
+      const index = resultsReceived
+        ? resultResponse.data
+          .findIndex((result: { [url: string]: boolean }) => url in result)
+        : -1;
+
+      this.statisticCollector.add({
+        type: STATISTIC_EVENT.ADDING_TO_QUEUE,
+        ok: index > -1 ? resultResponse.data[index][url] : false,
+        collection: tasks[i].collection,
+        urlType: tasks[i].urlType,
+        found: index > -1,
+      } as Omit<AddToQueueEvent, 'dateMsec'>);
     }
   }
 

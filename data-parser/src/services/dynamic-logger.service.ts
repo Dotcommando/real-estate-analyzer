@@ -4,7 +4,7 @@ import { IMonitorMessage } from '../types';
 
 
 @Injectable()
-export class StatusMonitorService {
+export class DynamicLoggerService {
   constructor() {
   }
 

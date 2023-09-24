@@ -17,14 +17,14 @@ import {
 } from './schemas';
 import {
   AppService,
-  CacheService,
   DbAccessService,
   DbUrlRelationService,
   DummyLoggerService,
+  DynamicLoggerService,
   LoggerService,
   MongoConfigService,
   ProxyFactoryService,
-  StatusMonitorService,
+  StatisticCollectorService,
 } from './services';
 
 
@@ -99,15 +99,15 @@ import {
     DbAccessService,
     DbUrlRelationService,
     AppService,
-    CacheService,
     ProxyFactoryService,
     SchedulerRegistry,
-    StatusMonitorService,
+    DynamicLoggerService,
+    StatisticCollectorService,
     {
       provide: LOGGER,
       useFactory: (
         configService: ConfigService,
-        statusMonitorService: StatusMonitorService,
+        statusMonitorService: DynamicLoggerService,
       ) => {
         const environment = configService.get('MODE');
 
@@ -115,7 +115,7 @@ import {
           ? new DummyLoggerService(statusMonitorService)
           : new LoggerService(statusMonitorService);
       },
-      inject: [ ConfigService, StatusMonitorService ],
+      inject: [ ConfigService, DynamicLoggerService ],
     },
   ],
 })
