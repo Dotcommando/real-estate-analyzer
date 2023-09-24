@@ -33,19 +33,22 @@ export class BaseApi {
     return `${this.protocol}://${this.host}${this.port}`;
   }
 
-  public get<Response, Params, Config = unknown>(
+  public get<Response, Params>(
     url: string,
     params?: Params,
     options?: AxiosRequestConfig,
-  ): Promise<AxiosResponse<Response, Config>> {
+  ): Promise<Response> {
     return axios
-      .request<Response>({
+      .request<{ data: Response }>({
         url: `${this.baseUrl}${this.apiPrefix}${url}`,
         method: 'get',
         params: mapObjectKeysToCase('snake', params),
         ...options,
       })
-      .then(translateResponseKeysToCamel);
+      .then(translateResponseKeysToCamel)
+      .then(
+        (response: AxiosResponse<{ data: Response }>) => response.data.data,
+      );
   }
 
   public post<Response, Body, Config = unknown>(
