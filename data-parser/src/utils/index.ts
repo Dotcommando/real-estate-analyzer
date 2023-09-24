@@ -1,6 +1,7 @@
 export * from './array-async-iterator';
 export * from './cast-to-number';
 export * from './date-in-human-readable-format';
+export * from './generate-hourly-event-boundaries';
 export * from './get-exception-messages';
 export * from './get-round-yesterday';
 export * from './parse-date';

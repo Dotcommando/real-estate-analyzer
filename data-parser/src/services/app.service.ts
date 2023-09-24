@@ -14,6 +14,7 @@ import {
   AddToQueueEvent,
   ProcessingEvent,
   RunEvent,
+  StatEvent,
   STATISTIC_EVENT,
   StatisticCollectorService,
 } from './statistic-collector.service';
@@ -21,6 +22,7 @@ import {
 import { BazarakiAdPageParser, BazarakiPaginationParser } from '../classes';
 import { LOGGER, UrlTypes, WebScraperMessages } from '../constants';
 import { IAdDBOperationResult, IRealEstate, ITcpResponse, IUrlData } from '../types';
+import { dateInHumanReadableFormat, getArrayIterator } from '../utils';
 
 
 config();
@@ -57,6 +59,7 @@ export class AppService implements OnModuleInit {
   private indexPagePriority = parseInt(this.configService.get('PRIORITY_INDEX_PAGE'));
   private paginationPagePriority = parseInt(this.configService.get('PRIORITY_PAGINATION_PAGE'));
   private adPagePriority = parseInt(this.configService.get('PRIORITY_AD_PAGE'));
+  private collectionList = JSON.parse(this.configService.get('MONGO_COLLECTIONS'));
 
   constructor(
     @Inject(LOGGER) private readonly logger: LoggerService,
@@ -87,15 +90,6 @@ export class AppService implements OnModuleInit {
         ok: true,
         runType: 'first_run',
       } as Omit<RunEvent, 'dateMsec'>);
-
-      let i = 0;
-
-      setInterval(async () => {
-        i++;
-
-        await this.print('break_line_1', ' ');
-        await this.print('counter_message', `Counter: ${i}`);
-      }, 1000);
     } catch (e) {
       await this.logger.error(' ');
       await this.logger.error('Error occurred in AppService.onModuleInit');
@@ -103,7 +97,7 @@ export class AppService implements OnModuleInit {
     }
   }
 
-  private async initScraping(depth?: number): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
+  private async initScraping(depth?: number): Promise<ITcpResponse<boolean[]>> {
     const indexUrsToScrape: string[] = this.dbUrlRelationService.getUrlList();
     const tasksToScrape: IUrlData[] = indexUrsToScrape.map((url: string): IUrlData => ({
       priority: this.indexPagePriority,
@@ -120,7 +114,7 @@ export class AppService implements OnModuleInit {
     name: 'pagination_scraping_full',
     utcOffset: 180,
   })
-  public async runnerFull(): Promise<ITcpResponse<{ [url: string]: boolean }[]> | void> {
+  public async runnerFull(): Promise<ITcpResponse<boolean[]> | void> {
     if (this.doNotRunFull) {
       return;
     }
@@ -138,7 +132,7 @@ export class AppService implements OnModuleInit {
     name: 'pagination_scraping_deep',
     utcOffset: 180,
   })
-  public async runnerDeep(): Promise<ITcpResponse<{ [url: string]: boolean }[]> | void> {
+  public async runnerDeep(): Promise<ITcpResponse<boolean[]> | void> {
     if (this.doNotRunDeep) {
       return;
     }
@@ -156,7 +150,7 @@ export class AppService implements OnModuleInit {
     name: 'pagination_scraping_moderate',
     utcOffset: 180,
   })
-  public async runnerModerate(): Promise<ITcpResponse<{ [url: string]: boolean }[]> | void> {
+  public async runnerModerate(): Promise<ITcpResponse<boolean[]> | void> {
     if (this.doNotRunModerate) {
       return;
     }
@@ -174,7 +168,7 @@ export class AppService implements OnModuleInit {
     name: 'pagination_scraping_superficial',
     utcOffset: 180,
   })
-  public async runnerSuperficial(): Promise<ITcpResponse<{ [url: string]: boolean }[]> | void> {
+  public async runnerSuperficial(): Promise<ITcpResponse<boolean[]> | void> {
     if (this.doNotRunSuperficial) {
       return;
     }
@@ -192,7 +186,7 @@ export class AppService implements OnModuleInit {
     name: 'pagination_scraping_shallow',
     utcOffset: 180,
   })
-  public async runnerShallow(): Promise<ITcpResponse<{ [url: string]: boolean }[]> | void> {
+  public async runnerShallow(): Promise<ITcpResponse<boolean[]> | void> {
     if (this.doNotRunShallow) {
       return;
     }
@@ -206,7 +200,95 @@ export class AppService implements OnModuleInit {
     return await this.initScraping(this.depthShallow);
   };
 
-  public async sendTaskForWebScraper(data: IUrlData[]): Promise<ITcpResponse<{ [url: string]: boolean }[]>> {
+  @Cron('0 0 * * *', {
+    name: 'purge_old_events',
+    utcOffset: 180,
+  })
+  public purgeOldEvents(): void {
+    this.statisticCollector.purgeOldEvents(3);
+  }
+
+  @Cron('* * * * *', {
+    name: 'print_stat',
+    utcOffset: 180,
+  })
+  public async printStat(): Promise<void> {
+    const eventsStat: Array<{ events: { [key: string]: StatEvent[] }; date: Date }> = this.statisticCollector
+      .getEventsByDays(2);
+    const dayAsyncIterator = getArrayIterator(eventsStat);
+
+    let dayIterationStep = 0;
+
+    for await (const dayEvents of dayAsyncIterator) {
+      const humanReadableDate = dateInHumanReadableFormat(dayEvents.date, 'DD.MM.YYYY');
+
+      await this.print(`day_${dayIterationStep}_break-line_1`, ' ');
+      await this.print(`day_${dayIterationStep}_break-line_2`, ' ');
+      await this.print(`day_${dayIterationStep}_break-line_3`, ' ');
+      await this.print(`day_${dayIterationStep}`, humanReadableDate);
+
+      const hourEventArray: StatEvent[][] = [];
+
+      for (let i = 0; i < 24; i++) {
+        hourEventArray.push(dayEvents.events[String(i)]);
+      }
+
+      const hourAsyncIterator = getArrayIterator(hourEventArray);
+      let hourIterationStep = 0;
+
+      for await (const hourEvents of hourAsyncIterator) {
+        const hour = String(hourIterationStep).length === 1 ? '0' + String(hourIterationStep) : String(hourIterationStep);
+
+        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_line-break_1`, ' ');
+        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}`, `${hour}:00 - ${hour}:59`);
+
+        const fullRun: StatEvent[] = hourEvents
+          .filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.RUN && ev.runType === 'full');
+        const shallowRun: StatEvent[] = hourEvents
+          .filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.RUN && ev.runType === 'shallow');
+
+        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_run`, 'Statistics of runs:');
+        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_full`, `Full  run  attempts:  ${fullRun.length}, successful: ${fullRun.filter(ev => ev.ok).length}, failed: ${fullRun.filter(ev => !ev.ok).length}`);
+        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_shallow`, `Shallow run attempts: ${fullRun.length}, successful: ${shallowRun.filter(ev => ev.ok).length}, failed: ${shallowRun.filter(ev => !ev.ok).length}`);
+        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_line-break_2`, ' ');
+        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_added-to-queue`, 'Added to queue:');
+
+        const addedToQueueEvents: AddToQueueEvent[] = hourEvents.filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.ADDING_TO_QUEUE) as AddToQueueEvent[];
+        const processingEvents: ProcessingEvent[] = hourEvents.filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.PAGE_PROCESSING) as ProcessingEvent[];
+        const collectionAsyncIterator = getArrayIterator(this.collectionList);
+
+        for await (const collection of collectionAsyncIterator) {
+          const eventsOfAddingToQueue = addedToQueueEvents.filter((ev: AddToQueueEvent) => (ev as AddToQueueEvent).collection === collection);
+          const eventsOfProcessing = processingEvents.filter((ev: ProcessingEvent) => (ev as ProcessingEvent).collection === collection);
+          const indexPageEvents = eventsOfAddingToQueue.filter(ev => ev.urlType === UrlTypes.Index);
+          const paginationPageEvents = eventsOfAddingToQueue.filter(ev => ev.urlType === UrlTypes.Pagination);
+          const adPageEvents = eventsOfAddingToQueue.filter(ev => ev.urlType === UrlTypes.Ad);
+          const paginationParsed = eventsOfProcessing.filter(ev => ev.processing === 'pagination_parsed');
+          const added = eventsOfProcessing.filter(ev => ev.processing === 'added');
+          const activeDateUpdated = eventsOfProcessing.filter(ev => ev.processing === 'active_date');
+          const noChanges = eventsOfProcessing.filter(ev => ev.processing === 'no_changes');
+          const errorOccurred = eventsOfProcessing.filter(ev => ev.processing === 'error');
+
+          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_name`, `Collection ${collection}:`);
+          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_index`, `    Index pages (ok/total): ${indexPageEvents.filter(ev => ev.ok).length} / ${indexPageEvents.length}`);
+          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_pagination`, `    Pagination pages (ok/total): ${paginationPageEvents.filter(ev => ev.ok).length} / ${paginationPageEvents.length}`);
+          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_ad`, `    Ad pages (ok/total): ${adPageEvents.filter(ev => ev.ok).length} / ${adPageEvents.length}`);
+          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_parsing`, '    Parsing results:');
+          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_pagination_parsed`, `        Pagination parsed: ${paginationParsed.length}`);
+          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_newly_added`, `        New added: ${added.length}`);
+          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_active_date_updated`, `        Active date updated: ${activeDateUpdated.length}`);
+          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_no_changes`, `        No changes: ${noChanges.length}`);
+          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_error_happened`, `        Errors: ${errorOccurred.length}`);
+        }
+
+        hourIterationStep++;
+      }
+
+      dayIterationStep++;
+    }
+  }
+
+  public async sendTaskForWebScraper(data: IUrlData[]): Promise<ITcpResponse<boolean[]>> {
     return await lastValueFrom(
       this.webScraperClient
         .send(WebScraperMessages.ADD_TO_PARSING_QUEUE, data)
@@ -244,7 +326,7 @@ export class AppService implements OnModuleInit {
         }));
 
       const tasks: IUrlData[] = [ ...paginationPagesTasks, ...adsPagesTasks ];
-      const indexPageProcessingResult: ITcpResponse<{ [url: string]: boolean }[]> = await this
+      const indexPageProcessingResult: ITcpResponse<boolean[]> = await this
         .sendTaskForWebScraper(tasks);
 
       this.addToDynamicLogAddingToQueueResult(urlData, tasks, indexPageProcessingResult);
@@ -283,7 +365,7 @@ export class AppService implements OnModuleInit {
         return;
       }
 
-      const paginationPageProcessingResult: ITcpResponse<{ [url: string]: boolean }[]> = await this
+      const paginationPageProcessingResult: ITcpResponse<boolean[]> = await this
         .sendTaskForWebScraper(adsPagesTasks);
 
       this.addToDynamicLogAddingToQueueResult(urlData, adsPagesTasks, paginationPageProcessingResult);
@@ -342,7 +424,7 @@ export class AppService implements OnModuleInit {
   private addToDynamicLogAddingToQueueResult(
     urlData: IUrlData,
     tasks: IUrlData[],
-    resultResponse: ITcpResponse<{ [url: string]: boolean }[]>,
+    resultResponse: ITcpResponse<boolean[]>,
   ): void {
     this.statisticCollector.add({
       ok: true,
@@ -352,21 +434,13 @@ export class AppService implements OnModuleInit {
       processing: 'pagination_parsed',
     } as Omit<ProcessingEvent, 'dateMsec'>);
 
-    const resultsReceived = resultResponse.data && resultResponse.data.length > 0;
-
     for (let i = 0; i < tasks.length; i++) {
-      const url = tasks[i].url;
-      const index = resultsReceived
-        ? resultResponse.data
-          .findIndex((result: { [url: string]: boolean }) => url in result)
-        : -1;
-
       this.statisticCollector.add({
         type: STATISTIC_EVENT.ADDING_TO_QUEUE,
-        ok: index > -1 ? resultResponse.data[index][url] : false,
+        ok: resultResponse.data[i],
         collection: tasks[i].collection,
         urlType: tasks[i].urlType,
-        found: index > -1,
+        found: true,
       } as Omit<AddToQueueEvent, 'dateMsec'>);
     }
   }

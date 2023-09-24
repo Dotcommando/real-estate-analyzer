@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { UrlTypes } from '../constants';
+import { generateHourlyEventBoundaries } from '../utils';
 
 
 export enum STATISTIC_EVENT {
@@ -46,5 +47,33 @@ export class StatisticCollectorService {
       ...eventData,
       dateMsec: Date.now(),
     } as StatEvent);
+  }
+
+  public purgeOldEvents(days: number): void {
+    const thresholdTimestamp = Date.now() - (days * 24 * 60 * 60 * 1000);
+
+    this.logArray = this.logArray.filter(event => event.dateMsec < thresholdTimestamp);
+  }
+
+  public getEventsByDays(days: number): Array<{ events: { [key: string]: StatEvent[] }; date: Date }> {
+    const boundaries: Array<{ events: { [key: string]: [number, number] }; date: Date }> = generateHourlyEventBoundaries(days);
+    const structuredEvents: Array<{ events: { [key: string]: StatEvent[] }; date: Date }> = [];
+
+    for (const boundary of boundaries) {
+      const dailyEvents: { [key: string]: StatEvent[] } = {};
+
+      for (const hour in boundary.events) {
+        dailyEvents[hour] = this.logArray.filter((event: StatEvent) =>
+          event.dateMsec >= boundary.events[hour][0] && event.dateMsec < boundary.events[hour][1],
+        );
+      }
+
+      structuredEvents.push({
+        date: boundary.date,
+        events: dailyEvents,
+      });
+    }
+
+    return structuredEvents;
   }
 }
