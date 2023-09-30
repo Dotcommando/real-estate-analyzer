@@ -4,7 +4,7 @@ import { AdsDto, StatsDto } from './dto';
 import { queryAdsToAds, queryStatsToStats } from './mappers';
 import { AppService } from './services';
 import { IAnalysisResult, ICityStats, IDistrictStats, IResponse } from './types';
-import { IAdsResult } from './types/ads';
+import { IAdsResult } from './types/ads.type';
 
 
 @Controller()

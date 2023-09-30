@@ -1,4 +1,4 @@
-export * from './ads';
+export * from './ads.type';
 export * from './ads-params.interface';
 export * from './analysis.interface';
 export * from './analysis-doc.interface';

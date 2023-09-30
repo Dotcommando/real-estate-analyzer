@@ -1,12 +1,10 @@
 import { HttpStatus, Inject, Injectable, LoggerService } from '@nestjs/common';
 
-import { IAdsResult } from 'src/types/ads';
-
 import { DbAccessService } from './db-access.service';
 
 import { LOGGER } from '../constants';
 import { roundNumbersInReport } from '../mappers';
-import { IAdsParams, IAnalysisParams, IAnalysisResult, ICityStats, IDistrictStats, IResponse } from '../types';
+import { IAdsParams, IAdsResult, IAnalysisParams, IAnalysisResult, ICityStats, IDistrictStats, IResponse } from '../types';
 
 
 @Injectable()

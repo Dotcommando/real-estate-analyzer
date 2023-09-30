@@ -8,5 +8,5 @@ export interface IAdsParams {
   offset: number;
   city: string;
   district: string;
-  ads: AdsEnum;
+  collection: string;
 }

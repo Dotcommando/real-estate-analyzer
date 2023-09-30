@@ -159,12 +159,17 @@ export class DbAccessService {
 
 
   public async getAds(params: IAdsParams): Promise<IAdsResult> {
-    const model = this.getAdsModel(params.ads);
+    const model = this.getAdsModel(params.collection as AdsEnum);
 
     const filter = {
-      $and: [
+      $or: [
         {
           publish_date: { $gte: params.startDate, $lte: params.endDate },
+        },
+        {
+          active_dates: { $elemMatch: {
+            $gte: params.startDate, $lte: params.endDate, 
+          }},
         },
       ],
     };

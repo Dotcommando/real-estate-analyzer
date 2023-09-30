@@ -1,4 +1,4 @@
-import { ISaleProperty } from './sale-property.interface.';
+import { ISaleProperty } from './sale-property.interface';
 
 import {
   AirConditioning,
