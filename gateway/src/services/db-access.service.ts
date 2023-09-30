@@ -168,7 +168,8 @@ export class DbAccessService {
         },
         {
           active_dates: { $elemMatch: {
-            $gte: params.startDate, $lte: params.endDate, 
+            $gte: params.startDate, 
+            $lte: params.endDate, 
           }},
         },
       ],
