@@ -9,9 +9,7 @@ type Props = {
   realEstateObject: RealEstateObject;
 };
 
-const RealEstateObjectCardBalconyComponent = ({
-  realEstateObject,
-}: Props) => {
+const RealEstateObjectCardBalconyComponent = ({ realEstateObject }: Props) => {
   const { t } = useTranslation();
 
   if (!realEstateObject.included?.find((include) => include === 'Balcony')) {

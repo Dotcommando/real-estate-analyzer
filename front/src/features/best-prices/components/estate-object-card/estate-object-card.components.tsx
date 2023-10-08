@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 import { Card } from '@consta/uikit/Card';
 import { cnMixSpace } from '@consta/uikit/MixSpace';
 import { Text } from '@consta/uikit/Text';
 import { block } from 'bem-cn';
 
 import { RealEstateObject } from '../../../../types/real-estate.type';
+import { selectBestPricesSelectedCity } from '../../best-prices.selector';
 
 import RealEstateObjectCardImportantBadgesComponent from './components/important-badges/estate-object-card-important-badges.component';
 import RealEstateObjectCardIncludedBadgesComponent from './components/included-badges/estate-object-card-included-badges.component';
@@ -23,7 +25,13 @@ type Props = {
 const MAXIMUM_COUNT_SYMBOLS = 300;
 
 const RealEstateObjectCardComponent = ({ realEstateObject }: Props) => {
+  /** Store */
+  const selectedCity = useSelector(selectBestPricesSelectedCity);
+
+  /** Hooks */
   const { t } = useTranslation();
+
+  /** State */
   const [isExpanded, setIsExpanded] = useState(false);
 
   const description = () => {
@@ -61,9 +69,11 @@ const RealEstateObjectCardComponent = ({ realEstateObject }: Props) => {
       <Text size="l" weight="bold" className={cnMixSpace({ mB: 's' })}>
         {realEstateObject.title}
       </Text>
-      <div className={`${cnMixSpace({ mB: 's' })} flex-default`}>
-        <RealEstateObjectCarCityComponent city={realEstateObject.city} />
-      </div>
+      {!selectedCity && (
+        <div className={`${cnMixSpace({ mB: 's' })} flex-default`}>
+          <RealEstateObjectCarCityComponent city={realEstateObject.city} />
+        </div>
+      )}
       <div className={cnMixSpace({ mB: 's' })}>
         <RealEstateObjectCardImportantBadgesComponent
           realEstateObject={realEstateObject}

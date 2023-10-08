@@ -31,6 +31,15 @@ export const EN_I18N: ResourceLanguage = {
       garden: 'Garden',
       currencyEur: 'Currency eur',
     },
+    adsType: {
+      rentFlats: 'Flats for rent',
+      rentHouses: 'Houses for rent',
+      saleFlats: 'Flats for sale',
+      saleHouses: 'Houses for sale',
+      rent: 'Rent',
+      sale: 'Sale',
+      type: 'Ads type',
+    },
     registration: {
       title: 'Registration',
     },
