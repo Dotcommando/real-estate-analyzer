@@ -4,7 +4,6 @@ import {
   configureStore,
   getDefaultMiddleware,
 } from '@reduxjs/toolkit';
-import * as logger from 'redux-logger';
 import { combineEpics, createEpicMiddleware } from 'redux-observable';
 
 import { bestPricesEpic } from './features/best-prices/best-prices.epic';
@@ -40,7 +39,6 @@ export const store = configureStore({
       thunk: false, // or true if you want to use thunks
     }),
     epicMiddleware,
-    process.env.NODE_ENV === 'development' ? logger.createLogger() : {},
   ],
 });
 
