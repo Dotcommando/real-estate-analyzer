@@ -30,6 +30,7 @@ export class BaseApi {
 
   // eslint-disable-next-line class-methods-use-this
   private get baseUrl() {
+    // return process.env.REACT_APP_BASE_API_URL;
     return `${this.protocol}://${this.host}${this.port}`;
   }
 

@@ -1,6 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
 
-import { RealEstateObject } from '../../types/real-estate.type';
 import { RootState } from '../../types/store.types';
 
 export const selectBestPrices = createSelector(
@@ -13,15 +12,14 @@ export const selectBestPricesSelectedCity = createSelector(
   ({ selectedCity }) => selectedCity,
 );
 
-export const selectBestPricesData = createSelector(
-  [selectBestPrices, selectBestPricesSelectedCity],
-  ({ data }, selectedCity) => {
-    if (selectedCity === null) {
-      return data;
-    }
+export const selectBestPricesAdsType = createSelector(
+  selectBestPrices,
+  ({ adsType }) => adsType,
+);
 
-    return data.filter((realEstateObject: RealEstateObject) => {
-      return realEstateObject.city === selectedCity;
-    });
+export const selectBestPricesData = createSelector(
+  [selectBestPrices],
+  (bestPrices) => {
+    return bestPrices.data;
   },
 );
