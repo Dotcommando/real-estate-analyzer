@@ -6,6 +6,7 @@ import { cnMixSpace } from '@consta/uikit/MixSpace';
 import { Text } from '@consta/uikit/Text';
 import { block } from 'bem-cn';
 
+import { dateInHumanReadableFormat } from '../../utils/date-in-human-readable-format';
 import { selectLoaderObjects } from '../loader/loader.selector';
 
 import { selectStatisticList } from './statistic.selector';
@@ -29,9 +30,21 @@ const StatisticComponent = () => {
   const loadingState = useSelector(selectLoaderObjects);
   const statisticList = useSelector(selectStatisticList);
 
+  const date = new Date();
+
+  date.setDate(date.getDate() - 90);
+
+  const previous3Months = dateInHumanReadableFormat(date, 'YYYY-MM-DD');
+  const currentDay = dateInHumanReadableFormat(new Date(), 'YYYY-MM-DD');
+
   useEffect(() => {
-    dispatch(initStatistic());
-  }, [dispatch]);
+    dispatch(
+      initStatistic({
+        startDate: previous3Months,
+        endDate: currentDay,
+      }),
+    );
+  }, [currentDay, dispatch, previous3Months]);
 
   const getChartDataByCountry = (city: string) => {
     return statisticList.map((statistic) => {

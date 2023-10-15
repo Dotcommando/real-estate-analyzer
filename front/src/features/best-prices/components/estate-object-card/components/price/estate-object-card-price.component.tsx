@@ -1,16 +1,34 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useMemo, useRef, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 import { cnMixSpace } from '@consta/uikit/MixSpace';
-import { Text } from '@consta/uikit/Text';
+import { Text, TextPropView } from '@consta/uikit/Text';
+import { Tooltip } from '@consta/uikit/Tooltip';
+import block from 'bem-cn';
 
 import { RealEstateObject } from '../../../../../../types/real-estate.type';
+import { selectNormalizedStatistic } from '../../../../../statistic/statistic.selector';
+
+import './estate-object-card-price.component.scss';
+
+const cn = block('estate-object-card-price');
+
+const MODERATE_OFFSET = 200;
 
 type Props = {
   realEstateObject: RealEstateObject;
 };
 
 const RealEstateObjectCardPriceComponent = ({ realEstateObject }: Props) => {
+  /** Store */
+  const normalizedStatistic = useSelector(selectNormalizedStatistic);
+
+  /** Hooks */
   const { t } = useTranslation();
+  const ref = useRef(null);
+
+  /** State */
+  const [isShowTooltip, setIsShowTooptip] = useState<boolean>(false);
 
   const currencyIcon = () => {
     switch (realEstateObject.currency) {
@@ -26,16 +44,124 @@ const RealEstateObjectCardPriceComponent = ({ realEstateObject }: Props) => {
     }
   };
 
+  const normalizedPrice = realEstateObject.price
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+  const priceView = useMemo((): TextPropView => {
+    if (!normalizedStatistic || !normalizedStatistic[realEstateObject.city]) {
+      return 'primary';
+    }
+
+    const currentNormalized = normalizedStatistic[realEstateObject.city];
+    const medianPrice = currentNormalized['median-price'];
+    const higherMedian = medianPrice + MODERATE_OFFSET;
+
+    if (
+      realEstateObject.price > medianPrice &&
+      realEstateObject.price <= higherMedian
+    ) {
+      return 'warning';
+    }
+
+    if (realEstateObject.price <= medianPrice) {
+      return 'success';
+    }
+
+    return 'alert';
+  }, [realEstateObject, normalizedStatistic]);
+
   return (
     <div className="flex-between">
-      <div className="flex-default">
+      <div
+        className={`${cn()} flex-default`}
+        ref={ref}
+        onMouseEnter={() => setIsShowTooptip(true)}
+        onMouseLeave={() => setIsShowTooptip(false)}
+      >
         {currencyIcon()}
-        <Text weight="bold">{realEstateObject.price}</Text>
+        <Text weight="bold" size="xl" view={priceView}>
+          {normalizedPrice}
+        </Text>
+
+        {normalizedStatistic && normalizedStatistic[realEstateObject.city] && (
+          <img
+            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAABGElEQVR4nM2TTUoDQRCFe6Fxk3QlEXf+nEPU46jkFJ5BGZBIpsogMSEHEPEs/oHmDmb1STUIycw4zMKFb9N0T783r+pVh/DX6ConYsyisRBlGZVPUaZt46ieecGGKNdivIhx2r9hNwzZ9FVuOYvKqyiZ36vki5OVh52MdtV3PxfjMYlU2laei2QxWN1vj+hE5a1Ujhgztx0aICrnYtyvHxqLVHOxrIIDR2/Mvjd2/aKyDHNaTQTCJVtifJUc9JS9JgLdEQfR+Cg6mHpUTQRizkCMyXpdOceev3e5TqB/R4zGe2fMYak0UTLPuSiyShbjSZSruknMPGePKvVkTit1PWfgf07k3ybxBz4knrM3Kr0FX41Jpe1/gW9zt7onWvTH8gAAAABJRU5ErkJggg=="
+            alt="question"
+            className={cnMixSpace({ mL: '2xs' })}
+          />
+        )}
       </div>
 
       <a href={realEstateObject.url} target="_blank" rel="noreferrer">
-        Open
+        {t('bestPrices.open')}
       </a>
+
+      {isShowTooltip &&
+        normalizedStatistic &&
+        normalizedStatistic[realEstateObject.city] && (
+          <Tooltip anchorRef={ref} size="l">
+            <div>
+              <Text className={cnMixSpace({ mB: 's' })}>
+                {t('bestPrices.price.title')}
+              </Text>
+              <Text className={cnMixSpace({ mB: 'xs' })}>
+                {t('bestPrices.price.description')}
+              </Text>
+
+              <div className={cnMixSpace({ mB: 'xs' })}>
+                <Text as="span" view="alert">
+                  {t('bestPrices.price.redOne')}
+                </Text>
+                <Text as="span">{t('bestPrices.price.redOneDescription')}</Text>
+              </div>
+            </div>
+
+            <div className={cnMixSpace({ mB: 'xs' })}>
+              <Text as="span" view="warning">
+                {t('bestPrices.price.orangeOne')}
+              </Text>
+              <Text as="span">
+                {t('bestPrices.price.orangeOneDescription')}
+              </Text>
+            </div>
+
+            <div className={cnMixSpace({ mB: 'm' })}>
+              <Text as="span" view="success">
+                {t('bestPrices.price.greenOne')}
+              </Text>
+              <Text as="span">{t('bestPrices.price.greenOneDescription')}</Text>
+            </div>
+
+            <div className={cnMixSpace({ mB: 'xs' })}>
+              <Text as="span">
+                <Trans
+                  i18nKey="bestPrices.price.currentMeanPrice"
+                  values={{
+                    city: realEstateObject.city,
+                    price:
+                      normalizedStatistic[realEstateObject.city]['mean-price'],
+                  }}
+                />
+              </Text>
+            </div>
+
+            <div className={cnMixSpace({ mB: 'xs' })}>
+              <Text as="span">
+                <Trans
+                  i18nKey="bestPrices.price.currentMedianPrice"
+                  values={{
+                    city: realEstateObject.city,
+                    price:
+                      normalizedStatistic[realEstateObject.city][
+                        'median-price'
+                      ],
+                  }}
+                />
+              </Text>
+            </div>
+          </Tooltip>
+        )}
     </div>
   );
 };

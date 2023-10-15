@@ -17,6 +17,11 @@ export const selectBestPricesAdsType = createSelector(
   ({ adsType }) => adsType,
 );
 
+export const selectBestPricesPage = createSelector(
+  selectBestPrices,
+  ({ page }) => page,
+);
+
 export const selectBestPricesData = createSelector(
   [selectBestPrices],
   (bestPrices) => {
