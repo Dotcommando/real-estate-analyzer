@@ -1,4 +1,4 @@
-import { Inject, Injectable, LoggerService, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy } from '@nestjs/microservices';
 import { Cron } from '@nestjs/schedule';
@@ -20,7 +20,7 @@ import {
 } from './statistic-collector.service';
 
 import { BazarakiAdPageParser, BazarakiPaginationParser } from '../classes';
-import { LOGGER, UrlTypes, WebScraperMessages } from '../constants';
+import { UrlTypes, WebScraperMessages } from '../constants';
 import { IAdDBOperationResult, IRealEstate, ITcpResponse, IUrlData } from '../types';
 import { dateInHumanReadableFormat, getDayStartTimestamp, getHourStartTimestamp } from '../utils';
 
@@ -69,7 +69,6 @@ export class AppService implements OnModuleInit {
   private collectionList = JSON.parse(this.configService.get('MONGO_COLLECTIONS'));
 
   constructor(
-    @Inject(LOGGER) private readonly logger: LoggerService,
     private readonly dynamicLogger: DynamicLoggerService,
     private readonly dbAccessService: DbAccessService,
     private readonly dbUrlRelationService: DbUrlRelationService,
@@ -81,8 +80,8 @@ export class AppService implements OnModuleInit {
     this.outputWrite = this.outputWrite.bind(this);
   }
 
-  public outputWrite(id: string, msg: string): void {
-    this.dynamicLogger.write(id, msg);
+  public outputWrite(msg: string): void {
+    this.dynamicLogger.write(msg);
   }
 
   public outputUpdate(): void {
@@ -103,9 +102,8 @@ export class AppService implements OnModuleInit {
         runType: 'first_run',
       } as Omit<RunEvent, 'dateMsec'>);
     } catch (e) {
-      await this.logger.error(' ');
-      await this.logger.error('Error occurred in AppService.onModuleInit');
-      await this.logger.error(e);
+      this.dynamicLogger.write('Error occurred in AppService.onModuleInit');
+      this.dynamicLogger.write(e);
     }
   }
 
@@ -269,10 +267,10 @@ export class AppService implements OnModuleInit {
         period.delta === 'day' ? 'DD.MM.YYYY' : 'DD.MM.YYYY HH:mm',
       );
 
-      this.outputWrite(`period_${i}_break-line_1`, ' ');
-      this.outputWrite(`period_${i}_break-line_2`, ' ');
-      this.outputWrite(`period_${i}_break-line_3`, ' ');
-      this.outputWrite(`period_${i}`, humanReadableStartDate);
+      this.outputWrite('');
+      this.outputWrite('');
+      this.outputWrite('');
+      this.outputWrite(humanReadableStartDate);
 
       const periodEvents: StatEvent[] = this.statisticCollector.getEventsForPeriod(period.start, period.end);
       const fullRun: StatEvent[] = periodEvents
@@ -280,11 +278,11 @@ export class AppService implements OnModuleInit {
       const shallowRun: StatEvent[] = periodEvents
         .filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.RUN && ev.runType === 'shallow');
 
-      this.outputWrite(`period_${i}_run`, 'Statistics of runs:');
-      this.outputWrite(`period_${i}_full`, `Full  run  attempts:  ${fullRun.length}, successful: ${fullRun.filter(ev => ev.ok).length}, failed: ${fullRun.filter(ev => !ev.ok).length}`);
-      this.outputWrite(`period_${i}_shallow`, `Shallow run attempts: ${fullRun.length}, successful: ${shallowRun.filter(ev => ev.ok).length}, failed: ${shallowRun.filter(ev => !ev.ok).length}`);
-      this.outputWrite(`period_${i}_line-break_2`, ' ');
-      this.outputWrite(`period_${i}_added-to-queue`, 'Added to queue:');
+      this.outputWrite('Statistics of runs:');
+      this.outputWrite(`Full  run  attempts:  ${fullRun.length}, successful: ${fullRun.filter(ev => ev.ok).length}, failed: ${fullRun.filter(ev => !ev.ok).length}`);
+      this.outputWrite(`Shallow run attempts: ${fullRun.length}, successful: ${shallowRun.filter(ev => ev.ok).length}, failed: ${shallowRun.filter(ev => !ev.ok).length}`);
+      this.outputWrite('');
+      this.outputWrite('Added to queue:');
 
       const addedToQueueEvents: AddToQueueEvent[] = periodEvents.filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.ADDING_TO_QUEUE) as AddToQueueEvent[];
       const processingEvents: ProcessingEvent[] = periodEvents.filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.PAGE_PROCESSING) as ProcessingEvent[];
@@ -301,17 +299,17 @@ export class AppService implements OnModuleInit {
         const noChanges = eventsOfProcessing.filter(ev => ev.processing === 'no_changes');
         const errorOccurred = eventsOfProcessing.filter(ev => ev.processing === 'error');
 
-        this.outputWrite(`period_${i}_${collection}_line-break-1`, ' ');
-        this.outputWrite(`period_${i}_${collection}_name`, `    Collection ${collection}:`);
-        this.outputWrite(`period_${i}_${collection}_index`, `        Index pages (ok/total): ${indexPageEvents.filter(ev => ev.ok).length} / ${indexPageEvents.length}`);
-        this.outputWrite(`period_${i}_${collection}_pagination`, `        Pagination pages (ok/total): ${paginationPageEvents.filter(ev => ev.ok).length} / ${paginationPageEvents.length}`);
-        this.outputWrite(`period_${i}_${collection}_ad`, `        Ad pages (ok/total): ${adPageEvents.filter(ev => ev.ok).length} / ${adPageEvents.length}`);
-        this.outputWrite(`period_${i}_${collection}_parsing`, '        Parsing results:');
-        this.outputWrite(`period_${i}_${collection}_pagination_parsed`, `            Pagination parsed: ${paginationParsed.length}`);
-        this.outputWrite(`period_${i}_${collection}_newly_added`, `            New added: ${added.length}`);
-        this.outputWrite(`period_${i}_${collection}_active_date_updated`, `            Active date updated: ${activeDateUpdated.length}`);
-        this.outputWrite(`period_${i}_${collection}_no_changes`, `            No changes: ${noChanges.length}`);
-        this.outputWrite(`period_${i}_${collection}_error_happened`, `            Errors: ${errorOccurred.length}`);
+        this.outputWrite('');
+        this.outputWrite(`    Collection ${collection}:`);
+        this.outputWrite(`        Index pages (ok/total): ${indexPageEvents.filter(ev => ev.ok).length} / ${indexPageEvents.length}`);
+        this.outputWrite(`        Pagination pages (ok/total): ${paginationPageEvents.filter(ev => ev.ok).length} / ${paginationPageEvents.length}`);
+        this.outputWrite(`        Ad pages (ok/total): ${adPageEvents.filter(ev => ev.ok).length} / ${adPageEvents.length}`);
+        this.outputWrite('        Parsing results:');
+        this.outputWrite(`            Pagination parsed: ${paginationParsed.length}`);
+        this.outputWrite(`            New added: ${added.length}`);
+        this.outputWrite(`            Active date updated: ${activeDateUpdated.length}`);
+        this.outputWrite(`            No changes: ${noChanges.length}`);
+        this.outputWrite(`            Errors: ${errorOccurred.length}`);
       }
     }
 
@@ -363,11 +361,11 @@ export class AppService implements OnModuleInit {
     } catch (e) {
       this.addToDynamicLogProcessingError(urlData, e.message);
 
-      await this.logger.error(' ');
-      await this.logger.error('Error occurred in AppService.processIndexPage');
-      await this.logger.error('urlData:');
-      await this.logger.error(urlData);
-      await this.logger.error(e);
+      this.dynamicLogger.write(' ');
+      this.dynamicLogger.write('Error occurred in AppService.processIndexPage');
+      this.dynamicLogger.write('urlData:');
+      this.dynamicLogger.write(JSON.stringify(urlData));
+      this.dynamicLogger.write(e);
     }
   }
 
@@ -402,11 +400,11 @@ export class AppService implements OnModuleInit {
     } catch (e) {
       this.addToDynamicLogProcessingError(urlData, e.message);
 
-      await this.logger.error(' ');
-      await this.logger.error('Error occurred in AppService.processPaginationPage');
-      await this.logger.error('urlData:');
-      await this.logger.error(urlData);
-      await this.logger.error(e);
+      this.dynamicLogger.write(' ');
+      this.dynamicLogger.write('Error occurred in AppService.processPaginationPage');
+      this.dynamicLogger.write('urlData:');
+      this.dynamicLogger.write(JSON.stringify(urlData));
+      this.dynamicLogger.write(e);
     }
   }
 
@@ -432,11 +430,11 @@ export class AppService implements OnModuleInit {
     } catch (e) {
       this.addToDynamicLogProcessingError(urlData, e.message);
 
-      await this.logger.error(' ');
-      await this.logger.error('Error occurred in AppService.processAdPage');
-      await this.logger.error('urlData:');
-      await this.logger.error(urlData);
-      await this.logger.error(e);
+      this.dynamicLogger.write(' ');
+      this.dynamicLogger.write('Error occurred in AppService.processAdPage');
+      this.dynamicLogger.write('urlData:');
+      this.dynamicLogger.write(JSON.stringify(urlData));
+      this.dynamicLogger.write(e);
     }
   }
 
@@ -493,8 +491,8 @@ export class AppService implements OnModuleInit {
 
       return isNaN(maxPageNumber) ? 0 : maxPageNumber;
     } catch (e) {
-      this.logger.error('Error happened in \'getMaxNumberOfPagination\' method of app.service.ts');
-      this.logger.error(e);
+      this.dynamicLogger.write('Error happened in \'getMaxNumberOfPagination\' method of app.service.ts');
+      this.dynamicLogger.write(e);
 
       return 0;
     }

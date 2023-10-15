@@ -107,13 +107,12 @@ import {
       provide: LOGGER,
       useFactory: (
         configService: ConfigService,
-        statusMonitorService: DynamicLoggerService,
       ) => {
         const environment = configService.get('MODE');
 
         return environment === 'prod'
-          ? new DummyLoggerService(statusMonitorService)
-          : new LoggerService(statusMonitorService);
+          ? new DummyLoggerService()
+          : new LoggerService();
       },
       inject: [ ConfigService, DynamicLoggerService ],
     },
