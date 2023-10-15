@@ -13,13 +13,13 @@ export class DummyLoggerService extends NestLogger implements AbstractLogger {
   }
 
   async log(message: string): Promise<void> {
-    await this.statusMonitorService.clearAll();
+    this.statusMonitorService.clearAll();
     super.log(message);
     this.statusMonitorService.flushBuffer();
   }
 
   async error(message: string): Promise<void> {
-    await this.statusMonitorService.clearAll();
+    this.statusMonitorService.clearAll();
     super.error(message);
     this.statusMonitorService.flushBuffer();
   }

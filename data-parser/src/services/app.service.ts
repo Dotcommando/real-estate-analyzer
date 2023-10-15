@@ -22,10 +22,17 @@ import {
 import { BazarakiAdPageParser, BazarakiPaginationParser } from '../classes';
 import { LOGGER, UrlTypes, WebScraperMessages } from '../constants';
 import { IAdDBOperationResult, IRealEstate, ITcpResponse, IUrlData } from '../types';
-import { dateInHumanReadableFormat, getArrayIterator } from '../utils';
+import { dateInHumanReadableFormat, getDayStartTimestamp, getHourStartTimestamp } from '../utils';
 
 
 config();
+
+interface IPeriod {
+  start: number;
+  end: number;
+  name: string;
+  delta: 'day' | 'hour';
+}
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -70,11 +77,16 @@ export class AppService implements OnModuleInit {
     private readonly proxyFactory: ProxyFactoryService,
     private readonly statisticCollector: StatisticCollectorService,
   ) {
-    this.print = this.print.bind(this);
+    this.outputUpdate = this.outputUpdate.bind(this);
+    this.outputWrite = this.outputWrite.bind(this);
   }
 
-  public async print(id: string, msg: string): Promise<void> {
-    await this.dynamicLogger.write(id, msg);
+  public outputWrite(id: string, msg: string): void {
+    this.dynamicLogger.write(id, msg);
+  }
+
+  public outputUpdate(): void {
+    this.dynamicLogger.update();
   }
 
   async onModuleInit(): Promise<void> {
@@ -208,84 +220,102 @@ export class AppService implements OnModuleInit {
     this.statisticCollector.purgeOldEvents(3);
   }
 
+  private getPeriod(start: number, delta: 'day' | 'hour'): { start: number; end: number } {
+    return {
+      start,
+      end: delta === 'day'
+        ? start + 24 * 60 * 60 * 1000
+        : start + 60 * 60 * 1000,
+    };
+  }
+
   @Cron('* * * * *', {
     name: 'print_stat',
     utcOffset: 180,
   })
-  public async printStat(): Promise<void> {
-    const eventsStat: Array<{ events: { [key: string]: StatEvent[] }; date: Date }> = this.statisticCollector
-      .getEventsByDays(2);
-    const dayAsyncIterator = getArrayIterator(eventsStat);
+  public printStat(daysAgo = 1, hoursAgo = 2): void {
+    const timestampPeriods: IPeriod[] = [];
 
-    let dayIterationStep = 0;
-
-    for await (const dayEvents of dayAsyncIterator) {
-      const humanReadableDate = dateInHumanReadableFormat(dayEvents.date, 'DD.MM.YYYY');
-
-      await this.print(`day_${dayIterationStep}_break-line_1`, ' ');
-      await this.print(`day_${dayIterationStep}_break-line_2`, ' ');
-      await this.print(`day_${dayIterationStep}_break-line_3`, ' ');
-      await this.print(`day_${dayIterationStep}`, humanReadableDate);
-
-      const hourEventArray: StatEvent[][] = [];
-
-      for (let i = 0; i < 24; i++) {
-        hourEventArray.push(dayEvents.events[String(i)]);
-      }
-
-      const hourAsyncIterator = getArrayIterator(hourEventArray);
-      let hourIterationStep = 0;
-
-      for await (const hourEvents of hourAsyncIterator) {
-        const hour = String(hourIterationStep).length === 1 ? '0' + String(hourIterationStep) : String(hourIterationStep);
-
-        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_line-break_1`, ' ');
-        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}`, `${hour}:00 - ${hour}:59`);
-
-        const fullRun: StatEvent[] = hourEvents
-          .filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.RUN && ev.runType === 'full');
-        const shallowRun: StatEvent[] = hourEvents
-          .filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.RUN && ev.runType === 'shallow');
-
-        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_run`, 'Statistics of runs:');
-        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_full`, `Full  run  attempts:  ${fullRun.length}, successful: ${fullRun.filter(ev => ev.ok).length}, failed: ${fullRun.filter(ev => !ev.ok).length}`);
-        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_shallow`, `Shallow run attempts: ${fullRun.length}, successful: ${shallowRun.filter(ev => ev.ok).length}, failed: ${shallowRun.filter(ev => !ev.ok).length}`);
-        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_line-break_2`, ' ');
-        await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_added-to-queue`, 'Added to queue:');
-
-        const addedToQueueEvents: AddToQueueEvent[] = hourEvents.filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.ADDING_TO_QUEUE) as AddToQueueEvent[];
-        const processingEvents: ProcessingEvent[] = hourEvents.filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.PAGE_PROCESSING) as ProcessingEvent[];
-        const collectionAsyncIterator = getArrayIterator(this.collectionList);
-
-        for await (const collection of collectionAsyncIterator) {
-          const eventsOfAddingToQueue = addedToQueueEvents.filter((ev: AddToQueueEvent) => (ev as AddToQueueEvent).collection === collection);
-          const eventsOfProcessing = processingEvents.filter((ev: ProcessingEvent) => (ev as ProcessingEvent).collection === collection);
-          const indexPageEvents = eventsOfAddingToQueue.filter(ev => ev.urlType === UrlTypes.Index);
-          const paginationPageEvents = eventsOfAddingToQueue.filter(ev => ev.urlType === UrlTypes.Pagination);
-          const adPageEvents = eventsOfAddingToQueue.filter(ev => ev.urlType === UrlTypes.Ad);
-          const paginationParsed = eventsOfProcessing.filter(ev => ev.processing === 'pagination_parsed');
-          const added = eventsOfProcessing.filter(ev => ev.processing === 'added');
-          const activeDateUpdated = eventsOfProcessing.filter(ev => ev.processing === 'active_date');
-          const noChanges = eventsOfProcessing.filter(ev => ev.processing === 'no_changes');
-          const errorOccurred = eventsOfProcessing.filter(ev => ev.processing === 'error');
-
-          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_name`, `Collection ${collection}:`);
-          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_index`, `    Index pages (ok/total): ${indexPageEvents.filter(ev => ev.ok).length} / ${indexPageEvents.length}`);
-          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_pagination`, `    Pagination pages (ok/total): ${paginationPageEvents.filter(ev => ev.ok).length} / ${paginationPageEvents.length}`);
-          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_ad`, `    Ad pages (ok/total): ${adPageEvents.filter(ev => ev.ok).length} / ${adPageEvents.length}`);
-          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_parsing`, '    Parsing results:');
-          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_pagination_parsed`, `        Pagination parsed: ${paginationParsed.length}`);
-          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_newly_added`, `        New added: ${added.length}`);
-          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_active_date_updated`, `        Active date updated: ${activeDateUpdated.length}`);
-          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_no_changes`, `        No changes: ${noChanges.length}`);
-          await this.print(`day_${dayIterationStep}_hour_${hourIterationStep}_${collection}_error_happened`, `        Errors: ${errorOccurred.length}`);
-        }
-
-        hourIterationStep++;
-      }
-
-      dayIterationStep++;
+    for (let i = daysAgo; i > -1; i--) {
+      timestampPeriods.push({
+        ...this.getPeriod(getDayStartTimestamp(i), 'day'),
+        name: i === 1
+          ? 'Yesterday'
+          : i === 0
+            ? 'Today'
+            : `${i} days ago`,
+        delta: 'day',
+      });
     }
+
+    for (let i = hoursAgo; i > -1; i--) {
+      timestampPeriods.push({
+        ...this.getPeriod(getHourStartTimestamp(i), 'hour'),
+        name: i === 1
+          ? 'A hour ago'
+          : i === 0
+            ? 'This hour'
+            : `${i} hours ago`,
+        delta: 'hour',
+      });
+    }
+
+    const timestampPeriodsLength = timestampPeriods.length;
+
+    for (let i = 0; i < timestampPeriodsLength; i++) {
+      const period = timestampPeriods[i];
+      const humanReadableStartDate = dateInHumanReadableFormat(
+        new Date(period.start),
+        period.delta === 'day' ? 'DD.MM.YYYY' : 'DD.MM.YYYY HH:mm',
+      );
+
+      this.outputWrite(`period_${i}_break-line_1`, ' ');
+      this.outputWrite(`period_${i}_break-line_2`, ' ');
+      this.outputWrite(`period_${i}_break-line_3`, ' ');
+      this.outputWrite(`period_${i}`, humanReadableStartDate);
+
+      const periodEvents: StatEvent[] = this.statisticCollector.getEventsForPeriod(period.start, period.end);
+      const fullRun: StatEvent[] = periodEvents
+        .filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.RUN && ev.runType === 'full');
+      const shallowRun: StatEvent[] = periodEvents
+        .filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.RUN && ev.runType === 'shallow');
+
+      this.outputWrite(`period_${i}_run`, 'Statistics of runs:');
+      this.outputWrite(`period_${i}_full`, `Full  run  attempts:  ${fullRun.length}, successful: ${fullRun.filter(ev => ev.ok).length}, failed: ${fullRun.filter(ev => !ev.ok).length}`);
+      this.outputWrite(`period_${i}_shallow`, `Shallow run attempts: ${fullRun.length}, successful: ${shallowRun.filter(ev => ev.ok).length}, failed: ${shallowRun.filter(ev => !ev.ok).length}`);
+      this.outputWrite(`period_${i}_line-break_2`, ' ');
+      this.outputWrite(`period_${i}_added-to-queue`, 'Added to queue:');
+
+      const addedToQueueEvents: AddToQueueEvent[] = periodEvents.filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.ADDING_TO_QUEUE) as AddToQueueEvent[];
+      const processingEvents: ProcessingEvent[] = periodEvents.filter((ev: StatEvent) => ev.type === STATISTIC_EVENT.PAGE_PROCESSING) as ProcessingEvent[];
+
+      for (const collection of this.collectionList) {
+        const eventsOfAddingToQueue = addedToQueueEvents.filter((ev: AddToQueueEvent) => (ev as AddToQueueEvent).collection === collection);
+        const eventsOfProcessing = processingEvents.filter((ev: ProcessingEvent) => (ev as ProcessingEvent).collection === collection);
+        const indexPageEvents = eventsOfAddingToQueue.filter(ev => ev.urlType === UrlTypes.Index);
+        const paginationPageEvents = eventsOfAddingToQueue.filter(ev => ev.urlType === UrlTypes.Pagination);
+        const adPageEvents = eventsOfAddingToQueue.filter(ev => ev.urlType === UrlTypes.Ad);
+        const paginationParsed = eventsOfProcessing.filter(ev => ev.processing === 'pagination_parsed');
+        const added = eventsOfProcessing.filter(ev => ev.processing === 'added');
+        const activeDateUpdated = eventsOfProcessing.filter(ev => ev.processing === 'active_date');
+        const noChanges = eventsOfProcessing.filter(ev => ev.processing === 'no_changes');
+        const errorOccurred = eventsOfProcessing.filter(ev => ev.processing === 'error');
+
+        this.outputWrite(`period_${i}_${collection}_line-break-1`, ' ');
+        this.outputWrite(`period_${i}_${collection}_name`, `    Collection ${collection}:`);
+        this.outputWrite(`period_${i}_${collection}_index`, `        Index pages (ok/total): ${indexPageEvents.filter(ev => ev.ok).length} / ${indexPageEvents.length}`);
+        this.outputWrite(`period_${i}_${collection}_pagination`, `        Pagination pages (ok/total): ${paginationPageEvents.filter(ev => ev.ok).length} / ${paginationPageEvents.length}`);
+        this.outputWrite(`period_${i}_${collection}_ad`, `        Ad pages (ok/total): ${adPageEvents.filter(ev => ev.ok).length} / ${adPageEvents.length}`);
+        this.outputWrite(`period_${i}_${collection}_parsing`, '        Parsing results:');
+        this.outputWrite(`period_${i}_${collection}_pagination_parsed`, `            Pagination parsed: ${paginationParsed.length}`);
+        this.outputWrite(`period_${i}_${collection}_newly_added`, `            New added: ${added.length}`);
+        this.outputWrite(`period_${i}_${collection}_active_date_updated`, `            Active date updated: ${activeDateUpdated.length}`);
+        this.outputWrite(`period_${i}_${collection}_no_changes`, `            No changes: ${noChanges.length}`);
+        this.outputWrite(`period_${i}_${collection}_error_happened`, `            Errors: ${errorOccurred.length}`);
+      }
+    }
+
+    this.outputUpdate();
   }
 
   public async sendTaskForWebScraper(data: IUrlData[]): Promise<ITcpResponse<boolean[]>> {

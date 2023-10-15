@@ -10,42 +10,51 @@ export class DynamicLoggerService {
 
   private buffer: IMonitorMessage[] = [];
   private stdout = process.stdout;
+  private printed = false;
 
-  private eraseLines(n: number): void {
-    for (let i = 0; i < n; i++) {
-      this.stdout.write('\x1b[1A');
-      this.stdout.write('\x1b[K');
-    }
+  private getTerminalWidth(): number {
+    return process.stdout.columns || 80;
   }
 
-  public async clearAll(): Promise<void> {
-    if (!this.buffer.length) {
+  private eraseLines(linesToErase: number): void {
+    this.stdout.write(`\x1b[${linesToErase}A\x1b[J`);
+  }
+
+  public clearAll(): void {
+    if (!this.buffer.length || !this.printed) {
       return;
     }
 
     let linesToErase = 0;
 
     for (const bufferedNote of this.buffer) {
-      const msgLines = (bufferedNote.msg.match(/\n/g) || []).length;
+      const terminalWidth = this.getTerminalWidth();
+      const msgLines = Math.ceil(bufferedNote.msg.length / terminalWidth) + (bufferedNote.msg.match(/\n/g) || []).length;
 
-      linesToErase += msgLines + 1;
+      linesToErase += msgLines;
     }
 
     this.eraseLines(linesToErase);
+
+    this.printed = false;
   }
 
-  public async update(): Promise<void> {
-    await this.clearAll();
+  public update(): void {
+    this.clearAll();
 
     for (const bufferedNote of this.buffer) {
-      this.stdout.write(`${bufferedNote.msg}\n`);
+      this.stdout.write(bufferedNote.msg);
     }
+
+    this.printed = true;
   }
 
   public flushBuffer(): void {
     for (const bufferedNote of this.buffer) {
-      this.stdout.write(`${bufferedNote.msg}\n`);
+      this.stdout.write(bufferedNote.msg);
     }
+
+    this.printed = true;
   }
 
   public write(id: string, ...msg: string[]): void {
@@ -53,14 +62,12 @@ export class DynamicLoggerService {
       .findIndex((bufferedNote: IMonitorMessage) => bufferedNote.id === id);
 
     if (index > -1) {
-      this.buffer[index].msg = msg.join(' ');
+      this.buffer[index].msg = msg.join(' ') + '\n';
     } else {
       this.buffer.push({
         id,
-        msg: msg.join(' '),
+        msg: msg.join(' ') + '\n',
       });
     }
-
-    this.update();
   }
 }
