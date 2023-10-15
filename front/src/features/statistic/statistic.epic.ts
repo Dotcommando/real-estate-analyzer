@@ -1,12 +1,17 @@
+import { PayloadAction } from '@reduxjs/toolkit';
 import { filter, ignoreElements, switchMap, tap } from 'rxjs';
 
 import { StoreEpic } from '../../types/store.types';
 import { statisticApi } from '../api/statistic.api';
+import { selectBestPricesAdsType } from '../best-prices/best-prices.selector';
 import { setLoader } from '../loader/loader.slice';
 
-import { initStatistic, setStatistic } from './statistic.slice';
 import {
-  AdsEnum,
+  initStatistic,
+  setStatistic,
+  StatisticInitPayload,
+} from './statistic.slice';
+import {
   AnalysisPeriod,
   AnalysisType,
   StatisticResponse,
@@ -17,14 +22,14 @@ export const statisticEpic: StoreEpic = (action$, state$, { dispatch }) =>
   action$.pipe(
     filter(initStatistic.match),
     tap(() => dispatch(setLoader({ key: 'objects', state: 'loading' }))),
-    switchMap(() => {
+    switchMap((action: PayloadAction<StatisticInitPayload>) => {
       return statisticApi
         .getStatistic({
-          startDate: '2023-09-01',
-          endDate: '2023-09-31',
+          startDate: action.payload.startDate,
+          endDate: action.payload.endDate,
           analysisType: AnalysisType.CITY_AVG_MEAN,
           analysisPeriod: AnalysisPeriod.DAILY_TOTAL,
-          ads: AdsEnum.SaleFlats,
+          ads: selectBestPricesAdsType(state$.value),
         })
         .catch((e) => {
           console.error(e);
@@ -34,7 +39,6 @@ export const statisticEpic: StoreEpic = (action$, state$, { dispatch }) =>
     }),
     tap(() => dispatch(setLoader({ key: 'objects', state: 'loaded' }))),
     tap((response) => {
-      console.log(11, response);
       dispatch(setStatistic(response as StatisticResponse[]));
     }),
     ignoreElements(),

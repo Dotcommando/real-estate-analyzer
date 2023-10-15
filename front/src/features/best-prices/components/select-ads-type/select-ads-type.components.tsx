@@ -1,8 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import { DefaultItem, Select } from '@consta/uikit/Select';
 
+import { SearchParam } from '../../../../constants/search-param.constant';
 import i18n from '../../../../i18n';
 import { AdsEnum } from '../../../statistic/statistic.type';
 import { selectBestPricesAdsType } from '../../best-prices.selector';
@@ -51,6 +53,8 @@ const SelectAdsTypeComponent = () => {
   /** Hooks */
   const { t } = useTranslation();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   /** Store */
   const dispatch = useDispatch();
   const adsType = useSelector(selectBestPricesAdsType);
@@ -65,6 +69,10 @@ const SelectAdsTypeComponent = () => {
       items={adsTypes}
       value={adsTypeValue()}
       onChange={({ value }) => {
+        searchParams.set(SearchParam.adsType, value?.id as string);
+
+        setSearchParams(searchParams);
+
         dispatch(
           setBestPricesAdsType((value?.id as AdsEnum) || AdsEnum.RentFlats),
         );

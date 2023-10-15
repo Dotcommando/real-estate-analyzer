@@ -117,7 +117,7 @@ module.exports = {
       },
     ],
     // Typescript
-    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-unused-vars': ['error', { "args": "none" }],
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-shadow': ['error'],
     '@typescript-eslint/no-use-before-define': ['error'],

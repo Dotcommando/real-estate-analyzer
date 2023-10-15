@@ -30,6 +30,24 @@ export const EN_I18N: ResourceLanguage = {
       storageRoom: 'Storage room',
       garden: 'Garden',
       currencyEur: 'Currency eur',
+      open: 'Open',
+      price: {
+        title:
+          'This section describes price detail. How it compares with another ads',
+        description:
+          'We compare all ads and show, is this price lower/higher of market',
+        redOne: 'Red one ',
+        redOneDescription: 'means that price higher of median price of market',
+        orangeOne: 'Orange one ',
+        orangeOneDescription: 'a bit higher of median price',
+        greenOne: 'Green one ',
+        greenOneDescription: "lower than median price, it's what you need",
+        currentMeanPrice:
+          'Current mean price for city <strong>{{city}}</strong> is <strong>{{price}}</strong>',
+        currentMedianPrice:
+          'Current median price for city <strong>{{city}}</strong> is <strong>{{price}}</strong>',
+      },
+      loadMore: 'Load more',
     },
     adsType: {
       rentFlats: 'Flats for rent',

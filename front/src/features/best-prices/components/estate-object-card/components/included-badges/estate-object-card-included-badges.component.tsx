@@ -56,7 +56,7 @@ const RealEstateObjectCardIncludedBadgesComponent = ({
 
         {/* <Text
           size="s"
-          view="brand"
+          view="link"
           onClick={() => setIsExpanded(!isExpanded)}
           className="c-pointer"
         >

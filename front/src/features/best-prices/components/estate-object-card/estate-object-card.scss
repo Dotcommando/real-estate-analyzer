@@ -1,5 +1,21 @@
 .estate-object-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
   &__description {
     min-height: 201px;
+  }
+
+  &__image {
+    width: 200px;
+    margin: 0 auto;
+    display: block;
+  }
+
+  &__badges {
+    overflow: hidden;
+
+    height: 72px;
   }
 }

@@ -43,7 +43,7 @@ const RealEstateObjectCardComponent = ({ realEstateObject }: Props) => {
             : realEstateObject.description.slice(0, MAXIMUM_COUNT_SYMBOLS)}
           <Text
             size="s"
-            view="brand"
+            view="link"
             onClick={() => setIsExpanded(!isExpanded)}
             className={`${cnMixSpace({ mT: 's' })} c-pointer`}
           >
@@ -66,34 +66,42 @@ const RealEstateObjectCardComponent = ({ realEstateObject }: Props) => {
       border
       form="round"
     >
-      <Text size="l" weight="bold" className={cnMixSpace({ mB: 's' })}>
-        {realEstateObject.title}
-      </Text>
-      {!selectedCity && (
-        <div className={`${cnMixSpace({ mB: 's' })} flex-default`}>
-          <RealEstateObjectCarCityComponent city={realEstateObject.city} />
+      <div>
+        <Text size="l" weight="bold" className={cnMixSpace({ mB: 's' })}>
+          {realEstateObject.title}
+        </Text>
+        {!selectedCity && (
+          <div className={`${cnMixSpace({ mB: 's' })} flex-default`}>
+            <RealEstateObjectCarCityComponent city={realEstateObject.city} />
+          </div>
+        )}
+        <div className={cnMixSpace({ mB: 's' })}>
+          <RealEstateObjectCardImportantBadgesComponent
+            realEstateObject={realEstateObject}
+          />
         </div>
-      )}
-      <div className={cnMixSpace({ mB: 's' })}>
-        <RealEstateObjectCardImportantBadgesComponent
+
+        <img src="/house.png" className={cn('image')} alt="house" />
+
+        <Text
+          size="s"
+          className={`${cnMixSpace({ mB: 's' })} ${cn('description')}`}
+        >
+          {description()}
+        </Text>
+      </div>
+
+      <div>
+        <div className={`${cnMixSpace({ mB: 's' })} ${cn('badges')}`}>
+          <RealEstateObjectCardIncludedBadgesComponent
+            realEstateObject={realEstateObject}
+          />
+        </div>
+
+        <RealEstateObjectCardPriceComponent
           realEstateObject={realEstateObject}
         />
       </div>
-
-      <Text
-        size="s"
-        className={`${cnMixSpace({ mB: 's' })} ${cn('description')}`}
-      >
-        {description()}
-      </Text>
-
-      <div className={cnMixSpace({ mB: 's' })}>
-        <RealEstateObjectCardIncludedBadgesComponent
-          realEstateObject={realEstateObject}
-        />
-      </div>
-
-      <RealEstateObjectCardPriceComponent realEstateObject={realEstateObject} />
     </Card>
   );
 };

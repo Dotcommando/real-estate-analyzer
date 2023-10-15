@@ -44,3 +44,5 @@ export type StatisticResponse = {
   analysisPeriod: AnalysisPeriod;
   data: StatisticDataResponse[];
 };
+
+export type NormalizedStatistic = Record<string, StatisticDataResponse>;
