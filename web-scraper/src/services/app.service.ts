@@ -56,7 +56,7 @@ export class AppService implements OnModuleInit {
 
   @Cron(process.env.CLEAR_CACHE, {
     name: 'clear_cache',
-    timeZone: 'Asia/Nicosia',
+    utcOffset: 180,
   })
   public clearCache() {
     this.cacheManager.clear();
@@ -291,7 +291,7 @@ export class AppService implements OnModuleInit {
     }
 
     if (!queue.priorities[priority]) {
-      // There is priority transformed to string
+      // There is priority transforms to string
       // If priority was 1 (as number), then `queue.priorities['1'] = [];`
       queue.priorities[priority] = [];
     }

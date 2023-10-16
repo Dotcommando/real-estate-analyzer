@@ -75,7 +75,7 @@ export class CacheService implements OnModuleInit {
   public clear(): void {
     this.cacheMap.clear();
     this.cacheKeys.clear();
-    this.logger.log(' ');
-    this.logger.log('    >>>>    Cache fully cleared');
+    this.logger.warn(' ');
+    this.logger.warn('    >>>>    Cache fully cleared');
   }
 }
