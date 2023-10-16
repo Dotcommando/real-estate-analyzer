@@ -229,7 +229,7 @@ export class AppService implements OnModuleInit {
     };
   }
 
-  @Cron('* * * * *', {
+  @Cron(process.env.SHOW_STATS, {
     name: 'print_stat',
     utcOffset: 180,
   })
