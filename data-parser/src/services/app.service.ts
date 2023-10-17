@@ -282,7 +282,7 @@ export class AppService implements OnModuleInit {
 
       this.outputWrite(`period_${i}_run`, 'Statistics of runs:');
       this.outputWrite(`period_${i}_full`, `Full  run  attempts:  ${fullRun.length}, successful: ${fullRun.filter(ev => ev.ok).length}, failed: ${fullRun.filter(ev => !ev.ok).length}`);
-      this.outputWrite(`period_${i}_shallow`, `Shallow run attempts: ${fullRun.length}, successful: ${shallowRun.filter(ev => ev.ok).length}, failed: ${shallowRun.filter(ev => !ev.ok).length}`);
+      this.outputWrite(`period_${i}_shallow`, `Shallow run attempts: ${shallowRun.length}, successful: ${shallowRun.filter(ev => ev.ok).length}, failed: ${shallowRun.filter(ev => !ev.ok).length}`);
       this.outputWrite(`period_${i}_line-break_2`, ' ');
       this.outputWrite(`period_${i}_added-to-queue`, 'Added to queue:');
 
