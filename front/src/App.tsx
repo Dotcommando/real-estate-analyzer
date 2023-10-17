@@ -34,12 +34,12 @@ const router = createBrowserRouter([
     children: [
       {
         path: RouteName.Home,
-        element: <div>home</div>,
-      },
-      {
-        path: RouteName.BestPrices,
         element: <BestPricesComponent />,
       },
+      // {
+      //   path: RouteName.BestPrices,
+      //   element: <BestPricesComponent />,
+      // },
       {
         path: RouteName.DetailObject,
         element: <div>bestPrices 222</div>,

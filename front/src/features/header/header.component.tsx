@@ -20,10 +20,10 @@ const TAB_ITEMS: Tab[] = [
     label: i18n.t('menu.home'),
     route: RouteName.Home,
   },
-  {
-    label: i18n.t('menu.bestPrices'),
-    route: RouteName.BestPrices,
-  },
+  // {
+  //   label: i18n.t('menu.bestPrices'),
+  //   route: RouteName.BestPrices,
+  // },
   {
     label: i18n.t('menu.statistic'),
     route: RouteName.Statistic,
