@@ -26,7 +26,7 @@ export class BazarakiPaginationScraper<T> {
   public getAdsUrls(): Set<string> {
     const ads = new Set<string>();
 
-    this.$('li.announcement-container a.announcement-block__title').each((index, element) => {
+    this.$('.advert .advert__content-title').each((index, element) => {
       ads.add(this.$(element).attr('href') || '');
     });
 
