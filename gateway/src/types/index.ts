@@ -8,6 +8,7 @@ export * from './city-stats-doc.interface';
 export * from './coords.interface';
 export * from './district-stats.interface';
 export * from './district-stats-doc.interface';
+export * from './get-districts-params.interface';
 export * from './rent-apartments-flats.interface';
 export * from './rent-houses.interface';
 export * from './response.interface';

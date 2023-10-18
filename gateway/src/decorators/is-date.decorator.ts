@@ -6,7 +6,7 @@ import {
 } from 'class-validator';
 
 
-export function IsDate(validationOptions?: ValidationOptions & { optional?: boolean }) {
+export function IsDate(validationOptions?: ValidationOptions & { optional?: boolean }): PropertyDecorator {
   return ValidateBy({
     name: 'IsDate',
     constraints: [ validationOptions?.[0] ],
