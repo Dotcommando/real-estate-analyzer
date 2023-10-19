@@ -91,7 +91,7 @@ export class AppService {
         data: ads,
       };
     } catch (e) {
-      this.logger.error('Error occurred in AppService.getAnalysis with parameters:');
+      this.logger.error('Error occurred in AppService.getAds with parameters:');
 
       if (params) {
         for (const key in params) {
@@ -107,7 +107,7 @@ export class AppService {
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         data: null,
         errors: [
-          'Cannot get statistics',
+          'Cannot get ads',
         ],
       };
     }
