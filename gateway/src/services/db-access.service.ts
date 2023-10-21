@@ -2,8 +2,9 @@ import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc } from 'src/schemas';
+import { IGetDistrictsResult } from 'src/types/get-districts.interface';
 
 import { AdsEnum, AdsEnumArray, AnalysisType, AnalysisTypeArray, LOGGER } from '../constants';
 import { analysisMapper, cityReportMapper, districtReportMapper } from '../mappers';
@@ -16,9 +17,7 @@ import {
   ICityStatsDoc,
   IDistrictStats,
   IDistrictStatsDoc,
-  IRentApartmentsFlats,
-  IRentHouses,
-  ISaleApartmentsFlats,
+  IGetDistrictsParams,
   ISaleHousesDoc,
 } from '../types';
 
@@ -168,8 +167,8 @@ export class DbAccessService {
         },
         {
           active_dates: { $elemMatch: {
-            $gte: params.startDate, 
-            $lte: params.endDate, 
+            $gte: params.startDate,
+            $lte: params.endDate,
           }},
         },
       ],
@@ -183,5 +182,45 @@ export class DbAccessService {
     }
 
     return await model.find(filter).skip(params.offset).limit(params.limit);
+  }
+
+  public async getDistrict(
+    params: IGetDistrictsParams,
+  ): Promise<IGetDistrictsResult[]> {
+    const filters = {
+      analysis_type: 'district_avg_mean',
+      analysis_period: 'monthly_total',
+    };
+
+    return await this.districtStatsRentFlatsModel.aggregate([
+      { $match: filters },
+      { $sort: { end_date: -1 }},
+      { $limit: 1 },
+      { $unwind: '$data' },
+      ...(params.city
+        ? [ { $match: { 'data.city': new RegExp([ '^', params.city ].join(''), 'i') }} ]
+        : []
+      ),
+      {
+        $group: {
+          _id: null,
+          data: { $push: '$data' },
+        },
+      },
+      { $unwind: '$data' },
+      {
+        $replaceRoot: {
+          newRoot: '$data',
+        },
+      },
+      {
+        $group: {
+          _id: '$city',
+          city: { $first: '$city' },
+          districts: { $push: '$district' },
+        },
+      },
+      { $project: { _id: 0 }},
+    ]);
   }
 }

@@ -1,6 +1,3 @@
-import { AdsEnum } from 'src/constants';
-
-
 export interface IAdsParams {
   startDate: Date;
   endDate: Date;

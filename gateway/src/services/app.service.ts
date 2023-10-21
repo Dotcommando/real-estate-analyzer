@@ -1,10 +1,22 @@
 import { HttpStatus, Inject, Injectable, LoggerService } from '@nestjs/common';
 
+import { cache, CacheType } from 'cache-decorator';
+
 import { DbAccessService } from './db-access.service';
 
 import { LOGGER } from '../constants';
 import { roundNumbersInReport } from '../mappers';
-import { IAdsParams, IAdsResult, IAnalysisParams, IAnalysisResult, ICityStats, IDistrictStats, IResponse } from '../types';
+import {
+  IAdsParams,
+  IAdsResult,
+  IAnalysisParams,
+  IAnalysisResult,
+  ICityStats,
+  IDistrictStats,
+  IGetDistrictsParams,
+  IResponse,
+} from '../types';
+import { IGetDistrictsResult } from '../types/get-districts.interface';
 
 
 @Injectable()
@@ -96,6 +108,42 @@ export class AppService {
         data: null,
         errors: [
           'Cannot get statistics',
+        ],
+      };
+    }
+  }
+
+  @cache({
+    ttl: 24 * 60 * 60 * 1000,
+    type: CacheType.MEMO,
+    compare: (oldVal: [IGetDistrictsParams], newVal: [IGetDistrictsParams]) => oldVal[0].country === newVal[0].country && oldVal[0].city === newVal[0].city,
+  })
+  public async getDistricts(params: IGetDistrictsParams): Promise<IResponse<IGetDistrictsResult[]>> {
+    try {
+      const district: IGetDistrictsResult[] = await this.dbAccessService.getDistrict(params);
+
+      return {
+        status: HttpStatus.OK,
+        data: district,
+      } ;
+    } catch (e) {
+      this.logger.error('Error occurred in AppService.getDistricts with parameters:');
+
+      if (params) {
+        for (const key in params) {
+          this.logger.error(`    ${key}: ${params[key]},`);
+        }
+      } else {
+        this.logger.error(`    params === ${params}, typeof params === ${typeof params}.`);
+      }
+
+      this.logger.error(e);
+
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        data: null,
+        errors: [
+          'Cannot get districts',
         ],
       };
     }
