@@ -1,29 +1,82 @@
-import { Logger as NestLogger } from '@nestjs/common';
+import { Logger as NestLogger, OnModuleInit } from '@nestjs/common';
 
-import { DynamicLoggerService } from './dynamic-logger.service';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import { AbstractLogger } from '../classes';
 
 
-export class DummyLoggerService extends NestLogger implements AbstractLogger {
+export class DummyLoggerService extends NestLogger implements AbstractLogger, OnModuleInit {
   constructor(
-    private readonly statusMonitorService: DynamicLoggerService,
   ) {
     super();
   }
 
-  async log(message: string): Promise<void> {
-    this.statusMonitorService.clearAll();
+  onModuleInit(): void {
+    this.ensureLogsFolderExists();
+  }
+
+  private logsFolder = 'logs';
+
+  private getFileName(): string {
+    const date = new Date();
+    const hours = date.getHours();
+
+    let timeRange: string;
+
+    if (hours < 6) {
+      timeRange = '00-06';
+    } else if (hours < 12) {
+      timeRange = '06-12';
+    } else if (hours < 18) {
+      timeRange = '12-18';
+    } else {
+      timeRange = '18-00';
+    }
+
+    return `log-${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}--${timeRange}.log`;
+  }
+
+  private ensureLogsFolderExists(): void {
+    const folderPath = path.join(process.cwd(), this.logsFolder);
+
+    if (!fs.existsSync(folderPath)) {
+      fs.mkdirSync(folderPath);
+    }
+  }
+
+  private writeToFile(message: string): void {
+    const filePath = path.join(process.cwd(), this.logsFolder, this.getFileName());
+    const strippedMessage = this.stripColorCodes(message);
+
+    fs.appendFileSync(filePath, `${strippedMessage}\n`);
+  }
+
+  private stripColorCodes(input: string): string {
+    const colorCodesRegex = /\x1b\[\d{1,2}m/g;
+
+    return input.replace(colorCodesRegex, '');
+  }
+
+  log(message: string): void {
+    this.writeToFile(message);
     super.log(message);
-    this.statusMonitorService.flushBuffer();
   }
 
-  async error(message: string): Promise<void> {
-    this.statusMonitorService.clearAll();
+  error(message: string): void {
+    this.writeToFile(message);
     super.error(message);
-    this.statusMonitorService.flushBuffer();
   }
 
-  debug(message: string) {}
-  verbose(message: string) {}
+  warn(message: string): void {
+    this.writeToFile(message);
+  }
+
+  debug(message: string): void {
+    this.writeToFile(message);
+  }
+
+  verbose(message: string) {
+    this.writeToFile(message);
+  }
 }

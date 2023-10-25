@@ -13,7 +13,7 @@ import { DelayService } from './delay.service';
 import { ProxyFactoryService } from './proxy-factory.service';
 
 import { DataParserMessages, LOGGER, mockTasks, UrlTypes } from '../constants';
-import { IQueue, IQueueElement, ITcpResponse, IUrlData, IWebScrapingResponse } from '../types';
+import { IAddToQueueResult, IQueue, IQueueElement, ITcpResponse, IUrlData, IWebScrapingResponse } from '../types';
 
 
 config();
@@ -252,11 +252,11 @@ export class AppService implements OnModuleInit {
     }
   }
 
-  public addPagesToQueue(tasks: IUrlData[]): ITcpResponse<{ [url: string]: boolean }[]> {
-    const result = [];
+  public addPagesToQueue(tasks: IUrlData[]): ITcpResponse<{ [url: string]: IAddToQueueResult }> {
+    const result: { [url: string]: { added: boolean; reason?: string } } = {};
 
     for (const task of tasks) {
-      result.push(this.addPageToQueue(task));
+      result[task.url] = this.addPageToQueue(task);
     }
 
     return {
@@ -299,12 +299,12 @@ export class AppService implements OnModuleInit {
     return queue.priorities[priority];
   }
 
-  public addPageToQueue(urlData: IUrlData): boolean {
+  public addPageToQueue(urlData: IUrlData): IAddToQueueResult {
     try {
-      const found: boolean = Boolean(this.findTaskDuplicate(urlData))
-        || Boolean(this.cacheManager.get(urlData.url));
+      const duplicateFound: boolean = Boolean(this.findTaskDuplicate(urlData));
+      const cacheFound: boolean = Boolean(this.cacheManager.get(urlData.url));
 
-      if (!found) {
+      if (!duplicateFound && !cacheFound) {
         const priorityArray: IQueueElement[] = this.getPriorityArray(urlData.priority, urlData.queueName);
         const taskToAdd: IUrlData = { ...urlData };
 
@@ -312,16 +312,26 @@ export class AppService implements OnModuleInit {
 
         priorityArray.push(taskToAdd as IQueueElement);
 
-        return true;
+        return { added: true };
       }
 
-      return false;
+      return {
+        added: false,
+        reason: duplicateFound
+          ? 'task-duplicate found'
+          : 'in cache found',
+      };
     } catch (e) {
       this.logger.error(' ');
       this.logger.error('Error occurred in AppService.addPageToQueue');
+      this.logger.error('urlData:');
+      this.logger.error(urlData);
       this.logger.error(e);
 
-      return false;
+      return {
+        added: false,
+        reason: `Error. ${e.message}`,
+      };
     }
   }
 
