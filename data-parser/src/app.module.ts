@@ -20,11 +20,9 @@ import {
   DbAccessService,
   DbUrlRelationService,
   DummyLoggerService,
-  DynamicLoggerService,
   LoggerService,
   MongoConfigService,
   ProxyFactoryService,
-  StatisticCollectorService,
 } from './services';
 
 
@@ -101,21 +99,18 @@ import {
     AppService,
     ProxyFactoryService,
     SchedulerRegistry,
-    DynamicLoggerService,
-    StatisticCollectorService,
     {
       provide: LOGGER,
       useFactory: (
         configService: ConfigService,
-        statusMonitorService: DynamicLoggerService,
       ) => {
         const environment = configService.get('MODE');
 
         return environment === 'prod'
-          ? new DummyLoggerService(statusMonitorService)
-          : new LoggerService(statusMonitorService);
+          ? new DummyLoggerService()
+          : new LoggerService();
       },
-      inject: [ ConfigService, DynamicLoggerService ],
+      inject: [ ConfigService ],
     },
   ],
 })
