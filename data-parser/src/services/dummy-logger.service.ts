@@ -60,7 +60,6 @@ export class DummyLoggerService extends NestLogger implements AbstractLogger, On
 
   log(message: string): void {
     this.writeToFile(message);
-    super.log(message);
   }
 
   error(message: string): void {
@@ -70,6 +69,7 @@ export class DummyLoggerService extends NestLogger implements AbstractLogger, On
 
   warn(message: string): void {
     this.writeToFile(message);
+    super.warn(message);
   }
 
   debug(message: string): void {
