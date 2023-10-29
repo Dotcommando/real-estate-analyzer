@@ -1,12 +1,11 @@
 import { HttpStatus } from '@nestjs/common';
 
-import { ITcpResponse, IUrlData } from '../types';
+import { ITcpResponse } from '../types';
 
 
 export class ErrorResponse implements ITcpResponse<null> {
   public success: boolean;
   public data: null;
-  public urlData: IUrlData;
   public errors: string[];
 
   constructor(status: number | HttpStatus, errorMessages: string[] | string) {

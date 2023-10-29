@@ -24,12 +24,12 @@ export class AppController {
       };
     }
 
-    if (scrapingResult.urlData.urlType === UrlTypes.Index) {
-      this.appService.processIndexPage(scrapingResult.data, scrapingResult.urlData);
-    } else if (scrapingResult.urlData.urlType === UrlTypes.Pagination) {
-      this.appService.processPaginationPage(scrapingResult.data, scrapingResult.urlData);
-    } else if (scrapingResult.urlData.urlType === UrlTypes.Ad) {
-      this.appService.processAdPage(scrapingResult.data, scrapingResult.urlData);
+    if (scrapingResult.task.urlType === UrlTypes.Index) {
+      this.appService.processIndexPage(scrapingResult.data, scrapingResult.task);
+    } else if (scrapingResult.task.urlType === UrlTypes.Pagination) {
+      this.appService.processPaginationPage(scrapingResult.data, scrapingResult.task);
+    } else if (scrapingResult.task.urlType === UrlTypes.Ad) {
+      this.appService.processAdPage(scrapingResult.data, scrapingResult.task);
     }
 
     return {

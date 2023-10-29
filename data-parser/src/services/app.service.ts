@@ -12,7 +12,13 @@ import { ProxyFactoryService } from './proxy-factory.service';
 
 import { BazarakiAdPageParser, BazarakiPaginationParser } from '../classes';
 import { LOGGER, UrlTypes, WebScraperMessages } from '../constants';
-import { IAdDBOperationResult, IAddToQueueResult, IRealEstate, ITcpResponse, IUrlData } from '../types';
+import {
+  IAdDBOperationResult,
+  IAddToQueueResult,
+  IRealEstate,
+  ITask,
+  ITcpResponse,
+} from '../types';
 import { dateInHumanReadableFormat } from '../utils';
 
 
@@ -51,6 +57,9 @@ export class AppService implements OnModuleInit {
   private paginationPagePriority = parseInt(this.configService.get('PRIORITY_PAGINATION_PAGE'));
   private adPagePriority = parseInt(this.configService.get('PRIORITY_AD_PAGE'));
   private sourceUrl = this.configService.get('SOURCE_URL');
+  private queueName = this.configService.get('QUEUE_NAME');
+  private host = this.configService.get('DATA_PARSER_SERVICE_HOST');
+  private port = this.configService.get('DATA_PARSER_SERVICE_PORT');
 
   constructor(
     @Inject(LOGGER) private readonly logger: LoggerService,
@@ -77,12 +86,15 @@ export class AppService implements OnModuleInit {
 
   private async initScraping(depth?: number): Promise<ITcpResponse<{ [url: string]: IAddToQueueResult }>> {
     const indexUrsToScrape: string[] = this.dbUrlRelationService.getUrlList();
-    const tasksToScrape: IUrlData[] = indexUrsToScrape.map((url: string): IUrlData => ({
+    const tasksToScrape: ITask[] = indexUrsToScrape.map((url: string): ITask => ({
       priority: this.indexPagePriority,
       url,
       urlType: UrlTypes.Index,
       collection: this.dbUrlRelationService.getCollectionByUrl(url),
       depth,
+      queueName: this.queueName,
+      host: this.host,
+      port: this.port,
     }));
 
     return await this.sendTaskForWebScraper(tasksToScrape);
@@ -148,49 +160,55 @@ export class AppService implements OnModuleInit {
     return await this.initScraping(this.depthShallow);
   };
 
-  public async sendTaskForWebScraper(data: IUrlData[]): Promise<ITcpResponse<{ [url: string]: IAddToQueueResult }>> {
+  public async sendTaskForWebScraper(tasks: ITask[]): Promise<ITcpResponse<{ [url: string]: IAddToQueueResult }>> {
     return await lastValueFrom(
       this.webScraperClient
-        .send(WebScraperMessages.ADD_TO_PARSING_QUEUE, data)
+        .send(WebScraperMessages.ADD_TO_PARSING_QUEUE, tasks)
         .pipe(timeout(this.tcpTimeout)),
     );
   }
 
-  public async processIndexPage(dataToParse: string, urlData: IUrlData): Promise<void> {
+  public async processIndexPage(dataToParse: string, task: ITask): Promise<void> {
     try {
-      const parsedPagination: [ Set<string>, Set<string> ] = new BazarakiPaginationParser(dataToParse, urlData.url)
+      const parsedPagination: [ Set<string>, Set<string> ] = new BazarakiPaginationParser(dataToParse, task.url)
         .getPaginationAndAds();
 
       const maxPaginationNumber: number = this.getMaxNumberOfPagination(parsedPagination[0]);
-      const depth: number = typeof urlData.depth === 'number' && !isNaN(urlData.depth)
-        ? urlData.depth === 0
+      const depth: number = typeof task.depth === 'number' && !isNaN(task.depth)
+        ? task.depth === 0
           ? maxPaginationNumber
-          : Math.min(urlData.depth, maxPaginationNumber)
+          : Math.min(task.depth, maxPaginationNumber)
         : maxPaginationNumber;
-      const categoryIndexURL: string = this.dbUrlRelationService.getUrlByCollection(urlData.collection);
+      const categoryIndexURL: string = this.dbUrlRelationService.getUrlByCollection(task.collection);
       const setOfPaginationUrls: Set<string> = this.getPaginationUrlsSet(2, depth, categoryIndexURL);
       const adsPagesUrls: string[] = this.dbUrlRelationService.addBaseUrlToSetOfPaths(parsedPagination[1]);
-      const paginationPagesTasks: IUrlData[] = Array.from(setOfPaginationUrls)
+      const paginationPagesTasks: ITask[] = Array.from(setOfPaginationUrls)
         .map((url: string) => ({
           priority: this.paginationPagePriority,
           url,
           urlType: UrlTypes.Pagination,
-          collection: urlData.collection,
+          collection: task.collection,
+          queueName: this.queueName,
+          host: task.host,
+          port: task.port,
         }));
-      const adsPagesTasks: IUrlData[] = adsPagesUrls
+      const adsPagesTasks: ITask[] = adsPagesUrls
         .map((url: string) => ({
           priority: this.adPagePriority,
           url,
           urlType: UrlTypes.Ad,
-          collection: urlData.collection,
+          collection: task.collection,
+          queueName: this.queueName,
+          host: task.host,
+          port: task.port,
         }));
 
-      const tasks: IUrlData[] = [ ...paginationPagesTasks, ...adsPagesTasks ];
+      const tasks: ITask[] = [ ...paginationPagesTasks, ...adsPagesTasks ];
       const indexPageProcessingResult: ITcpResponse<{ [url: string]: IAddToQueueResult }> = await this
         .sendTaskForWebScraper(tasks);
 
       this.logger.log(' ');
-      this.logger.log(`\x1b[36m${dateInHumanReadableFormat(new Date(), 'DD.MM.YYYY HH:mm:ss')} Index ${urlData.url.replace(this.sourceUrl, '')}\x1b[0m`);
+      this.logger.log(`\x1b[36m${dateInHumanReadableFormat(new Date(), 'DD.MM.YYYY HH:mm:ss')} Index ${task.url.replace(this.sourceUrl, '')}\x1b[0m`);
 
       for (const key in indexPageProcessingResult.data) {
         this.logger.log(`  ${key.replace(this.sourceUrl, '')}: ${indexPageProcessingResult.data[key].added ? 'added' : 'not added'}${indexPageProcessingResult.data[key].reason ? ' ' + indexPageProcessingResult.data[key].reason : ''}`);
@@ -198,22 +216,25 @@ export class AppService implements OnModuleInit {
     } catch (e) {
       await this.logger.error(' ');
       await this.logger.error('Error occurred in AppService.processIndexPage');
-      await this.logger.error('urlData:');
-      await this.logger.error(urlData);
+      await this.logger.error('task:');
+      await this.logger.error(task);
       await this.logger.error(e);
     }
   }
 
-  public async processPaginationPage(dataToParse: string, urlData: IUrlData): Promise<void> {
+  public async processPaginationPage(dataToParse: string, task: ITask): Promise<void> {
     try {
-      const parsedAdUrls: Set<string> = new BazarakiPaginationParser(dataToParse, urlData.url).getAdsUrls();
+      const parsedAdUrls: Set<string> = new BazarakiPaginationParser(dataToParse, task.url).getAdsUrls();
       const adsPagesUrls: string[] = this.dbUrlRelationService.addBaseUrlToSetOfPaths(parsedAdUrls);
-      const adsPagesTasks: IUrlData[] = adsPagesUrls
+      const adsPagesTasks: ITask[] = adsPagesUrls
         .map((url: string) => ({
           priority: this.adPagePriority,
           url,
           urlType: UrlTypes.Ad,
-          collection: urlData.collection,
+          collection: task.collection,
+          queueName: this.queueName,
+          host: this.host,
+          port: this.port,
         }));
 
       if (!adsPagesTasks.length) {
@@ -224,7 +245,7 @@ export class AppService implements OnModuleInit {
         .sendTaskForWebScraper(adsPagesTasks);
 
       this.logger.log(' ');
-      this.logger.log(`\x1b[32m${dateInHumanReadableFormat(new Date(), 'DD.MM.YYYY HH:mm:ss')} Pagination ${urlData.url.replace(this.sourceUrl, '')}\x1b[0m`);
+      this.logger.log(`\x1b[32m${dateInHumanReadableFormat(new Date(), 'DD.MM.YYYY HH:mm:ss')} Pagination ${task.url.replace(this.sourceUrl, '')}\x1b[0m`);
 
       for (const key in paginationPageProcessingResult.data) {
         this.logger.log(`  ${key.replace(this.sourceUrl, '')}: ${paginationPageProcessingResult.data[key].added ? 'added' : 'not added'}${paginationPageProcessingResult.data[key].reason ? ' ' + paginationPageProcessingResult.data[key].reason : ''}`);
@@ -232,8 +253,8 @@ export class AppService implements OnModuleInit {
     } catch (e) {
       await this.logger.error(' ');
       await this.logger.error('Error occurred in AppService.processPaginationPage');
-      await this.logger.error('urlData:');
-      await this.logger.error(urlData);
+      await this.logger.error('task:');
+      await this.logger.error(task);
       await this.logger.error(e);
     }
   }
@@ -246,7 +267,7 @@ export class AppService implements OnModuleInit {
       case AdProcessingStatus.NO_CHANGES:
         return '\x1b[90m';
 
-      case AdProcessingStatus.ADDED:
+      case AdProcessingStatus.SAVED:
         return '\x1b[32m';
 
       case AdProcessingStatus.ACTIVE_DATE_ADDED:
@@ -257,18 +278,18 @@ export class AppService implements OnModuleInit {
     }
   }
 
-  public async processAdPage(dataToParse: string, urlData: IUrlData): Promise<void> {
+  public async processAdPage(dataToParse: string, task: ITask): Promise<void> {
     try {
-      const parsedAdPage: Partial<IRealEstate> = new BazarakiAdPageParser(dataToParse, urlData.url).getPageData();
+      const parsedAdPage: Partial<IRealEstate> = new BazarakiAdPageParser(dataToParse, task.url).getPageData();
       const typeCastedPageData: Partial<IRealEstate> = this.dbAccessService.typecastingFields(parsedAdPage);
-      const saveAdResult: IAdDBOperationResult = await this.dbAccessService.saveNewAnnouncement(urlData.collection, typeCastedPageData);
+      const saveAdResult: IAdDBOperationResult = await this.dbAccessService.saveNewAnnouncement(task.collection, typeCastedPageData);
 
-      this.logger.log(`${dateInHumanReadableFormat(new Date(), 'DD.MM.YYYY HH:mm:ss')} Saving result to DB: \x1b[33m${urlData.url.replace(this.sourceUrl, '')}\x1b[0m ${this.getStatusColor(saveAdResult.status)}${saveAdResult.status}\x1b[0m`);
+      this.logger.log(`${dateInHumanReadableFormat(new Date(), 'DD.MM.YYYY HH:mm:ss')} Saving result to DB: \x1b[33m${task.url.replace(this.sourceUrl, '')}\x1b[0m ${this.getStatusColor(saveAdResult.status)}${saveAdResult.status}\x1b[0m`);
     } catch (e) {
       await this.logger.error(' ');
       await this.logger.error('Error occurred in AppService.processAdPage');
-      await this.logger.error('urlData:');
-      await this.logger.error(urlData);
+      await this.logger.error('task:');
+      await this.logger.error(task);
       await this.logger.error(e);
     }
   }

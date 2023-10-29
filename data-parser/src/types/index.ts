@@ -6,6 +6,6 @@ export * from './monitor-message.interface';
 export * from './real-estate';
 export * from './rent-property';
 export * from './sale-property';
+export * from './task.interface';
 export * from './tcp-response.interface';
-export * from './url-data.interface';
 export * from './web-scraping-response.interface';

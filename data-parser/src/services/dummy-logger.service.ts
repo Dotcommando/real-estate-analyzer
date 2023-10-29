@@ -46,8 +46,13 @@ export class DummyLoggerService extends NestLogger implements AbstractLogger, On
   }
 
   private writeToFile(message: string): void {
+    const msg = typeof message === 'string'
+      ? message
+      : typeof message === 'object'
+        ? JSON.stringify(message)
+        : String(message);
     const filePath = path.join(process.cwd(), this.logsFolder, this.getFileName());
-    const strippedMessage = this.stripColorCodes(message);
+    const strippedMessage = this.stripColorCodes(msg);
 
     fs.appendFileSync(filePath, `${strippedMessage}\n`);
   }
