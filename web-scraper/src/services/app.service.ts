@@ -12,8 +12,15 @@ import { CacheService } from './cache.service';
 import { DelayService } from './delay.service';
 import { ProxyFactoryService } from './proxy-factory.service';
 
-import { DataParserMessages, LOGGER, mockTasks, UrlTypes } from '../constants';
-import { IAddToQueueResult, IQueue, IQueueElement, ITcpResponse, IUrlData, IWebScrapingResponse } from '../types';
+import { DataParserMessages, LOGGER, UrlTypes } from '../constants';
+import {
+  IAddToQueueResult,
+  IQueue,
+  IQueueElement,
+  ITask,
+  ITcpResponse,
+  IWebScrapingResponse,
+} from '../types';
 
 
 config();
@@ -169,7 +176,7 @@ export class AppService implements OnModuleInit {
         const scrapingResult: IWebScrapingResponse = {
           success: true,
           data: pageDataResponse.data,
-          urlData: { ...element },
+          task: { ...element },
         };
 
         await lastValueFrom(
@@ -252,7 +259,7 @@ export class AppService implements OnModuleInit {
     }
   }
 
-  public addPagesToQueue(tasks: IUrlData[]): ITcpResponse<{ [url: string]: IAddToQueueResult }> {
+  public addPagesToQueue(tasks: ITask[]): ITcpResponse<{ [url: string]: IAddToQueueResult }> {
     const result: { [url: string]: { added: boolean; reason?: string } } = {};
 
     for (const task of tasks) {
@@ -265,7 +272,7 @@ export class AppService implements OnModuleInit {
     };
   }
 
-  private findTaskDuplicate(taskToFind: IUrlData): IUrlData | null {
+  private findTaskDuplicate(taskToFind: ITask): ITask | null {
     const queueName = taskToFind.queueName ?? this.defaultQueueName;
     const queue: IQueue = this.queues[queueName];
 
@@ -273,16 +280,16 @@ export class AppService implements OnModuleInit {
       return null;
     }
 
-    const priorityArray: IQueueElement[] = queue.priorities[taskToFind.priority];
+    const priorityArray: ITask[] = queue.priorities[taskToFind.priority];
 
     if (!priorityArray || !priorityArray.length) {
       return null;
     }
 
-    return priorityArray.find((task: IQueueElement) => task.url === taskToFind.url) ?? null;
+    return priorityArray.find((task: ITask) => task.url === taskToFind.url) ?? null;
   }
 
-  private getPriorityArray(priority: number, queueName?: string): IQueueElement[] {
+  private getPriorityArray(priority: number, queueName?: string): ITask[] {
     const name = queueName ?? this.defaultQueueName;
     const queue: IQueue = this.queues[name];
 
@@ -299,14 +306,14 @@ export class AppService implements OnModuleInit {
     return queue.priorities[priority];
   }
 
-  public addPageToQueue(urlData: IUrlData): IAddToQueueResult {
+  public addPageToQueue(task: ITask): IAddToQueueResult {
     try {
-      const duplicateFound: boolean = Boolean(this.findTaskDuplicate(urlData));
-      const cacheFound: boolean = Boolean(this.cacheManager.get(urlData.url));
+      const duplicateFound: boolean = Boolean(this.findTaskDuplicate(task));
+      const cacheFound: boolean = Boolean(this.cacheManager.get(task.url));
 
       if (!duplicateFound && !cacheFound) {
-        const priorityArray: IQueueElement[] = this.getPriorityArray(urlData.priority, urlData.queueName);
-        const taskToAdd: IUrlData = { ...urlData };
+        const priorityArray: IQueueElement[] = this.getPriorityArray(task.priority, task.queueName);
+        const taskToAdd: ITask = { ...task };
 
         delete taskToAdd.queueName;
 
@@ -325,19 +332,13 @@ export class AppService implements OnModuleInit {
       this.logger.error(' ');
       this.logger.error('Error occurred in AppService.addPageToQueue');
       this.logger.error('urlData:');
-      this.logger.error(urlData);
+      this.logger.error(task);
       this.logger.error(e);
 
       return {
         added: false,
         reason: `Error. ${e.message}`,
       };
-    }
-  }
-
-  private addMockTasks() {
-    for (const task of mockTasks) {
-      this.addPageToQueue(task);
     }
   }
 }

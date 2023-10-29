@@ -29,10 +29,10 @@ import { castToNumber, roundDate } from '../utils';
 
 
 export enum AdProcessingStatus {
-  ADDED = 'added',
+  SAVED = 'saved',
   AD_FOUND = 'ad_found',
   AD_NOT_FOUND = 'ad_not_found',
-  ACTIVE_DATE_ADDED = 'active_date',
+  ACTIVE_DATE_ADDED = 'active_date_added',
   NO_CHANGES = 'no_changes',
   ERROR = 'error',
 }
@@ -161,7 +161,7 @@ export class DbAccessService {
         newAnnouncement.active_dates = [ roundDate(new Date()) ];
         await newAnnouncement.save();
 
-        status = AdProcessingStatus.ADDED;
+        status = AdProcessingStatus.SAVED;
 
         return { ad: newAnnouncement.toObject(), status };
       }

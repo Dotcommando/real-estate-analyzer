@@ -1,7 +1,7 @@
-import { IUrlData } from './url-data.interface';
+import { ITask } from './task.interface';
 
 
-export interface IQueueElement extends Omit<IUrlData, 'queueName'> {
+export interface IQueueElement extends ITask {
   attempt?: number;
 }
 
