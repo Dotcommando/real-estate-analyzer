@@ -56,7 +56,7 @@ export class AppService implements OnModuleInit {
 
   @Cron(process.env.CLEAR_CACHE, {
     name: 'clear_cache',
-    utcOffset: 180,
+    timeZone: process.env.TZ,
   })
   public clearCache() {
     this.cacheManager.clear();
