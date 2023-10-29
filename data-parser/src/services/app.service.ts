@@ -90,7 +90,7 @@ export class AppService implements OnModuleInit {
 
   @Cron(process.env.PAGINATION_SCRAPING_FULL, {
     name: 'pagination_scraping_full',
-    utcOffset: 180,
+    timeZone: process.env.TZ,
   })
   public async runnerFull(): Promise<ITcpResponse<{ [url: string]: IAddToQueueResult }> | void> {
     if (this.doNotRunFull) {
@@ -102,7 +102,7 @@ export class AppService implements OnModuleInit {
 
   @Cron(process.env.PAGINATION_SCRAPING_DEEP, {
     name: 'pagination_scraping_deep',
-    utcOffset: 180,
+    timeZone: process.env.TZ,
   })
   public async runnerDeep(): Promise<ITcpResponse<{ [url: string]: IAddToQueueResult }> | void> {
     if (this.doNotRunDeep) {
@@ -114,7 +114,7 @@ export class AppService implements OnModuleInit {
 
   @Cron(process.env.PAGINATION_SCRAPING_MODERATE, {
     name: 'pagination_scraping_moderate',
-    utcOffset: 180,
+    timeZone: process.env.TZ,
   })
   public async runnerModerate(): Promise<ITcpResponse<{ [url: string]: IAddToQueueResult }> | void> {
     if (this.doNotRunModerate) {
@@ -126,7 +126,7 @@ export class AppService implements OnModuleInit {
 
   @Cron(process.env.PAGINATION_SCRAPING_SUPERFICIAL, {
     name: 'pagination_scraping_superficial',
-    utcOffset: 180,
+    timeZone: process.env.TZ,
   })
   public async runnerSuperficial(): Promise<ITcpResponse<{ [url: string]: IAddToQueueResult }> | void> {
     if (this.doNotRunSuperficial) {
@@ -138,7 +138,7 @@ export class AppService implements OnModuleInit {
 
   @Cron(process.env.PAGINATION_SCRAPING_SHALLOW, {
     name: 'pagination_scraping_shallow',
-    utcOffset: 180,
+    timeZone: process.env.TZ,
   })
   public async runnerShallow(): Promise<ITcpResponse<{ [url: string]: IAddToQueueResult }> | void> {
     if (this.doNotRunShallow) {
