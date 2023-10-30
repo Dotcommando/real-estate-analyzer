@@ -238,7 +238,7 @@ export class AppService implements OnModuleInit {
       this.logger.log(`\x1b[36m${dateInHumanReadableFormat(new Date(), 'DD.MM.YYYY HH:mm:ss')} Index ${task.url.replace(this.sourceUrl, '')}\x1b[0m`);
 
       for (const key in indexPageProcessingResult.data) {
-        this.logger.log(`  ${key.replace(this.sourceUrl, '')}: ${indexPageProcessingResult.data[key].added ? 'added' : 'not added'}${indexPageProcessingResult.data[key].reason ? ' ' + indexPageProcessingResult.data[key].reason : ''}`);
+        this.logger.log(`  ${key.replace(this.sourceUrl, '')}: ${indexPageProcessingResult.data[key].added ? 'added' : 'not added'}${indexPageProcessingResult.data[key].reason ? '. ' + indexPageProcessingResult.data[key].reason : ''}`);
       }
     } catch (e) {
       await this.logger.error(' ');
@@ -277,7 +277,7 @@ export class AppService implements OnModuleInit {
       this.logger.log(`\x1b[32m${dateInHumanReadableFormat(new Date(), 'DD.MM.YYYY HH:mm:ss')} Pagination ${task.url.replace(this.sourceUrl, '')}\x1b[0m`);
 
       for (const key in paginationPageProcessingResult.data) {
-        this.logger.log(`  ${key.replace(this.sourceUrl, '')}: ${paginationPageProcessingResult.data[key].added ? 'added' : 'not added'}${paginationPageProcessingResult.data[key].reason ? ' ' + paginationPageProcessingResult.data[key].reason : ''}`);
+        this.logger.log(`  ${key.replace(this.sourceUrl, '')}: ${paginationPageProcessingResult.data[key].added ? 'added' : 'not added'}${paginationPageProcessingResult.data[key].reason ? '. ' + paginationPageProcessingResult.data[key].reason : ''}`);
       }
     } catch (e) {
       await this.logger.error(' ');
