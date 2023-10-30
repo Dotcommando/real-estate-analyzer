@@ -55,7 +55,15 @@ export class AppService implements OnModuleInit {
 
   private indexPagePriority = parseInt(this.configService.get('PRIORITY_INDEX_PAGE'));
   private paginationPagePriority = parseInt(this.configService.get('PRIORITY_PAGINATION_PAGE'));
-  private adPagePriority = parseInt(this.configService.get('PRIORITY_AD_PAGE'));
+  private adPagePriority = this.getPriorityNumber('PRIORITY_AD_PAGE', 10);
+
+  private adPageFirstRunPriority = this.getPriorityNumber('PRIORITY_AD_PAGE_FIRST_RUN', this.adPagePriority);
+  private adPageFullPriority = this.getPriorityNumber('PRIORITY_AD_PAGE_FULL', this.adPagePriority);
+  private adPageDeepPriority = this.getPriorityNumber('PRIORITY_AD_PAGE_DEEP', this.adPagePriority);
+  private adPageModeratePriority = this.getPriorityNumber('PRIORITY_AD_PAGE_MODERATE', this.adPagePriority);
+  private adPageSuperficialPriority = this.getPriorityNumber('PRIORITY_AD_PAGE_SUPERFICIAL', this.adPagePriority);
+  private adPageShallowPriority = this.getPriorityNumber('PRIORITY_AD_PAGE_SHALLOW', this.adPagePriority);
+
   private sourceUrl = this.configService.get('SOURCE_URL');
   private queueName = this.configService.get('QUEUE_NAME');
   private host = this.configService.get('DATA_PARSER_SERVICE_HOST');
@@ -75,7 +83,7 @@ export class AppService implements OnModuleInit {
       this.webScraperClient = this.proxyFactory.getClientProxy();
 
       if (!this.doNotRunFirst) {
-        await this.initScraping(this.firstRunDepth);
+        await this.initScraping(this.firstRunDepth, this.adPageFirstRunPriority);
       }
     } catch (e) {
       await this.logger.error(' ');
@@ -84,10 +92,26 @@ export class AppService implements OnModuleInit {
     }
   }
 
-  private async initScraping(depth?: number): Promise<ITcpResponse<{ [url: string]: IAddToQueueResult }>> {
+  private getPriorityNumber(envVariableName: string, defaultPriority = 0): number {
+    try {
+      const priority = parseInt(this.configService.get(envVariableName));
+
+      return !isNaN(priority)
+        ? priority
+        : defaultPriority;
+    } catch (e) {
+      return defaultPriority;
+    }
+  }
+
+  private async initScraping(
+    depth: number,
+    adPriority?: number,
+  ): Promise<ITcpResponse<{ [url: string]: IAddToQueueResult }>> {
     const indexUrsToScrape: string[] = this.dbUrlRelationService.getUrlList();
     const tasksToScrape: ITask[] = indexUrsToScrape.map((url: string): ITask => ({
       priority: this.indexPagePriority,
+      ...(typeof adPriority === 'number' && { adPriority }),
       url,
       urlType: UrlTypes.Index,
       collection: this.dbUrlRelationService.getCollectionByUrl(url),
@@ -109,7 +133,7 @@ export class AppService implements OnModuleInit {
       return;
     }
 
-    return await this.initScraping(this.depthFull);
+    return await this.initScraping(this.depthFull, this.adPageFullPriority);
   };
 
   @Cron(process.env.PAGINATION_SCRAPING_DEEP, {
@@ -121,7 +145,7 @@ export class AppService implements OnModuleInit {
       return;
     }
 
-    return await this.initScraping(this.depthDeep);
+    return await this.initScraping(this.depthDeep, this.adPageDeepPriority);
   };
 
   @Cron(process.env.PAGINATION_SCRAPING_MODERATE, {
@@ -133,7 +157,7 @@ export class AppService implements OnModuleInit {
       return;
     }
 
-    return await this.initScraping(this.depthModerate);
+    return await this.initScraping(this.depthModerate, this.adPageModeratePriority);
   };
 
   @Cron(process.env.PAGINATION_SCRAPING_SUPERFICIAL, {
@@ -145,7 +169,7 @@ export class AppService implements OnModuleInit {
       return;
     }
 
-    return await this.initScraping(this.depthSuperficial);
+    return await this.initScraping(this.depthSuperficial, this.adPageSuperficialPriority);
   };
 
   @Cron(process.env.PAGINATION_SCRAPING_SHALLOW, {
@@ -157,7 +181,7 @@ export class AppService implements OnModuleInit {
       return;
     }
 
-    return await this.initScraping(this.depthShallow);
+    return await this.initScraping(this.depthShallow, this.adPageShallowPriority);
   };
 
   public async sendTaskForWebScraper(tasks: ITask[]): Promise<ITcpResponse<{ [url: string]: IAddToQueueResult }>> {
@@ -185,6 +209,7 @@ export class AppService implements OnModuleInit {
       const paginationPagesTasks: ITask[] = Array.from(setOfPaginationUrls)
         .map((url: string) => ({
           priority: this.paginationPagePriority,
+          ...(typeof task.adPriority === 'number' && { adPriority: task.adPriority }),
           url,
           urlType: UrlTypes.Pagination,
           collection: task.collection,
@@ -194,7 +219,9 @@ export class AppService implements OnModuleInit {
         }));
       const adsPagesTasks: ITask[] = adsPagesUrls
         .map((url: string) => ({
-          priority: this.adPagePriority,
+          priority: typeof task.adPriority === 'number'
+            ? task.adPriority      // 1st place, where `adPriority` becomes `priority`
+            : this.adPagePriority,
           url,
           urlType: UrlTypes.Ad,
           collection: task.collection,
@@ -228,7 +255,9 @@ export class AppService implements OnModuleInit {
       const adsPagesUrls: string[] = this.dbUrlRelationService.addBaseUrlToSetOfPaths(parsedAdUrls);
       const adsPagesTasks: ITask[] = adsPagesUrls
         .map((url: string) => ({
-          priority: this.adPagePriority,
+          priority: typeof task.adPriority === 'number'
+            ? task.adPriority      // 2nd place, where `adPriority` becomes `priority`
+            : this.adPagePriority,
           url,
           urlType: UrlTypes.Ad,
           collection: task.collection,
