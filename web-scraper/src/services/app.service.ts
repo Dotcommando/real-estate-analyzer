@@ -6,6 +6,7 @@ import { Cron } from '@nestjs/schedule';
 
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { config } from 'dotenv';
+import * as _ from 'lodash';
 import { lastValueFrom, timeout } from 'rxjs';
 
 import { CacheService } from './cache.service';
@@ -280,13 +281,17 @@ export class AppService implements OnModuleInit {
       return null;
     }
 
-    const priorityArray: ITask[] = queue.priorities[taskToFind.priority];
+    let result: ITask = null;
 
-    if (!priorityArray || !priorityArray.length) {
-      return null;
-    }
+    _.forEach(queue.priorities, (task: ITask) => {
+      result = _.find(task, { url: taskToFind.url }) ?? null;
 
-    return priorityArray.find((task: ITask) => task.url === taskToFind.url) ?? null;
+      if (result) {
+        return false;
+      }
+    });
+
+    return result;
   }
 
   private getPriorityArray(priority: number, queueName?: string): ITask[] {
