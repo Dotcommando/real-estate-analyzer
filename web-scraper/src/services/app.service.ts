@@ -24,6 +24,13 @@ import {
 
 config();
 
+interface ITaskDuplicate {
+  taskFound: IQueueElement;
+  priority: string;
+  index: number;
+  priorityArray: IQueueElement[];
+}
+
 @Injectable()
 export class AppService implements OnModuleInit {
   constructor(
@@ -268,7 +275,7 @@ export class AppService implements OnModuleInit {
     };
   }
 
-  private findTaskDuplicate(taskToFind: ITask): ITask | null {
+  private findTaskDuplicate(taskToFind: ITask): ITaskDuplicate | null {
     const queueName = taskToFind.queueName ?? this.defaultQueueName;
     const queue: IQueue = this.queues[queueName];
 
@@ -276,13 +283,23 @@ export class AppService implements OnModuleInit {
       return null;
     }
 
-    const priorityArray: ITask[] = queue.priorities[taskToFind.priority];
+    const priorities = Object.keys(queue.priorities);
 
-    if (!priorityArray || !priorityArray.length) {
-      return null;
+    for (const priority of priorities) {
+      const currentPriorityArray: IQueueElement[] | undefined = queue.priorities[priority];
+      const taskFound: IQueueElement = currentPriorityArray.find((el: IQueueElement) => el.url === taskToFind.url);
+
+      if (Boolean(taskFound)) {
+        return {
+          taskFound,
+          priority,
+          index: currentPriorityArray.findIndex((el: IQueueElement) => el.url === taskFound.url),
+          priorityArray: currentPriorityArray,
+        };
+      }
     }
 
-    return priorityArray.find((task: ITask) => task.url === taskToFind.url) ?? null;
+    return null;
   }
 
   private getPriorityArray(priority: number, queueName?: string): ITask[] {
@@ -302,32 +319,95 @@ export class AppService implements OnModuleInit {
     return queue.priorities[priority];
   }
 
-  public addPageToQueue(task: ITask): IAddToQueueResult {
+  private changePriority(task: ITask, duplicate: ITaskDuplicate): IAddToQueueResult {
     try {
-      const duplicateFound: boolean = Boolean(this.findTaskDuplicate(task));
-      const cacheFound: boolean = Boolean(this.cacheManager.get(task.url));
+      const startPriority = duplicate.priority;
+      const desiredPriority = task.priority;
 
-      if (!duplicateFound && !cacheFound) {
-        const priorityArray: IQueueElement[] = this.getPriorityArray(task.priority, task.queueName);
-        const taskToAdd: ITask = { ...task };
+      duplicate.priorityArray.splice(duplicate.index, 1);
 
-        delete taskToAdd.queueName;
-
-        priorityArray.push(taskToAdd as IQueueElement);
-
-        return { added: true };
+      if (duplicate.priorityArray.length === 0) {
+        delete this.queues[task.queueName].priorities[duplicate.priority];
       }
+
+      const taskAddingResult: IAddToQueueResult = this.pushTaskToPriorityArray(task);
+
+      return taskAddingResult.added
+        ? {
+          added: true,
+          reason: `Priority changed from ${startPriority} to ${desiredPriority}`,
+        }
+        : {
+          added: false,
+          reason: `Cannot change priority from ${startPriority} to ${desiredPriority}`,
+        };
+    } catch (e) {
+      this.logger.error(' ');
+      this.logger.error('Error occurred in AppService.changePriority');
+      this.logger.error(e);
 
       return {
         added: false,
-        reason: duplicateFound
-          ? 'task-duplicate found'
-          : 'in cache found',
+        reason: `An error in AppService.changePriority. ${e.message}`,
       };
+    }
+  }
+
+  private pushTaskToPriorityArray(task: ITask): IAddToQueueResult {
+    try {
+      const priorityArray: IQueueElement[] = this.getPriorityArray(task.priority, task.queueName);
+      const taskToAdd: ITask = { ...task };
+
+      priorityArray.push(taskToAdd as IQueueElement);
+
+      return { added: true };
+    } catch (e) {
+      this.logger.error(' ');
+      this.logger.error('Error occurred in AppService.pushTaskToPriorityArray');
+      this.logger.error(e);
+
+      return {
+        added: false,
+        reason: `An error in AppService.pushTaskToPriorityArray. ${e.message}`,
+      };
+    }
+  }
+
+  public addPageToQueue(task: ITask): IAddToQueueResult {
+    try {
+      const duplicate: ITaskDuplicate = this.findTaskDuplicate(task);
+      const cacheFound: boolean = Boolean(this.cacheManager.get(task.url));
+
+      if (cacheFound) {
+        return {
+          added: false,
+          reason: 'The URL found in the cache',
+        };
+      }
+
+      if (duplicate && duplicate.priority === String(task.priority)) {
+        return {
+          added: false,
+          reason: 'A full duplicate found',
+        };
+      }
+
+      if (duplicate && Number(duplicate.priority) > task.priority) {
+        return {
+          added: false,
+          reason: `A duplicate with higher pr. found (${duplicate.priority} > ${task.priority})`,
+        };
+      }
+
+      if (duplicate && Number(duplicate.priority) < task.priority) {
+        return this.changePriority(task, duplicate);
+      }
+
+      return this.pushTaskToPriorityArray(task);
     } catch (e) {
       this.logger.error(' ');
       this.logger.error('Error occurred in AppService.addPageToQueue');
-      this.logger.error('urlData:');
+      this.logger.error('Task:');
       this.logger.error(task);
       this.logger.error(e);
 
