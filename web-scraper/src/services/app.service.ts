@@ -308,7 +308,7 @@ export class AppService implements OnModuleInit {
 
   public addPageToQueue(task: ITask): IAddToQueueResult {
     try {
-      const duplicateFound: boolean = Boolean(this.findTaskDuplicate(task));
+      const duplicateFound: ITask = this.findTaskDuplicate(task);
       const cacheFound: boolean = Boolean(this.cacheManager.get(task.url));
 
       if (!duplicateFound && !cacheFound) {
@@ -318,6 +318,24 @@ export class AppService implements OnModuleInit {
         delete taskToAdd.queueName;
 
         priorityArray.push(taskToAdd as IQueueElement);
+
+        return { added: true };
+      }
+
+      if (duplicateFound.priority < task.priority) {
+        const priorityArray: IQueueElement[] = this.getPriorityArray(task.priority, task.queueName);
+        const taskToAdd: ITask = { ...task };
+
+        priorityArray.push(taskToAdd as IQueueElement);
+
+        const lowPriorityArray: IQueueElement[] = this.getPriorityArray(duplicateFound.priority, duplicateFound.queueName);
+        const lowPriorityTaskToRemove: ITask = { ...duplicateFound };
+
+        for (let i = 0; i < lowPriorityArray.length; i++) {
+          if (lowPriorityArray[i].url === lowPriorityTaskToRemove.url) {
+            lowPriorityArray.splice(i, 1);
+          }
+        }
 
         return { added: true };
       }
