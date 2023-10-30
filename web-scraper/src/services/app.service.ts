@@ -1,7 +1,6 @@
 import { HttpService } from '@nestjs/axios';
 import { HttpStatus, Inject, Injectable, LoggerService, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { ClientProxy } from '@nestjs/microservices';
 import { Cron } from '@nestjs/schedule';
 
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
@@ -42,11 +41,9 @@ export class AppService implements OnModuleInit {
   private queues: { [key: string]: IQueue } = {};
   private maxAttempts: number;
   private axiosConfig: AxiosRequestConfig;
-  private dataParserClient: ClientProxy;
   private tcpTimeout = parseInt(this.configService.get<string>('TCP_TIMEOUT'));
 
   public async onModuleInit(): Promise<void> {
-    this.dataParserClient = this.proxyFactory.getClientProxy();
     this.initAxiosConfigData();
     this.initQueuesDefaults();
 
@@ -57,7 +54,6 @@ export class AppService implements OnModuleInit {
       };
     }
 
-    // this.addMockTasks();
     this.runQueues();
   }
 
@@ -180,7 +176,7 @@ export class AppService implements OnModuleInit {
         };
 
         await lastValueFrom(
-          this.dataParserClient
+          this.proxyFactory.getClientProxy(element.host, element.port)
             .send(DataParserMessages.PARSE_PAGE, scrapingResult)
             .pipe(timeout(this.tcpTimeout)),
         );
