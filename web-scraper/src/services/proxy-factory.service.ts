@@ -5,29 +5,32 @@ import { ClientOptions, ClientProxy, ClientProxyFactory, TcpOptions, Transport }
 
 @Injectable()
 export class ProxyFactoryService {
-  private clientProxy: ClientProxy;
+  private clientProxyMap = new Map<string, ClientProxy>();
 
   constructor(
     private readonly configService: ConfigService,
   ) {
   }
 
-  public getClientProxy(): ClientProxy {
-    if (!this.clientProxy) {
-      const host = this.configService.get<string>('DATA_PARSER_SERVICE_HOST');
-      const port = parseInt(this.configService.get<string>('DATA_PARSER_SERVICE_PORT'));
+  public getClientProxy(host: string, port: string | number): ClientProxy {
+    const key = host + ':' + port;
 
+    if (!this.clientProxyMap.has(key)) {
       const options: TcpOptions = {
         transport: Transport.TCP,
         options: {
           host,
-          port,
+          port: typeof port === 'number' ? port : parseInt(port),
         },
       };
 
-      this.clientProxy = ClientProxyFactory.create(options as ClientOptions);
+      const clientProxy = ClientProxyFactory.create(options as ClientOptions);
+
+      this.clientProxyMap.set(key, clientProxy);
+
+      return clientProxy;
     }
 
-    return this.clientProxy;
+    return this.clientProxyMap.get(key);
   }
 }

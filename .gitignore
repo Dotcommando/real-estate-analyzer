@@ -67,3 +67,7 @@ mock-server/assets/**/*.html
 # Python system files
 **/__pycache__
 **/venv/
+
+# Data Parser Microservice Replicas
+**/data-parser-*
+**/data-parser_*

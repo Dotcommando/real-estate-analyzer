@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+
+  data-parser-1:
+    image: node:18-alpine
+    working_dir: /data-parser
+    command: sh -c "npm i && npm run build && npm run start:prod"
+    volumes:
+      - .:/data-parser
+    hostname: localhost
+    ports:
+      - "${DATA_PARSER_SERVICE_PORT}:${DATA_PARSER_SERVICE_PORT}"
+    env_file:
+      - .env
+    container_name: data-parser-1
+    networks:
+      - common-net
+
+networks:
+  common-net:
+    name: parser-network-1
+    external: true
