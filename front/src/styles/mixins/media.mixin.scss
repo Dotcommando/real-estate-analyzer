@@ -1,6 +1,13 @@
-$mobile: 375px;
+$mobile: 576px;
 $tablet: 768px;
+$wide-tablet: 992px;
 $desktop: 1200px;
+
+@mixin less-mobile() {
+  @media (max-width: $mobile) {
+    @content;
+  }
+}
 
 @mixin mobile() {
   @media (min-width: $mobile) {
@@ -10,6 +17,12 @@ $desktop: 1200px;
 
 @mixin tablet() {
   @media (min-width: $tablet) {
+    @content;
+  }
+}
+
+@mixin wide-tablet() {
+  @media (min-width: $wide-tablet) {
     @content;
   }
 }

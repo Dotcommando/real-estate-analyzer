@@ -1,16 +1,25 @@
 import { ignoreElements, switchMap, tap } from 'rxjs';
 
 import { ofAction } from '../../operators/of-action.operator';
-import { RealEstateObject } from '../../types/real-estate.type';
 import { StoreEpic } from '../../types/store.types';
 import { dateInHumanReadableFormat } from '../../utils/date-in-human-readable-format';
 import { adsApi } from '../ads/api/ads.api';
+import { AdsQueryParams } from '../ads/types/ads.types';
+import { CountryEnum } from '../country/country.enum';
+import { districtApi } from '../district/api/district.api';
+import { selectSelectedDistrict } from '../district/store/district.selector';
+import {
+  setDistrictData,
+  setSelectedDistrict,
+} from '../district/store/district.slice';
 import { setLoader } from '../loader/loader.slice';
 import { initStatistic } from '../statistic/statistic.slice';
+import { AnalysisType } from '../statistic/statistic.type';
 
 import {
   selectBestPricesAdsType,
   selectBestPricesPage,
+  selectBestPricesSelectedCity,
 } from './best-prices.selector';
 import {
   initBestPrices,
@@ -30,6 +39,7 @@ export const bestPricesEpic: StoreEpic = (action$, state$, { dispatch }) =>
       setBestPricesSelectedCity,
       setBestPricesAdsType,
       setBestPricesPage,
+      setSelectedDistrict,
     ]),
     tap(() => {
       dispatch(
@@ -54,21 +64,29 @@ export const bestPricesEpic: StoreEpic = (action$, state$, { dispatch }) =>
         initStatistic({
           startDate: previousDay,
           endDate: currentDay,
+          analysisType: AnalysisType.DISTRICT_AVG_MEAN,
         }),
       );
 
-      const isSelectedCityAction = setBestPricesSelectedCity.match(action);
+      const selectedCity = selectBestPricesSelectedCity(state$.value);
+      const selectedDistrict = selectSelectedDistrict(state$.value);
 
-      return adsApi.getAds({
+      const adsQueryParam: AdsQueryParams = {
         startDate: previousDay,
         ads: selectBestPricesAdsType(state$.value),
         limit: DEFAULT_LIMIT,
         offset: currentPage !== 1 ? currentPage * DEFAULT_LIMIT : 0,
-        city:
-          isSelectedCityAction && action.payload && action.payload !== 'All'
-            ? action.payload
+        city: selectedCity && selectedCity !== 'All' ? selectedCity : undefined,
+        district:
+          selectedDistrict && selectedDistrict !== 'All'
+            ? selectedDistrict
             : undefined,
-      });
+      };
+
+      return Promise.all([
+        adsApi.getAds(adsQueryParam),
+        districtApi.getDistricts({ country: CountryEnum.Cyprus }),
+      ]);
     }),
     tap(() => {
       dispatch(
@@ -78,6 +96,9 @@ export const bestPricesEpic: StoreEpic = (action$, state$, { dispatch }) =>
         }),
       );
     }),
-    tap((response) => dispatch(setBestPrices(response as RealEstateObject[]))),
+    tap((response) => {
+      dispatch(setBestPrices(response[0]));
+      dispatch(setDistrictData(response[1]));
+    }),
     ignoreElements(),
   );

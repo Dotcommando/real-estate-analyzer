@@ -21,7 +21,9 @@ export const selectNormalizedStatistic = createSelector(
 
     data.forEach((statistic: StatisticResponse) => {
       statistic.data.forEach((statisticDataResponse: StatisticDataResponse) => {
-        normalized[statisticDataResponse.city] = statisticDataResponse;
+        normalized[
+          `${statisticDataResponse.city}_${statisticDataResponse.district}`
+        ] = statisticDataResponse;
       });
     });
 

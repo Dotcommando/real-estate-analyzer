@@ -1,148 +1,111 @@
 @import './styles/mixins/index';
+@import './styles/overrides';
+@import './styles/class-helpers';
 
-blockquote,
-body,
-code,
-dd,
-div,
-dl,
-dt,
-fieldset,
-form,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-input,
-li,
-p,
-pre,
-td,
-textarea,
-th,
-ul {
-  margin: 0;
-  padding: 0;
+:root {
+  --minimal-app-width: 480px;
+  --mobile-width: 576px;
+  --tablet-width: 768px;
+  --wide-tablet-width: 992px;
+  --desktop-width: 1200px;
+
+  /** Background **/
+  --color-bg-default: #22272b;
+
+  /** Spacing **/
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-s: 12px;
+  --space-m: 16px;
+  --space-l: 20px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 40px;
+  --space-4xl: 48px;
+  --space-5xl: 72px;
+  --space-6xl: 96px;
+
+  /** Controls **/
+  --control-radius: 4px;
+  --control-border-width: 1px;
+
+  /** Font **/
+  --color-bg-border: hsla(0deg, 0%, 100%, 20%);
+  --color-typo-primary: #fafafa;
+  --default-font-family: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto,
+    oxygen, ubuntu, cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+
+  /** Border **/
+  --border-radius: var(--control-radius);
+  --not-found: #969696;
+  --very-cheap: #08c545;
+  --cheap: #62a806;
+  --average-priced: #b6b601;
+  --expensive: #c58008;
+  --very-expensive: #c54108;
 }
 
-input {
-  border: none;
-  outline: none;
-}
+.icon {
+  display: block;
 
-main {
-}
-
-a {
-  color: var(--color-bg-link);
-}
-
-html, body, #root, main {
-  height: 100%;
-  background-color: #22272b;
-}
-
-body {
-  margin: 0;
-
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  color: var(--color-control-typo-primary);
-}
-
-button {
-  margin: 0;
-  padding: 0;
-
-  background-color: inherit;
-  border: none;
-  outline: none;
-}
-
-.container {
-  padding: 0 var(--space-s);
-
-  @include tablet {
-    padding: 0 var(--space-m);
-  }
-
-  @include desktop {
-    margin: 0 auto;
-
-    max-width: 1500px;
-  }
-}
-
-.vertical-container {
-  margin-bottom: var(--space-s);
-
-  @include tablet {
-    margin-bottom: var(--space-m);
-  }
-
-  @include desktop {
-    margin-bottom: var(--space-l);
-  }
-}
-
-.align-self {
-  &-end {
-    align-self: flex-end;
-  }
-}
-
-.white-space {
-  &_pre-line {
-    white-space: pre-line;
-  }
-}
-
-.c-pointer {
-  cursor: pointer;
-}
-
-.p-relative {
-  position: relative;
-}
-
-.h-100 {
-  height: 100%;
-}
-
-.icon-m {
   width: 24px;
   height: 24px;
 }
 
-.flex-default {
-  display: flex;
-  align-items: center;
+.color {
+  &-very-cheap {
+    color: var(--very-cheap);
+  }
+
+  &-cheap {
+    color: var(--cheap);
+  }
+
+  &-average {
+    color: var(--average-priced);
+  }
+
+  &-expensive {
+    color: var(--expensive);
+  }
+
+  &-very-expensive {
+    color: var(--very-expensive);
+  }
 }
 
-.flex-end {
-  display: flex;
-  align-items: end;
+.m {
+  &t {
+    &-s {
+      margin-top: var(--space-s);
+    }
+
+    &-m {
+      margin-top: var(--space-m);
+    }
+  }
+
+  &b {
+    &-s {
+      margin-bottom: var(--space-s);
+    }
+
+    &-m {
+      margin-bottom: var(--space-m);
+    }
+
+    &-l {
+      margin-bottom: var(--space-l);
+    }
+  }
 }
 
-.flex-between {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.flex-wrap {
-  flex-wrap: wrap;
-}
-
-.gap-s {
-  gap: var(--space-s);
-}
-
-.inline {
-  display: inline-block;
+.p {
+  &b {
+    &-l {
+      padding-bottom: var(--space-l);
+    }
+  }
 }
