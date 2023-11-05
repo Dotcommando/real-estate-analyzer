@@ -11,11 +11,7 @@ import {
   setStatistic,
   StatisticInitPayload,
 } from './statistic.slice';
-import {
-  AnalysisPeriod,
-  AnalysisType,
-  StatisticResponse,
-} from './statistic.type';
+import { AnalysisPeriod, StatisticResponse } from './statistic.type';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const statisticEpic: StoreEpic = (action$, state$, { dispatch }) =>
@@ -27,7 +23,7 @@ export const statisticEpic: StoreEpic = (action$, state$, { dispatch }) =>
         .getStatistic({
           startDate: action.payload.startDate,
           endDate: action.payload.endDate,
-          analysisType: AnalysisType.CITY_AVG_MEAN,
+          analysisType: action.payload.analysisType,
           analysisPeriod: AnalysisPeriod.DAILY_TOTAL,
           ads: selectBestPricesAdsType(state$.value),
         })

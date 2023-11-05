@@ -1,4 +1,3 @@
-import { RealEstateObject } from '../../../types/real-estate.type';
 import { AdsEnum } from '../../statistic/statistic.type';
 
 export type AdsQueryParams = {
@@ -10,5 +9,3 @@ export type AdsQueryParams = {
   district?: string;
   ads: AdsEnum;
 };
-
-export type AdsResponse = RealEstateObject[];

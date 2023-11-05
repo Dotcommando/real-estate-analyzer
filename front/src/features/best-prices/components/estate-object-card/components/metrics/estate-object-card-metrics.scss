@@ -1,0 +1,188 @@
+@import '../../../../../../styles/mixins/index';
+
+.estate-object-card-metrics {
+  position: relative;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-start;
+
+  width: auto;
+  max-width: 40%;
+  flex: 0 0 40%;
+
+  @include mobile {
+    margin: 0 0 12px;
+
+    justify-content: flex-start;
+
+    max-width: 100%;
+    flex: 0 0 100%;
+  }
+
+  @include tablet {
+    overflow: hidden;
+    justify-content: space-between;
+
+    height: 28px;
+    max-height: 56px;
+    flex-wrap: wrap;
+  }
+
+  @include desktop {
+    height: 60px;
+    max-height: 60px;
+  }
+
+  &__item {
+    margin: 0 8px 0 0;
+
+    height: 24px;
+
+    font: 16px / 26px var(--default-font-family);
+    flex-shrink: 0;
+
+    &:last-child {
+      margin-right: 0;
+    }
+
+    @include mobile {
+      margin: 0 12px 0 0;
+
+      height: 26px;
+
+      font: 18px / 28px var(--default-font-family);
+    }
+
+    @include tablet {
+      font: 16px / 26px var(--default-font-family);
+    }
+
+    &_bedrooms,
+    &_bathrooms,
+    &_energy-efficiency {
+      &-img {
+        display: block;
+
+        width: 24px;
+        height: 24px;
+      }
+    }
+
+    &_bedrooms,
+    &_bathrooms {
+      position: relative;
+
+      width: 24px;
+      height: 24px;
+
+      @include mobile {
+        position: relative;
+
+        width: auto;
+        height: auto;
+      }
+
+      &-img {
+        @include mobile {
+          display: none;
+        }
+      }
+
+      &-unit {
+        @include less-mobile {
+          display: none;
+        }
+      }
+
+      &-number {
+        position: absolute;
+        top: -6px;
+        left: 50%;
+
+        font-size: 12px;
+        line-height: 16px;
+
+        transform: translateX(-50%);
+
+        @include mobile {
+          position: relative;
+          top: auto;
+          left: auto;
+
+          font-size: inherit;
+          line-height: inherit;
+
+          transform: none;
+        }
+      }
+    }
+
+    &_energy-efficiency {
+      position: relative;
+
+      display: flex;
+      flex-direction: row;
+
+      height: 24px;
+
+      &-title {
+        @include less-mobile {
+          display: none;
+        }
+
+        @include mobile {
+          display: none;
+        }
+      }
+
+      &-img {
+        background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABAUlEQVR4nO3WwSoFUQDH4ZOFKLYslTXyBvIKyiMoj0A8glLsFR7Bgizdm7JRXkCJndyVbMSn494yrhm6M51jc3/L2XxzavqfCWHYAGEUbbRCzrCl22NOdAbPPbidEz7x1UEudNX3NnKgk3jog1dywLt+NpcancdrH/qGsZToCC5LTnubDI1hXXlnIVWYRqcC3ksJHxu8ZjOKZbzXgK+bwjc10PiiS03hVg34sBH6W9ivQJ8wFVKF8wp4LRkaw10JehWHJqQK472pLBandDEZGsNCyWl3wj/cx/eYyAFvZ7+PYzgqoKchV7pfb+wFsznhTg/ezIYWZvQi/tB/PhgW/u4DJ0+nel9VHaQAAAAASUVORK5CYII=')
+          no-repeat 50% 50% / contain;
+      }
+    }
+
+    &_bedrooms-img {
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAiUlEQVR4nO3SSw5EQBCA4Vo5xriuKw1WLMRBXGDY/0JIREi6h1KJ1L/tx5d+iHie95qAFmgs4DmH1WPJHAZSoAQGoAA++7mBdUAGJKHwhG7L/4TXslC43y38XYS7UHi63jtPTMwb58vJvxfeOA5+LKxh5RorGIfF/KpF+fPKwUANVIpwrbm/J2eNEd72onzQ5NkAAAAASUVORK5CYII=')
+        no-repeat 50% 50% / contain;
+    }
+
+    &_bathrooms-img {
+      background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB20lEQVR4nO2Zu0oDQRRAp/IFipVCFKJ+gR/i4zNEsFFQUAQb8T+0MBaC+gEqmFjEJhaKnSI2WqmJQho5MslEdLOzu1k25M6aAwv7nDuHe2dZ9iolHKAfWAKKwCvwYfZX9DXlAkAWuMbOLTChJAP0ASUz4TtgHhg025yR0Nzoe5VkgAFgGhj2uTb0S2ZZuQz1LGmKShrALHBuFrXezoAZy706K5qykgSwE7Cwty3P1FDCMhFGU2YaF5QUTDmFcerzXA0lBaASquGzFiSK5COIXIgXiQsSRYBLnZmgfVdE8o3yse07IRIHcSLe8iHkWLLIn/IJOxYrEhckifiVDdHPiRJpKhsinksf1NPlOoWfGnMdRYpECrhPvtNLtIsvQAY4wT2O9dy9MmO4R8aWGadQNnAM1RURhvoPGfnEHSpBIg+4w32QyBHucBgksog7LASJ6P7cG/J5100eq4iR2UI+m4ESRqQnpCXcaUp6jqEiRmYceEIej/rjNpKE52v4ClmZyLYk4Wnab0TsJrWLMrAO9MaS8GkDr5mBv4BqGydeNTE0q6FvpxZFRoEDM/huYgPb4+2ZWDlgpB29vWdgMpGBg2NOmVjJ/SUxIi/Avg6QyEyjy+RM7JT/71Up5BvfI6PpKi1w+AAAAABJRU5ErkJggg==')
+        no-repeat 50% 50% / contain;
+    }
+  }
+
+  &__realty-type-full {
+    @include less-mobile {
+      display: none;
+    }
+
+    @include mobile {
+      display: block;
+    }
+
+    @include tablet {
+      display: none;
+    }
+
+    @include wide-tablet {
+      display: block;
+    }
+  }
+
+  &__realty-type-short {
+    @include mobile {
+      display: none;
+    }
+
+    @include tablet {
+      display: block;
+    }
+
+    @include wide-tablet {
+      display: none;
+    }
+  }
+}

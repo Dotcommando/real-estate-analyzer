@@ -1,0 +1,360 @@
+@import '../../styles//mixins/index';
+
+.ui-bookmark {
+  position: absolute;
+  top: -4px;
+
+  padding: 2px 6px 0;
+
+  width: var(--bookmark-width-xs);
+  height: var(--bookmark-height-xs);
+
+  text-align: center;
+
+  border-top-left-radius: var(--control-radius);
+  border-top-right-radius: var(--control-radius);
+
+  &::before {
+    content: '';
+
+    position: absolute;
+    z-index: 0;
+    left: calc(0px - var(--bookmark-width-xs) / 4);
+    bottom: calc(0px - var(--bookmark-width-xs) / 4);
+
+    transform: rotate(-90deg) scale(0.5, 1);
+  }
+
+  &::after {
+    content: '';
+
+    position: absolute;
+    z-index: 0;
+    right: calc(0px - var(--bookmark-width-xs) / 4);
+    bottom: calc(0px - var(--bookmark-width-xs) / 4);
+
+    transform: rotate(90deg) scale(0.5, 1);
+  }
+
+  @include mobile {
+    top: -4px;
+
+    padding: 4px 8px 0;
+
+    width: var(--bookmark-width-s);
+    height: var(--bookmark-height-s);
+
+    &::before {
+      left: calc(0px - var(--bookmark-width-s) / 4);
+      bottom: calc(0px - var(--bookmark-width-s) / 4);
+    }
+
+    &::after {
+      right: calc(0px - var(--bookmark-width-s) / 4);
+      bottom: calc(0px - var(--bookmark-width-s) / 4);
+    }
+  }
+
+  @include tablet {
+    top: -4px;
+
+    padding: 2px 6px 0;
+
+    width: var(--bookmark-width-m);
+    height: 34px;
+    height: var(--bookmark-height-m);
+
+    border-top-left-radius: 0;
+    border-bottom-right-radius: var(--control-radius);
+
+    &::before {
+      content: '';
+
+      position: absolute;
+      z-index: 0;
+      left: calc(0px - 1.23 * var(--bookmark-height-m));
+      bottom: calc(0px - 0.5 * var(--bookmark-height-m));
+
+      border-width: var(--bookmark-height-m) var(--bookmark-height-m)
+        var(--bookmark-height-m) var(--bookmark-height-m);
+
+      transform: rotate(0) scale(0.25, 0.5);
+    }
+
+    &::after {
+      display: none;
+    }
+  }
+
+  > span {
+    position: relative;
+    z-index: 1;
+  }
+
+  &_very-cheap {
+    background: var(--very-cheap);
+
+    &::before,
+    &::after {
+      border-top: solid calc(var(--bookmark-width-xs) / 2) var(--very-cheap);
+      border-left: solid calc(var(--bookmark-width-xs) / 2) transparent;
+      border-right: solid calc(var(--bookmark-width-xs) / 2) transparent;
+    }
+
+    @include mobile {
+      &::before,
+      &::after {
+        border-top: solid calc(var(--bookmark-width-s) / 2) var(--very-cheap);
+        border-left: solid calc(var(--bookmark-width-s) / 2) transparent;
+        border-right: solid calc(var(--bookmark-width-s) / 2) transparent;
+      }
+    }
+
+    @include tablet {
+      &::before,
+      &::after {
+        border-top: solid var(--bookmark-height-m) transparent;
+        border-left: solid var(--bookmark-height-m) transparent;
+        border-right: solid var(--bookmark-height-m) var(--very-cheap);
+        border-bottom: solid var(--bookmark-height-m) transparent;
+      }
+    }
+  }
+
+  &_cheap {
+    background: var(--cheap);
+
+    &::before,
+    &::after {
+      border-top: solid calc(var(--bookmark-width-xs) / 2) var(--cheap);
+      border-left: solid calc(var(--bookmark-width-xs) / 2) transparent;
+      border-right: solid calc(var(--bookmark-width-xs) / 2) transparent;
+    }
+
+    @include mobile {
+      &::before,
+      &::after {
+        border-top: solid calc(var(--bookmark-width-s) / 2) var(--cheap);
+        border-left: solid calc(var(--bookmark-width-s) / 2) transparent;
+        border-right: solid calc(var(--bookmark-width-s) / 2) transparent;
+      }
+    }
+
+    @include tablet {
+      &::before,
+      &::after {
+        border-top: solid var(--bookmark-height-m) transparent;
+        border-left: solid var(--bookmark-height-m) transparent;
+        border-right: solid var(--bookmark-height-m) var(--cheap);
+        border-bottom: solid var(--bookmark-height-m) transparent;
+      }
+    }
+  }
+
+  &_average {
+    background: var(--average-priced);
+
+    &::before,
+    &::after {
+      border-top: solid calc(var(--bookmark-width-xs) / 2) var(--average-priced);
+      border-left: solid calc(var(--bookmark-width-xs) / 2) transparent;
+      border-right: solid calc(var(--bookmark-width-xs) / 2) transparent;
+    }
+
+    @include mobile {
+      &::before,
+      &::after {
+        border-top: solid calc(var(--bookmark-width-s) / 2)
+          var(--average-priced);
+        border-left: solid calc(var(--bookmark-width-s) / 2) transparent;
+        border-right: solid calc(var(--bookmark-width-s) / 2) transparent;
+      }
+    }
+
+    @include tablet {
+      &::before,
+      &::after {
+        border-top: solid var(--bookmark-height-m) transparent;
+        border-left: solid var(--bookmark-height-m) transparent;
+        border-right: solid var(--bookmark-height-m) var(--average-priced);
+        border-bottom: solid var(--bookmark-height-m) transparent;
+      }
+    }
+  }
+
+  &_expensive {
+    background: var(--expensive);
+
+    &::before,
+    &::after {
+      border-top: solid calc(var(--bookmark-width-xs) / 2) var(--expensive);
+      border-left: solid calc(var(--bookmark-width-xs) / 2) transparent;
+      border-right: solid calc(var(--bookmark-width-xs) / 2) transparent;
+    }
+
+    @include mobile {
+      &::before,
+      &::after {
+        border-top: solid calc(var(--bookmark-width-s) / 2) var(--expensive);
+        border-left: solid calc(var(--bookmark-width-s) / 2) transparent;
+        border-right: solid calc(var(--bookmark-width-s) / 2) transparent;
+      }
+    }
+
+    @include tablet {
+      &::before,
+      &::after {
+        border-top: solid var(--bookmark-height-m) transparent;
+        border-left: solid var(--bookmark-height-m) transparent;
+        border-right: solid var(--bookmark-height-m) var(--expensive);
+        border-bottom: solid var(--bookmark-height-m) transparent;
+      }
+    }
+  }
+
+  &_very-expensive {
+    background: var(--very-expensive);
+
+    &::before,
+    &::after {
+      border-top: solid calc(var(--bookmark-width-xs) / 2) var(--very-expensive);
+      border-left: solid calc(var(--bookmark-width-xs) / 2) transparent;
+      border-right: solid calc(var(--bookmark-width-xs) / 2) transparent;
+    }
+
+    @include mobile {
+      &::before,
+      &::after {
+        border-top: solid calc(var(--bookmark-width-s) / 2)
+          var(--very-expensive);
+        border-left: solid calc(var(--bookmark-width-s) / 2) transparent;
+        border-right: solid calc(var(--bookmark-width-s) / 2) transparent;
+      }
+    }
+
+    @include tablet {
+      &::before,
+      &::after {
+        border-top: solid var(--bookmark-height-m) transparent;
+        border-left: solid var(--bookmark-height-m) transparent;
+        border-right: solid var(--bookmark-height-m) var(--very-expensive);
+        border-bottom: solid var(--bookmark-height-m) transparent;
+      }
+    }
+  }
+
+  &_white {
+    background: var(--not-found);
+
+    &::before,
+    &::after {
+      border-top: solid calc(var(--bookmark-width-xs) / 2) var(--not-found);
+      border-left: solid calc(var(--bookmark-width-xs) / 2) transparent;
+      border-right: solid calc(var(--bookmark-width-xs) / 2) transparent;
+    }
+
+    @include mobile {
+      &::before,
+      &::after {
+        border-top: solid calc(var(--bookmark-width-s) / 2) var(--not-found);
+        border-left: solid calc(var(--bookmark-width-s) / 2) transparent;
+        border-right: solid calc(var(--bookmark-width-s) / 2) transparent;
+      }
+    }
+
+    @include tablet {
+      &::before,
+      &::after {
+        border-top: solid var(--bookmark-height-m) transparent;
+        border-left: solid var(--bookmark-height-m) transparent;
+        border-right: solid var(--bookmark-height-m) var(--not-found);
+        border-bottom: solid var(--bookmark-height-m) transparent;
+      }
+    }
+  }
+
+  &_avg {
+    right: 76px;
+
+    @include mobile {
+      right: 92px;
+    }
+
+    @include tablet {
+      top: 12px;
+      right: -4px;
+    }
+  }
+
+  &_median {
+    right: 12px;
+
+    @include tablet {
+      top: 58px;
+      right: -4px;
+    }
+  }
+
+  &__title {
+    display: block;
+
+    width: 100%;
+
+    font-size: 12px;
+    line-height: 12px;
+
+    @include mobile {
+      display: block;
+
+      width: 100%;
+
+      font-size: 16px;
+      line-height: 20px;
+    }
+
+    @include tablet {
+      display: block;
+
+      width: 100%;
+
+      font-size: 12px;
+      line-height: 12px;
+    }
+  }
+
+  &__value {
+    font: 700 12px/12px var(--default-font-family);
+
+    @include mobile {
+      font: 700 16px/20px var(--default-font-family);
+    }
+
+    @include tablet {
+      font: 700 12px/12px var(--default-font-family);
+    }
+  }
+
+  &__delimiter {
+    font: 700 10px/12px var(--default-font-family);
+
+    @include mobile {
+      font: 700 14px/20px var(--default-font-family);
+    }
+
+    @include tablet {
+      font: 700 10px/12px var(--default-font-family);
+    }
+  }
+
+  &__unit {
+    font: 700 10px/12px var(--default-font-family);
+
+    @include mobile {
+      font: 700 14px/20px var(--default-font-family);
+    }
+
+    @include tablet {
+      font: 700 10px/12px var(--default-font-family);
+    }
+  }
+}

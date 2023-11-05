@@ -65,7 +65,7 @@ const SelectAdsTypeComponent = () => {
 
   return (
     <Select
-      placeholder={t('adsType.type')}
+      caption={t('adsType.type')}
       items={adsTypes}
       value={adsTypeValue()}
       onChange={({ value }) => {
