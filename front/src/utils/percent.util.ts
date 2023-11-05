@@ -12,8 +12,7 @@ export function getPercentColor(
   const percentDifference = getPriceDifference(targetPrice, currentPrice);
 
   const AVERAGE_OFFSET = 5;
-  const FIRST_OFFSET = 10;
-  const SECOND_OFFSET = 15;
+  const MEDIUM_OFFSET = 15;
 
   if (
     percentDifference >= -AVERAGE_OFFSET &&
@@ -22,22 +21,19 @@ export function getPercentColor(
     return 'color-average';
   }
 
-  if (percentDifference <= -SECOND_OFFSET) {
+  if (percentDifference < -MEDIUM_OFFSET) {
     return 'color-very-cheap';
   }
 
-  if (percentDifference >= SECOND_OFFSET) {
+  if (percentDifference > MEDIUM_OFFSET) {
     return 'color-very-expensive';
   }
 
-  if (
-    percentDifference >= -SECOND_OFFSET ||
-    percentDifference >= -FIRST_OFFSET
-  ) {
+  if (percentDifference <= -MEDIUM_OFFSET) {
     return 'color-cheap';
   }
 
-  if (percentDifference >= SECOND_OFFSET || percentDifference >= FIRST_OFFSET) {
+  if (percentDifference <= MEDIUM_OFFSET) {
     return 'color-expensive';
   }
 
