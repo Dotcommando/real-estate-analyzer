@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
-import { ChoiceGroup } from '@consta/uikit/ChoiceGroup';
 import { Loader } from '@consta/uikit/Loader';
 import { cnMixSpace } from '@consta/uikit/MixSpace';
 import { Pagination } from '@consta/uikit/Pagination';
@@ -15,42 +15,28 @@ import { selectLoaderBestPrices } from '../loader/loader.selector';
 
 import RealEstateObjectCardComponent from './components/estate-object-card/estate-object-card.components';
 import SelectAdsTypeComponent from './components/select-ads-type/select-ads-type.components';
+import SelectCityComponent from './components/select-city/select-city.components';
+import SelectDistrictComponent from './components/select-district/select-district.components';
 import {
   selectBestPricesData,
   selectBestPricesPage,
-  selectBestPricesSelectedCity,
 } from './best-prices.selector';
-import {
-  initBestPrices,
-  setBestPricesPage,
-  setBestPricesSelectedCity,
-} from './best-prices.slice';
+import { initBestPrices, setBestPricesPage } from './best-prices.slice';
 
 import './best-prices.scss';
 
 const cn = block('best-prices');
-
-type Item = string;
-
-const items: Item[] = [
-  'All',
-  'Limassol',
-  'Nicosia',
-  'Paphos',
-  'Larnaca',
-  'Famagusta',
-];
 
 const BestPricesComponent = () => {
   /** Store */
   const dispatch = useDispatch();
   const loaderState = useSelector(selectLoaderBestPrices);
   const bestPricesData = useSelector(selectBestPricesData);
-  const selectedCity = useSelector(selectBestPricesSelectedCity);
   const page = useSelector(selectBestPricesPage);
 
   /** Hooks */
   const [searchParams, setSearchParams] = useSearchParams();
+  const { t } = useTranslation();
 
   useEffect(() => {
     dispatch(initBestPrices());
@@ -76,44 +62,34 @@ const BestPricesComponent = () => {
           </Text>
 
           <div className={`flex-default gap-s ${cnMixSpace({ mB: 'm' })}`}>
-            <ChoiceGroup
-              value={selectedCity}
-              onChange={({ value }) => {
-                searchParams.set(SearchParam.selectedCity, value);
+            <SelectCityComponent />
 
-                setSearchParams(searchParams);
-
-                dispatch(setBestPricesSelectedCity(value));
-              }}
-              items={items}
-              getItemLabel={(item) => item}
-              multiple={false}
-              name="CitySelector"
-              size="s"
-            />
+            <SelectDistrictComponent />
 
             <SelectAdsTypeComponent />
           </div>
 
-          <Text size="l" className={cnMixSpace({ mB: 'm' })}>
-            {selectedCity || i18n.t('bestPrices.allCities')}
-          </Text>
-
           <div className={cn('cards')}>
-            {bestPricesData.map((realEstateObject: RealEstateObject) => (
-              <RealEstateObjectCardComponent
-                realEstateObject={realEstateObject}
-                key={realEstateObject.url}
-              />
-            ))}
+            {bestPricesData.length > 0 ? (
+              bestPricesData.map((realEstateObject: RealEstateObject) => (
+                <RealEstateObjectCardComponent
+                  realEstateObject={realEstateObject}
+                  key={realEstateObject.url}
+                />
+              ))
+            ) : (
+              <Text size="xl">{t('common.notFound')}</Text>
+            )}
           </div>
 
-          <Pagination
-            currentPage={page - 1}
-            totalPages={100}
-            onChange={(changedPage) => handleChangePage(changedPage + 1)}
-            className={cnMixSpace({ mV: 'm' })}
-          />
+          {bestPricesData.length > 52 && (
+            <Pagination
+              currentPage={page - 1}
+              totalPages={100}
+              onChange={(changedPage) => handleChangePage(changedPage + 1)}
+              className={cnMixSpace({ mV: 'm' })}
+            />
+          )}
         </div>
       )}
     </div>

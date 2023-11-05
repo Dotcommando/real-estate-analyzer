@@ -8,6 +8,7 @@ import BestPricesComponent from './features/best-prices/best-prices.component';
 import HeaderComponent from './features/header/header.component';
 import RegistrationComponent from './features/registration/registration.component';
 import StatisticComponent from './features/statistic/statistic.component';
+import UrlCrawlerComponent from './features/url-crawl/url-crawl.component';
 
 import './app.scss';
 
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
       {
         path: RouteName.DetailObject,
         element: <div>bestPrices 222</div>,
+      },
+      {
+        path: RouteName.SearchByUrl,
+        element: <UrlCrawlerComponent />,
       },
       {
         path: RouteName.Registration,

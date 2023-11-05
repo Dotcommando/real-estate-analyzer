@@ -8,6 +8,7 @@ import { combineEpics, createEpicMiddleware } from 'redux-observable';
 
 import { bestPricesEpic } from './features/best-prices/best-prices.epic';
 import bestPricesReducer from './features/best-prices/best-prices.slice';
+import districtReducer from './features/district/store/district.slice';
 import loaderReducer from './features/loader/loader.slice';
 import { statisticEpic } from './features/statistic/statistic.epic';
 import statisticReducer from './features/statistic/statistic.slice';
@@ -33,6 +34,7 @@ export const store = configureStore({
     'loader': loaderReducer,
     'statistic': statisticReducer,
     'best-prices': bestPricesReducer,
+    'district': districtReducer,
   },
   middleware: [
     ...getDefaultMiddleware({

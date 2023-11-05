@@ -11,7 +11,7 @@ import { selectLoaderObjects } from '../loader/loader.selector';
 
 import { selectStatisticList } from './statistic.selector';
 import { initStatistic } from './statistic.slice';
-import { StatisticDataResponse } from './statistic.type';
+import { AnalysisType, StatisticDataResponse } from './statistic.type';
 
 import './statistic.scss';
 
@@ -42,6 +42,7 @@ const StatisticComponent = () => {
       initStatistic({
         startDate: previous3Months,
         endDate: currentDay,
+        analysisType: AnalysisType.DISTRICT_AVG_MEAN,
       }),
     );
   }, [currentDay, dispatch, previous3Months]);
