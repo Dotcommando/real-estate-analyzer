@@ -157,8 +157,7 @@ export class DbAccessService {
       : await this.getDistrictAnalysis(params);
   }
 
-
-  public async getAds(params: IAdsParams): Promise<{ads: IAdsResult; total: number }> {
+  public async getAds(params: IAdsParams): Promise<{ ads: IAdsResult; total: number }> {
     const model = this.getAdsModel(params.collection as AdsEnum);
 
     const filter = {
@@ -189,8 +188,8 @@ export class DbAccessService {
     ]);
 
     return {
-      ads: activeDatesMapper(ads, getLastDate), 
-      total: await model.countDocuments({}), 
+      ads: activeDatesMapper(ads, getLastDate),
+      total: await model.countDocuments({}),
     };
   }
 
