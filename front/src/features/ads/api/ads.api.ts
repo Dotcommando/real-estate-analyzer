@@ -1,12 +1,12 @@
-import { RealEstateObject } from '../../../types/real-estate.type';
+import { AdsResponse, RealEstateObject } from '../../../types/real-estate.type';
 import { BaseApi } from '../../api/base.api';
 import { AdsQueryParams } from '../types/ads.types';
 
 class AdsApi extends BaseApi {
-  public getAds(params: AdsQueryParams): Promise<RealEstateObject[]> {
-    return this.get<RealEstateObject[], AdsQueryParams>('/ads', params).then(
-      (x) => {
-        return x.map((df: RealEstateObject) => {
+  public getAds(params: AdsQueryParams): Promise<AdsResponse> {
+    return this.get<AdsResponse, AdsQueryParams>('/ads', params).then(
+      (response) => {
+        response.ads = response.ads.map((df: RealEstateObject) => {
           if (!df.district) {
             return df;
           }
@@ -48,6 +48,8 @@ class AdsApi extends BaseApi {
 
           return df;
         });
+
+        return response;
       },
     );
   }
