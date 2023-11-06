@@ -17,9 +17,11 @@ import RealEstateObjectCardComponent from './components/estate-object-card/estat
 import SelectAdsTypeComponent from './components/select-ads-type/select-ads-type.components';
 import SelectCityComponent from './components/select-city/select-city.components';
 import SelectDistrictComponent from './components/select-district/select-district.components';
+import { ADS_PER_PAGE } from './constants/ads.constant';
 import {
   selectBestPricesData,
   selectBestPricesPage,
+  selectBestPricesTotalAds,
 } from './best-prices.selector';
 import { initBestPrices, setBestPricesPage } from './best-prices.slice';
 
@@ -27,13 +29,12 @@ import './best-prices.scss';
 
 const cn = block('best-prices');
 
-const MIN_COUNT_OF_DATA_FOR_SHOW_PAGINATION = 40;
-
 const BestPricesComponent = () => {
   /** Store */
   const dispatch = useDispatch();
   const loaderState = useSelector(selectLoaderBestPrices);
   const bestPricesData = useSelector(selectBestPricesData);
+  const totalAds = useSelector(selectBestPricesTotalAds);
   const page = useSelector(selectBestPricesPage);
 
   /** Hooks */
@@ -84,10 +85,10 @@ const BestPricesComponent = () => {
             )}
           </div>
 
-          {bestPricesData.length > MIN_COUNT_OF_DATA_FOR_SHOW_PAGINATION && (
+          {totalAds > ADS_PER_PAGE && (
             <Pagination
               currentPage={page - 1}
-              totalPages={100}
+              totalPages={Math.round(totalAds / ADS_PER_PAGE)}
               onChange={(changedPage) => handleChangePage(changedPage + 1)}
               className={cnMixSpace({ mV: 'm' })}
             />
