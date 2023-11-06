@@ -5,9 +5,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc } from 'src/schemas';
 import { IGetDistrictsResult } from 'src/types/get-districts.interface';
+import { getLastDate } from 'src/utils';
 
 import { AdsEnum, AdsEnumArray, AnalysisType, AnalysisTypeArray, LOGGER } from '../constants';
-import { analysisMapper, cityReportMapper, districtReportMapper } from '../mappers';
+import { activeDatesMapper, analysisMapper, cityReportMapper, districtReportMapper } from '../mappers';
 import {
   IAdsParams,
   IAdsResult,
@@ -156,8 +157,7 @@ export class DbAccessService {
       : await this.getDistrictAnalysis(params);
   }
 
-
-  public async getAds(params: IAdsParams): Promise<IAdsResult> {
+  public async getAds(params: IAdsParams): Promise<{ ads: IAdsResult; total: number }> {
     const model = this.getAdsModel(params.collection as AdsEnum);
 
     const filter = {
@@ -181,7 +181,16 @@ export class DbAccessService {
       filter['district'] = params.district;
     }
 
-    return await model.find(filter).skip(params.offset).limit(params.limit);
+    const ads = await model.aggregate([
+      { $match: filter },
+      { $skip: params.offset },
+      { $limit: params.limit },
+    ]);
+
+    return {
+      ads: activeDatesMapper(ads, getLastDate),
+      total: await model.countDocuments({}),
+    };
   }
 
   public async getDistrict(

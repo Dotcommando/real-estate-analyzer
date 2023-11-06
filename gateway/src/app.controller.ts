@@ -30,7 +30,7 @@ export class AppController {
   @Get('/ads')
   public async getAds(
     @Query() query: AdsDto,
-  ): Promise<IResponse<IAdsResult>> {
+  ): Promise<IResponse<{ ads: IAdsResult; total: number }>> {
     return this.appService.getAds(queryAdsToAds(query));
   }
 

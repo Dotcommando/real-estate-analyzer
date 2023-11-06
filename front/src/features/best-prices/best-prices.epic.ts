@@ -16,6 +16,7 @@ import { setLoader } from '../loader/loader.slice';
 import { initStatistic } from '../statistic/statistic.slice';
 import { AnalysisType } from '../statistic/statistic.type';
 
+import { ADS_PER_PAGE } from './constants/ads.constant';
 import {
   selectBestPricesAdsType,
   selectBestPricesPage,
@@ -27,9 +28,8 @@ import {
   setBestPricesAdsType,
   setBestPricesPage,
   setBestPricesSelectedCity,
+  setTotalAds,
 } from './best-prices.slice';
-
-const DEFAULT_LIMIT = 52;
 
 export const bestPricesEpic: StoreEpic = (action$, state$, { dispatch }) =>
   action$.pipe(
@@ -73,8 +73,8 @@ export const bestPricesEpic: StoreEpic = (action$, state$, { dispatch }) =>
       const adsQueryParam: AdsQueryParams = {
         startDate: previousDay,
         ads: selectBestPricesAdsType(state$.value),
-        limit: DEFAULT_LIMIT,
-        offset: currentPage !== 1 ? currentPage * DEFAULT_LIMIT : 0,
+        limit: ADS_PER_PAGE,
+        offset: currentPage !== 1 ? currentPage * ADS_PER_PAGE : 0,
         city: selectedCity && selectedCity !== 'All' ? selectedCity : undefined,
         district:
           selectedDistrict && selectedDistrict !== 'All'
@@ -96,7 +96,8 @@ export const bestPricesEpic: StoreEpic = (action$, state$, { dispatch }) =>
       );
     }),
     tap((response) => {
-      dispatch(setBestPrices(response[0]));
+      dispatch(setBestPrices(response[0].ads));
+      dispatch(setTotalAds(response[0].total));
       dispatch(setDistrictData(response[1]));
     }),
     ignoreElements(),

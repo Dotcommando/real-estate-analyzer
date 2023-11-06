@@ -28,3 +28,10 @@ export const selectBestPricesData = createSelector(
     return bestPrices.data;
   },
 );
+
+export const selectBestPricesTotalAds = createSelector(
+  [selectBestPrices],
+  (bestPrices) => {
+    return bestPrices.totalAds;
+  },
+);

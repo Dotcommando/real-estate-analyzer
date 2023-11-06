@@ -71,6 +71,11 @@ export type RealEstateApartment = {
   'pets': RealEstatePets;
 };
 
+export type AdsResponse = {
+  ads: RealEstateObject[];
+  total: number;
+};
+
 export type RealEstateObject = {
   'url': string;
   'title': string;

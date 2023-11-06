@@ -11,14 +11,17 @@ export type BestPricesStore = {
   selectedCity: string | null;
   adsType: AdsEnum;
   page: number;
+  totalAds: number;
 };
 
+/** TODO: to Ads */
 const initialState: BestPricesStore = {
   data: [],
   selectedCity: getSearchParam(SearchParam.selectedCity) || 'All',
   adsType:
     (getSearchParam(SearchParam.adsType) as AdsEnum) || AdsEnum.RentFlats,
   page: parseInt(getSearchParam(SearchParam.page) || '1', 10),
+  totalAds: 0,
 };
 
 export const bestPricesSlice = createSlice({
@@ -50,6 +53,12 @@ export const bestPricesSlice = createSlice({
     ) => {
       state.page = action.payload;
     },
+    setTotalAds: (
+      state: BestPricesStore,
+      action: PayloadAction<BestPricesStore['totalAds']>,
+    ) => {
+      state.totalAds = action.payload;
+    },
   },
 });
 
@@ -59,6 +68,7 @@ export const {
   setBestPricesSelectedCity,
   setBestPricesAdsType,
   setBestPricesPage,
+  setTotalAds,
 } = bestPricesSlice.actions;
 
 export default bestPricesSlice.reducer;

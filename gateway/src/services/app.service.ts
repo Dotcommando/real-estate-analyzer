@@ -74,7 +74,7 @@ export class AppService {
     }
   }
 
-  public async getAds(params: IAdsParams): Promise<IResponse<IAdsResult>> {
+  public async getAds(params: IAdsParams): Promise<IResponse<{ ads: IAdsResult; total: number }>> {
     try {
       if (params.startDate.getTime() > params.endDate.getTime()) {
         return {
@@ -84,7 +84,7 @@ export class AppService {
         };
       }
 
-      const ads: IAdsResult = await this.dbAccessService.getAds(params);
+      const ads: {ads: IAdsResult; total: number } = await this.dbAccessService.getAds(params);
 
       return {
         status: HttpStatus.OK,

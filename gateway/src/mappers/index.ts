@@ -1,3 +1,4 @@
+export * from './active-dates.mapper';
 export * from './analysis.mapper';
 export * from './city-report.mapper';
 export * from './district-report.mapper';
