@@ -72,6 +72,14 @@ export class AppService implements OnModuleInit {
     this.cacheManager.clear();
   }
 
+  @Cron(process.env.CACHE_PERSISTENCE_UPDATE, {
+    name: 'update_persistence_cache',
+    timeZone: process.env.TZ,
+  })
+  public updatePersistenceCache() {
+    this.cacheManager.updatePersistenceCache();
+  }
+
   private getEnvVariableAsInteger(varName: string, defaultValue: number): number {
     let result: number;
 
