@@ -17,7 +17,8 @@ export const EN_I18N: ResourceLanguage = {
       bathrooms: 'Count bathroom:',
       bedrooms: 'Count bedroom:',
       square: 'Square:',
-      city: 'City',
+      city: 'Select city',
+      district: 'Select district',
       energy: 'Energy efficiency',
       furniture: 'Furniture',
       expandDescription: 'Expand description',
@@ -48,6 +49,17 @@ export const EN_I18N: ResourceLanguage = {
           'Current median price for city <strong>{{city}}</strong> is <strong>{{price}}</strong>',
       },
       loadMore: 'Load more',
+      apartShort: 'Apart.',
+      links: {
+        hideAd: 'Hide this ad',
+        addToFavorites: 'Add to favorites',
+        showSource: 'Show source',
+        moreData: 'More data',
+      },
+    },
+    bookmark: {
+      avg: 'Avg',
+      median: 'Median',
     },
     adsType: {
       rentFlats: 'Flats for rent',
@@ -62,8 +74,11 @@ export const EN_I18N: ResourceLanguage = {
       title: 'Registration',
     },
     indicator: {
-      bedroom: 'Bedroom',
-      bathroom: 'Bathroom',
+      bedroom: 'Bedrooms',
+      bathroom: 'Bathrooms',
+    },
+    common: {
+      notFound: 'Not found results by this query',
     },
   },
 };

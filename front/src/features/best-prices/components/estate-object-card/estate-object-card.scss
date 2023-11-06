@@ -1,16 +1,126 @@
+@import '../../../../styles/mixins/index';
+
 .estate-object-card {
+  --max-card-width: 440px;
+  position: relative;
+
+  margin: 0 auto;
+  padding: var(--space-s);
+
   display: flex;
-  flex-direction: column;
   justify-content: space-between;
+
+  width: var(--max-card-width);
+
+  border: var(--control-border-width) solid var(--color-bg-border);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-group);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  flex-grow: 1;
+
+  @include mobile {
+    width: 536px;
+  }
+
+  @include tablet {
+    width: 354px;
+    height: 400px;
+  }
+
+  @include wide-tablet {
+    width: 466px;
+    height: 400px;
+  }
+
+  @include desktop {
+    width: 275px;
+    height: 500px;
+  }
+
+  h1 {
+    font: 700 28px / 36px var(--default-font-family);
+
+    @include wide-tablet {
+      font: 700 32px / 36px var(--default-font-family);
+    }
+  }
+
+  h2 {
+    font: 700 24px / 30px var(--default-font-family);
+
+    @include wide-tablet {
+      font: 700 28px / 30px var(--default-font-family);
+    }
+  }
+
+  h3 {
+    font: 700 20px / 24px var(--default-font-family);
+
+    @include wide-tablet {
+      font: 700 24px / 24px var(--default-font-family);
+    }
+  }
+
+  h4 {
+    font: 700 18px / 24px var(--default-font-family);
+
+    @include wide-tablet {
+      font: 700 20px / 24px var(--default-font-family);
+    }
+  }
+
+  &__title {
+    width: 100%;
+    flex-shrink: 0;
+    flex-grow: 1;
+
+    h4 {
+      overflow: hidden;
+
+      max-width: 100%;
+
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    @include tablet {
+      flex: 0 0 calc(100% - var(--bookmark-width-m) - 8px);
+
+      height: 48px;
+
+      h4 {
+        display: -webkit-box;
+
+        /* Cutting 2 lines start */
+        overflow: hidden;
+
+        white-space: normal;
+        text-overflow: unset;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+
+        /* Cutting 2 lines end */
+      }
+    }
+
+    @include wide-tablet {
+      flex: 0 0 calc(100% - var(--bookmark-width-m) - 8px);
+
+      height: 48px;
+    }
+  }
 
   &__description {
     min-height: 201px;
   }
 
   &__image {
-    width: 200px;
     margin: 0 auto;
+
     display: block;
+
+    width: 200px;
   }
 
   &__badges {

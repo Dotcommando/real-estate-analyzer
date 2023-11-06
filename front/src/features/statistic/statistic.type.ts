@@ -19,6 +19,8 @@ export enum AdsEnum {
 
 export type StatisticDataResponse = {
   'city': string;
+  'district': string;
+  'count': number;
   'total-area': number;
   'total-price': number;
   'mean-price': number;

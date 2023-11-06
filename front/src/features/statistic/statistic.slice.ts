@@ -9,7 +9,7 @@ export type StatisticStore = {
 
 export type StatisticInitPayload = Pick<
   StatisticGetParameters,
-  'startDate' | 'endDate'
+  'startDate' | 'endDate' | 'analysisType'
 >;
 
 const initialState: StatisticStore = {

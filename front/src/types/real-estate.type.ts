@@ -78,6 +78,7 @@ export type RealEstateObject = {
   'publish_date': number;
   'city': string;
   'district'?: string;
+  'fullDistrict'?: string;
   'price': number;
   'currency': string;
   'ad_id': string;
