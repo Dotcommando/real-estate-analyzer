@@ -20,9 +20,12 @@ const UiBookmark = ({ value, type, color }: Props) => {
       <span className={cn('title')}>
         {t(type === 'avg' ? 'bookmark.avg' : 'bookmark.median')}
       </span>
-      {value ? (
+      {value !== undefined ? (
         <>
-          <span className={cn('value')}>{value}</span>
+          <span className={cn('value')}>
+            {value > 0 ? '+' : ''}
+            {value}
+          </span>
           <span className={cn('delimiter')} />
           <span className={cn('unit')}>%</span>
         </>

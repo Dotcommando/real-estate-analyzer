@@ -15,6 +15,13 @@ export function getPercentColor(
   const FIRST_OFFSET = 10;
   const SECOND_OFFSET = 15;
 
+  if (
+    percentDifference >= -AVERAGE_OFFSET &&
+    percentDifference <= AVERAGE_OFFSET
+  ) {
+    return 'color-average';
+  }
+
   if (percentDifference <= -SECOND_OFFSET) {
     return 'color-very-cheap';
   }
@@ -23,19 +30,15 @@ export function getPercentColor(
     return 'color-very-expensive';
   }
 
-  if (percentDifference <= -FIRST_OFFSET) {
+  if (
+    percentDifference >= -SECOND_OFFSET ||
+    percentDifference >= -FIRST_OFFSET
+  ) {
     return 'color-cheap';
   }
 
-  if (percentDifference >= FIRST_OFFSET) {
+  if (percentDifference >= SECOND_OFFSET || percentDifference >= FIRST_OFFSET) {
     return 'color-expensive';
-  }
-
-  if (
-    percentDifference >= -AVERAGE_OFFSET ||
-    percentDifference <= AVERAGE_OFFSET
-  ) {
-    return 'color-average';
   }
 
   return '';

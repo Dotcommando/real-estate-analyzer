@@ -27,6 +27,8 @@ import './best-prices.scss';
 
 const cn = block('best-prices');
 
+const MIN_COUNT_OF_DATA_FOR_SHOW_PAGINATION = 40;
+
 const BestPricesComponent = () => {
   /** Store */
   const dispatch = useDispatch();
@@ -82,7 +84,7 @@ const BestPricesComponent = () => {
             )}
           </div>
 
-          {bestPricesData.length > 52 && (
+          {bestPricesData.length > MIN_COUNT_OF_DATA_FOR_SHOW_PAGINATION && (
             <Pagination
               currentPage={page - 1}
               totalPages={100}

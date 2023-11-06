@@ -21,10 +21,8 @@ export const statisticEpic: StoreEpic = (action$, state$, { dispatch }) =>
     switchMap((action: PayloadAction<StatisticInitPayload>) => {
       return statisticApi
         .getStatistic({
-          startDate: '2023-11-01',
-          // startDate: action.payload.startDate,
-          // endDate: action.payload.endDate,
-          endDate: '2023-11-02',
+          startDate: action.payload.startDate,
+          endDate: action.payload.endDate,
           analysisType: action.payload.analysisType,
           analysisPeriod: AnalysisPeriod.DAILY_TOTAL,
           ads: selectBestPricesAdsType(state$.value),

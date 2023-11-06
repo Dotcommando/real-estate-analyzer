@@ -31,7 +31,6 @@ import {
 
 const DEFAULT_LIMIT = 52;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const bestPricesEpic: StoreEpic = (action$, state$, { dispatch }) =>
   action$.pipe(
     ofAction([

@@ -1,12 +1,6 @@
 @import '../../styles//mixins/index';
 
 .ui-bookmark {
-  --bookmark-width-xs: 52px;
-  --bookmark-height-xs: 34px;
-  --bookmark-width-s: 68px;
-  --bookmark-height-s: 48px;
-  --bookmark-width-m: 52px;
-  --bookmark-height-m: 34px;
   position: absolute;
   top: -4px;
 
@@ -78,7 +72,7 @@
 
       position: absolute;
       z-index: 0;
-      left: calc(0px - 1.25 * var(--bookmark-height-m));
+      left: calc(0px - 1.23 * var(--bookmark-height-m));
       bottom: calc(0px - 0.5 * var(--bookmark-height-m));
 
       border-width: var(--bookmark-height-m) var(--bookmark-height-m)

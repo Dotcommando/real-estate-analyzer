@@ -29,10 +29,10 @@ class AdsApi extends BaseApi {
           df.district = df.district.replace(/\((.*?)\)/g, ' - $1');
 
           // Обрабатываем специфические случаи
-          df.district = df.district.replace(
-            'Timiou Prodromou  Mesa Geitonias',
-            'Mesa Geitonia',
-          );
+          df.district = df.district
+            .replace('Timiou Prodromou  Mesa Geitonias', 'Mesa Geitonia')
+            .replace('Strovolos - ', '')
+            .replace('Egkomi -', '');
 
           // Заменяем тире с любым количеством пробелов вокруг на " - "
           df.district = df.district.replace(/\s*-\s*/g, ' - ');

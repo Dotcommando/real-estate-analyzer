@@ -61,18 +61,18 @@ const RealEstateObjectCardComponent = ({ realEstateObject }: Props) => {
     return {
       avg: {
         color: averageColor,
-        value: medianPriceDifference,
+        value: averagePriceDifference,
       },
       median: {
         color: medianColor,
-        value: averagePriceDifference,
+        value: medianPriceDifference,
       },
     };
   }, [realEstateObject, normalizedStatistic]);
 
   return (
     <div className={cn()}>
-      <div className="card__title">
+      <div className={cn('title')}>
         <h4>{realEstateObject.title}</h4>
       </div>
 
