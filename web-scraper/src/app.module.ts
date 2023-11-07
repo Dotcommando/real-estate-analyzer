@@ -33,8 +33,8 @@ import { getRandomElement } from './utils';
   controllers: [ AppController ],
   providers: [
     SchedulerRegistry,
-    AppService,
     CacheService,
+    AppService,
     DelayService,
     ProxyFactoryService,
     {

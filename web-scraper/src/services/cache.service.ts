@@ -13,9 +13,25 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
     @Inject(LOGGER) private readonly logger: LoggerService,
     private readonly configService: ConfigService,
   ) {
+    this.del = this.del.bind(this);
+  }
+
+  public onModuleInit() {
     this.ensureCacheFolderExists();
 
-    this.del = this.del.bind(this);
+    const filePath = path.join(process.cwd(), this.cacheFolder, this.getFileName());
+
+    if (fs.existsSync(filePath)) {
+      const data = fs.readFileSync(filePath, 'utf-8');
+      const json = JSON.parse(data);
+      const map = new Map<string, unknown>(json);
+
+      if (map.size) {
+        this.cacheMap = map;
+      }
+    }
+
+    this.logger.log('Cache Service initialized');
   }
 
   public onApplicationShutdown(signal: string) {
@@ -43,21 +59,6 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
   private cacheMap = new Map<string, unknown>();
   private cacheKeys = new Set<string>();
 
-  public onModuleInit() {
-    const filePath = path.join(process.cwd(), this.cacheFolder, this.getFileName());
-
-    if (fs.existsSync(filePath)) {
-      const data = fs.readFileSync(filePath, 'utf-8');
-      const json = JSON.parse(data);
-      const map = new Map<string, unknown>(json);
-
-      if (map.size) {
-        this.cacheMap = map;
-      }
-    }
-
-    this.logger.log('Cache Service initialized');
-  }
 
   private add(key: string, value: string): void {
     this.cacheMap.set(key, value);
