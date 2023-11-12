@@ -71,3 +71,17 @@ mock-server/assets/**/*.html
 # Data Parser Microservice Replicas
 **/data-parser-*
 **/data-parser_*
+
+# Storybook build
+**/storybook-static/
+
+# next.js
+**/.next/
+**/out/
+
+# vercel
+**/.vercel
+
+# typescript
+**/*.tsbuildinfo
+**/next-env.d.ts
