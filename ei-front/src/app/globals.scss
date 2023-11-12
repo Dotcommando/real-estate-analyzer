@@ -1,5 +1,36 @@
 :root {
+  /* Color palette: https://icolorpalette.com/111822_1e2b3d_314561_0b1735_122555 */
+
   --minimal-app-width: 480px;
+
+  --color-bg-default: #111822;
+
+  --color-typo-default: #fafafa;
+
+  --color-inactive-ext-light: #b1c1d7;
+  --color-inactive-light: #99aecb;
+  --color-inactive: #819bbf;
+  --color-inactive-dark: #6988b3;
+
+  --color-primary-ext-light: #9db3ea;
+  --color-primary-light: #6286de;
+  --color-primary: #1e4093;
+  --color-primary-dark: #122658;
+  --color-primary-ext-dark: #0c193b;
+
+
+  --color-secondary-ext-light: #b0c0d7;
+  --color-secondary-light: #819bc0;
+  --color-secondary: #3b5477;
+  --color-secondary-dark: #233247;
+  --color-secondary-ext-dark: #17212f;
+
+  --not-found: #969696;
+  --very-cheap: #08c545;
+  --cheap: #62a806;
+  --average-priced: #b6b601;
+  --expensive: #c58008;
+  --very-expensive: #c54108;
 }
 
 * {
@@ -22,6 +53,8 @@ body {
   min-width: var(--minimal-app-width);
   display: flex;
   flex-direction: column;
+  background: var(--color-bg-default);
+  color: var(--color-typo-default);
 }
 
 code {

@@ -1,13 +1,14 @@
 import Image from 'next/image'
 import styles from './page.module.css'
+import Button from '@/ui/Button/Button';
 
 export default function Home() {
   return (
     <main className={styles.main}>
       <div className={styles.description}>
         <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
+          <Button type="primary" size="l">Primary button</Button>
+          <Button type="secondary" size="s">Secondary button</Button>
         </p>
         <div>
           <a
