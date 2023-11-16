@@ -3,13 +3,19 @@ import { Logger as NestLogger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { DAY_MS } from '../constants';
+import { getIntFromEnv } from '../utils';
+
 
 export class ExtendedNestLogger extends NestLogger {
   onModuleInit(): void {
     this.ensureLogsFolderExists();
+    this.deleteOutdatedLogs();
   }
 
   private logsFolder = 'logs';
+  private logPrefix = process.env.LOG_PREFIX ?? 'log-';
+  private logExpirationDays = getIntFromEnv('KEEP_LOGS_FOR_DAYS', 1);
 
   private getFileName(): string {
     const date = new Date();
@@ -27,7 +33,39 @@ export class ExtendedNestLogger extends NestLogger {
       timeRange = '18-00';
     }
 
-    return `log-${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}--${timeRange}.log`;
+    return `${this.logPrefix}${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}--${timeRange}.log`;
+  }
+
+  private deleteOutdatedLogs(): void {
+    const currentDate = new Date();
+    const files = fs.readdirSync(this.logsFolder, { withFileTypes: true });
+
+    for (const file of files) {
+      const fileFormatRegex = new RegExp(`${this.logPrefix}\\d{4}-\\d{2}-\\d{2}--\\d{2}-\\d{2}\\.log`);
+      const fileName = file.name;
+
+      if (!fileFormatRegex.test(fileName)) {
+        continue;
+      }
+
+      const dateRegex = new RegExp('\\d{4}-\\d{2}-\\d{2}');
+      const fileNameDate = fileName.match(dateRegex);
+
+      if (!fileNameDate) {
+        continue;
+      }
+
+      const dateParts = fileNameDate[0].split('-');
+      const specifiedDate = new Date(Number(dateParts[0]), parseInt(dateParts[1]) - 1, Number(dateParts[2]));
+      const diffMs = Math.abs(Number(currentDate) - Number(specifiedDate));
+      const daysMs = (this.logExpirationDays + 1) * DAY_MS;
+
+      if (diffMs >= daysMs) {
+        const filePath = path.join(process.cwd(), this.logsFolder, fileName);
+
+        fs.unlinkSync(filePath);
+      }
+    }
   }
 
   private ensureLogsFolderExists(): void {
