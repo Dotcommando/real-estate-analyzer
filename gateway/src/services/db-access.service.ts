@@ -189,7 +189,7 @@ export class DbAccessService {
 
     return {
       ads: activeDatesMapper(ads, getLastDate),
-      total: await model.countDocuments({}),
+      total: await model.countDocuments(filter),
     };
   }
 

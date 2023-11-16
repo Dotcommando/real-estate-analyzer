@@ -21,19 +21,22 @@ export function getPercentColor(
     return 'color-average';
   }
 
-  if (percentDifference < -MEDIUM_OFFSET) {
+  if (percentDifference <= -MEDIUM_OFFSET) {
     return 'color-very-cheap';
   }
 
-  if (percentDifference > MEDIUM_OFFSET) {
+  if (percentDifference >= MEDIUM_OFFSET) {
     return 'color-very-expensive';
   }
 
-  if (percentDifference <= -MEDIUM_OFFSET) {
+  if (
+    percentDifference > -MEDIUM_OFFSET &&
+    percentDifference < -AVERAGE_OFFSET
+  ) {
     return 'color-cheap';
   }
 
-  if (percentDifference <= MEDIUM_OFFSET) {
+  if (percentDifference < MEDIUM_OFFSET && percentDifference > AVERAGE_OFFSET) {
     return 'color-expensive';
   }
 
