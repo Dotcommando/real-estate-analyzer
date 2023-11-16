@@ -3,6 +3,9 @@ import { Logger as NestLogger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { DAY_MS } from '../constants';
+import { getIntFromEnv } from '../utils';
+
 
 export class ExtendedNestLogger extends NestLogger {
   onModuleInit(): void {
@@ -11,6 +14,8 @@ export class ExtendedNestLogger extends NestLogger {
   }
 
   private logsFolder = 'logs';
+  private logPrefix = process.env.LOG_PREFIX ?? 'log-';
+  private logExpirationDays = getIntFromEnv('KEEP_LOGS_FOR_DAYS', 1);
 
   private getFileName(): string {
     const date = new Date();
@@ -28,7 +33,7 @@ export class ExtendedNestLogger extends NestLogger {
       timeRange = '18-00';
     }
 
-    return `${process.env.LOG_PREFIX}${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}--${timeRange}.log`;
+    return `${this.logPrefix}${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}--${timeRange}.log`;
   }
 
   private deleteOutdatedLogs(): void {
@@ -36,26 +41,29 @@ export class ExtendedNestLogger extends NestLogger {
     const files = fs.readdirSync(this.logsFolder, { withFileTypes: true });
 
     for (const file of files) {
-      const fileFormatRegex = new RegExp(`${process.env.LOG_PREFIX}\\d{4}-\\d{2}-\\d{2}--\\d{2}-\\d{2}\\.log`);
+      const fileFormatRegex = new RegExp(`${this.logPrefix}\\d{4}-\\d{2}-\\d{2}--\\d{2}-\\d{2}\\.log`);
       const fileName = file.name;
 
-      if (fileFormatRegex.test(fileName)) {
-        const dataRegex = new RegExp('\\d{4}-\\d{2}-\\d{2}');
-        const data = fileName.match(dataRegex);
+      if (!fileFormatRegex.test(fileName)) {
+        continue;
+      }
 
-        if (data) {
-          const dateParts = data[0].split('-');
-          const specifiedDate = new Date(Number(dateParts[0]), parseInt(dateParts[1]) - 1, Number(dateParts[2]));
+      const dateRegex = new RegExp('\\d{4}-\\d{2}-\\d{2}');
+      const fileNameDate = fileName.match(dateRegex);
 
-          const diffInMilliseconds = Math.abs(Number(currentDate) - Number(specifiedDate));
-          const daysInMilliseconds = (Number(process.env.KEEP_LOGS_FOR_DAYS) + 1) * 24 * 60 * 60 * 1000;
+      if (!fileNameDate) {
+        continue;
+      }
 
-          if (diffInMilliseconds >= daysInMilliseconds) {
-            const filePath = path.join(process.cwd(), this.logsFolder, fileName);
+      const dateParts = fileNameDate[0].split('-');
+      const specifiedDate = new Date(Number(dateParts[0]), parseInt(dateParts[1]) - 1, Number(dateParts[2]));
+      const diffMs = Math.abs(Number(currentDate) - Number(specifiedDate));
+      const daysMs = (this.logExpirationDays + 1) * DAY_MS;
 
-            fs.unlinkSync(filePath);
-          }
-        }
+      if (diffMs >= daysMs) {
+        const filePath = path.join(process.cwd(), this.logsFolder, fileName);
+
+        fs.unlinkSync(filePath);
       }
     }
   }
