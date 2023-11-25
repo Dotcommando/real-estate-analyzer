@@ -22,7 +22,7 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
     this.updatePersistenceCache();
   }
 
-  private cacheFolder = 'cache';  
+  private cacheFolder = 'cache';
 
   private ensureCacheFolderExists(): void {
     const folderPath = path.join(process.cwd(), this.cacheFolder);
@@ -34,8 +34,11 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
 
   private getFileName(): string {
     const date = new Date();
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
 
-    return `cache-${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.json`;
+    return `cache-${year}-${month}-${day}.json`;
   }
 
   private readonly ttl = parseInt(this.configService.get('CACHE_TTL')) * 1000;
@@ -44,9 +47,18 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
   private cacheKeys = new Set<string>();
 
   public onModuleInit() {
-    const filePath = path.join(process.cwd(), this.cacheFolder, this.getFileName());
+    this.restoreCacheFromFile();
+    this.logger.log('Cache Service initialized');
+  }
 
-    if (fs.existsSync(filePath)) {
+  private restoreCacheFromFile(): void {
+    try {
+      const filePath = path.join(process.cwd(), this.cacheFolder, this.getFileName());
+
+      if (!fs.existsSync(filePath)) {
+        return;
+      }
+
       const data = fs.readFileSync(filePath, 'utf-8');
       const json = JSON.parse(data);
       const map = new Map<string, unknown>(json);
@@ -54,9 +66,10 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
       if (map.size) {
         this.cacheMap = map;
       }
+    } catch (e) {
+      this.logger.error(`Cannot restore cache from the cache file ${this.getFileName()}`);
+      this.logger.error(e.message);
     }
-
-    this.logger.log('Cache Service initialized');
   }
 
   private add(key: string, value: string): void {
