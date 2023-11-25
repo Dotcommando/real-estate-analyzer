@@ -71,3 +71,6 @@ mock-server/assets/**/*.html
 # Data Parser Microservice Replicas
 **/data-parser-*
 **/data-parser_*
+
+# Cache persistence file
+**/cache
