@@ -10,5 +10,6 @@ export interface ISaleHouses extends ISaleProperty {
   furnishing?: Furnishing;
   'air-conditioning': AirConditioning;
   bedrooms: number;
-  bathrooms: number;
+  bathrooms?: number;
+  toilets?: number;
 }

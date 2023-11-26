@@ -20,7 +20,8 @@ export function parseDate(
     throw new Error(`Wrong format of the date to parse: ${dateToParse}.`);
   }
 
-  const supportedPatterns = [ 'YYYY', 'YY', 'MM', 'M', 'DD', 'D', 'HH', 'H', 'mm', 'm', 'ss', 's', 'SSS', 'SS', 'S', 'Z' ];
+  const monthNames = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ];
+  const supportedPatterns = [ 'YYYY', 'YY', 'MMM', 'MM', 'M', 'DD', 'D', 'HH', 'H', 'mm', 'm', 'ss', 's', 'SSS', 'SS', 'S', 'Z' ];
   const sortedByLengthPatterns = supportedPatterns.sort((a, b) => a.length > b.length
     ? -1
     : a.length === b.length
@@ -55,9 +56,11 @@ export function parseDate(
     ? values['MM']
     : values['M']
       ? ('0' + values['M']).slice(-2)
-      : fillRestFromCurrentDate
-        ? ('0' + String(today.getMonth() + 1)).slice(-2)
-        : '01';
+      : values['MMM']
+        ? ('0' + (monthNames.findIndex(m => m.toLowerCase() === values['MMM']) + 1)).slice(-2)
+        : fillRestFromCurrentDate
+          ? ('0' + String(today.getMonth() + 1)).slice(-2)
+          : '01';
   resultDateString += '-';
   resultDateString += values['DD']
     ? values['DD']

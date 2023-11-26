@@ -15,6 +15,7 @@ export * from './parking.enum';
 export * from './pets.enum';
 export * from './plot-type.enum';
 export * from './share.enum';
+export * from './source.enum';
 export * from './time.const';
 export * from './url-types.const';
 export * from './web-scraper-messages.const';

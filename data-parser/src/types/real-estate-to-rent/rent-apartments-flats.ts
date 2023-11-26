@@ -10,7 +10,8 @@ export interface IRentApartmentsFlats extends IRentProperty {
   'property-area-unit': 'm²';
   furnishing?: Furnishing;
   bedrooms: number;
-  bathrooms: number;
+  bathrooms?: number;
+  toilets?: number;
   'air-conditioning': AirConditioning;
   pets: Pets;
 }

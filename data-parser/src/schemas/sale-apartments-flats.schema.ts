@@ -17,6 +17,7 @@ import {
   OnlineViewing,
   OnlineViewingArray,
   ParkingArray,
+  SourceArray,
 } from '../constants';
 import { ISaleApartmentsFlats } from '../types/real-estate-for-sale';
 import { roundDate } from '../utils';
@@ -24,7 +25,6 @@ import { roundDate } from '../utils';
 
 export interface ISaleApartmentsFlatsDoc extends ISaleApartmentsFlats, Document {
   active_dates: Date[];
-  mode?: Mode;
 }
 
 export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Model<ISaleApartmentsFlatsDoc>>(
@@ -41,6 +41,11 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     publish_date: {
       type: Schema.Types.Date,
       required: [ true, 'Publish date is required' ],
+    },
+    source: {
+      type: String,
+      enum: SourceArray,
+      required: [ true, 'Source is required' ],
     },
     city: {
       type: String,
@@ -71,10 +76,6 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     'reference-number': String,
     'registration-number': String,
     'registration-block': String,
-    'square-meter-price': {
-      type: Number,
-      required: [ true, 'Square meter price is required' ],
-    },
     condition: {
       type: String,
       enum: ConditionArray,
@@ -129,11 +130,6 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     },
     coords: {
       type: CoordsSchema,
-    },
-    mode: {
-      type: String,
-      enum: ModeArray,
-      default: Mode.Prod,
     },
   },
   { collection: 'saleapartmentsflats' },

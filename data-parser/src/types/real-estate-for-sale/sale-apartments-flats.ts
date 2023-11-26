@@ -14,6 +14,7 @@ export interface ISaleApartmentsFlats extends ISaleProperty {
   'property-area-unit': 'm²';
   furnishing?: Furnishing;
   bedrooms: number;
-  bathrooms: number;
+  bathrooms?: number;
+  toilets?: number;
   'air-conditioning': AirConditioning;
 }

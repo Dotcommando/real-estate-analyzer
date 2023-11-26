@@ -2,19 +2,21 @@ import * as cheerio from 'cheerio';
 import * as dashify from 'dashify';
 import * as levenshtein from 'fast-levenshtein';
 import Root = cheerio.Root;
-import { coordsRegexp, OnlineViewing, OnlineViewingArray } from '../constants';
+import { AdPageParserAbstract } from './ad-page-parser.abstract';
+
+import { coordsRegexp, OnlineViewing, OnlineViewingArray, Source } from '../constants';
 import { IRealEstate } from '../types';
 import { dateInHumanReadableFormat, getRoundYesterday, parseDate, roundDate } from '../utils';
 
 
-export class BazarakiAdPageParser<T extends IRealEstate> {
-  private pageContent: string;
+export class BazarakiAdPageParser extends AdPageParserAbstract<IRealEstate> {
   private $: Root;
-  private resultData: Partial<T>;
+  private resultData: Partial<IRealEstate>;
   private category: string;
 
   constructor(pageContent: string, url: string) {
-    this.pageContent = pageContent;
+    super(pageContent, url);
+
     this.$ = cheerio.load(pageContent);
 
     const [ city, district ] = this.getCityDistrict();
@@ -25,13 +27,13 @@ export class BazarakiAdPageParser<T extends IRealEstate> {
       // description: this.$('.announcement-description .js-description').text().trim().substring(0, 30) + '...',
       url,
       publish_date: this.getPublishDate(),
+      source: Source.BAZARAKI,
       // publish_date_human_readable: dateInHumanReadableFormat(new Date(this.getPublishDate())),
       city,
       district,
       currency: this.getCurrency(),
       price: this.getPrice(),
       ad_id: this.getAdId(),
-      'square-meter-price': this.getSquareMeterPrice(),
       expired: this.getExpiredStatus(),
       coords: this.getCoords(),
       ...(this.getCharacteristics('.announcement-characteristics .chars-column')),
@@ -56,23 +58,6 @@ export class BazarakiAdPageParser<T extends IRealEstate> {
         .replace(/[\s\t ]+/gm, ' ');
     } catch (e) {
       return '';
-    }
-  }
-
-  private getSquareMeterPrice(): number {
-    try {
-      const sqMeterPrice = parseFloat(
-        this.$('.announcement-price__per-meter')
-          .text()
-          .trim()
-          .replace(/[^\d.]/g, ''),
-      );
-
-      return isNaN(sqMeterPrice)
-        ? 0
-        : sqMeterPrice;
-    } catch (e) {
-      return 0;
     }
   }
 
@@ -149,9 +134,9 @@ export class BazarakiAdPageParser<T extends IRealEstate> {
     return [ city, district ];
   }
 
-  private getCharacteristics(selector: string): Partial<T> {
+  private getCharacteristics(selector: string): Partial<IRealEstate> {
     try {
-      const characteristics: Partial<T> = {};
+      const characteristics: Partial<IRealEstate> = {};
       const $ = this.$;
 
       this.$(selector).find('li').each(function() {
@@ -226,7 +211,7 @@ export class BazarakiAdPageParser<T extends IRealEstate> {
     }
   }
 
-  public getPageData(): Partial<T> {
+  public getPageData(): Partial<IRealEstate> {
     return this.resultData;
   }
 }

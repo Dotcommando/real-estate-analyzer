@@ -4,7 +4,7 @@ import { ClientOptions, ClientProxy, ClientProxyFactory, TcpOptions, Transport }
 
 
 @Injectable()
-export class ProxyFactoryService {
+export class ProxyFactory {
   private clientProxy: ClientProxy;
 
   constructor(

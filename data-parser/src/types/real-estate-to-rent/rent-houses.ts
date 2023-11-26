@@ -10,7 +10,8 @@ export interface IRentHouses extends IRentProperty {
   furnishing?: Furnishing;
   'air-conditioning': AirConditioning;
   bedrooms: number;
-  bathrooms: number;
+  bathrooms?: number;
+  toilets?: number;
   pets: Pets;
   'plot-area': number;
   'plot-area-unit': 'm²';

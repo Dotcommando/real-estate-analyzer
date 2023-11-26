@@ -2,10 +2,12 @@ import { timeoffsetToHumanReadableFormat } from './timeoffset-to-human-readable-
 
 
 export function dateInHumanReadableFormat(date: Date, format = 'DD.MM.YYYY HH:mm:ss SSS'): string {
+  const monthNames = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ];
   const YYYY = date.getFullYear().toString();
   const YY = YYYY.slice(-2);
   const M = String(date.getMonth() + 1);
   const MM = ('0' + M).slice(-2);
+  const MMM = monthNames[date.getMonth()];
   const D = String(date.getDate());
   const DD = ('0' + D).slice(-2);
   const H = String(date.getHours());
@@ -23,6 +25,7 @@ export function dateInHumanReadableFormat(date: Date, format = 'DD.MM.YYYY HH:mm
   return format
     .replace(/YYYY/g, YYYY)
     .replace(/YY/g, YY)
+    .replace(/MMM/g, MMM)
     .replace(/MM/g, MM)
     .replace(/M/g, M)
     .replace(/DD/g, DD)

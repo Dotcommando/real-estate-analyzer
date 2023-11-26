@@ -58,7 +58,6 @@ export class DbAccessService {
 
   public typecastingFields(announcementData: Partial<IRealEstate>): Partial<IRealEstate> {
     const forceMakeNumberProps = [
-      'square-meter-price',
       'price',
       'property-area',
       'plot-area',

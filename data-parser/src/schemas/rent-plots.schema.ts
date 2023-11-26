@@ -10,6 +10,7 @@ import {
   OnlineViewingArray,
   Share,
   ShareArray,
+  SourceArray,
 } from '../constants';
 import { IRentPlots } from '../types/real-estate-to-rent';
 import { roundDate } from '../utils';
@@ -17,7 +18,6 @@ import { roundDate } from '../utils';
 
 export interface IRentPlotsDoc extends IRentPlots, Document {
   active_dates: Date[];
-  mode?: Mode;
 }
 
 export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
@@ -34,6 +34,11 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
     publish_date: {
       type: Schema.Types.Date,
       required: [ true, 'Publish date is required' ],
+    },
+    source: {
+      type: String,
+      enum: SourceArray,
+      required: [ true, 'Source is required' ],
     },
     city: {
       type: String,
@@ -64,10 +69,6 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
     'reference-number': String,
     'registration-number': String,
     'registration-block': String,
-    'square-meter-price': {
-      type: Number,
-      required: [ true, 'Square meter price is required' ],
-    },
     'plot-area': {
       type: Number,
       default: 0,
@@ -96,11 +97,6 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
     },
     coords: {
       type: CoordsSchema,
-    },
-    mode: {
-      type: String,
-      enum: ModeArray,
-      default: Mode.Prod,
     },
   },
   { collection: 'rentplots' },

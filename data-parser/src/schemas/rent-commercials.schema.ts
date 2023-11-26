@@ -12,6 +12,7 @@ import {
   ModeArray,
   OnlineViewing,
   OnlineViewingArray,
+  SourceArray,
 } from '../constants';
 import { IRentCommercials } from '../types/real-estate-to-rent';
 import { roundDate } from '../utils';
@@ -19,7 +20,6 @@ import { roundDate } from '../utils';
 
 export interface IRentCommercialDoc extends IRentCommercials, Document {
   active_dates: Date[];
-  mode?: Mode;
 }
 
 export const RentCommercialsSchema = new Schema<IRentCommercialDoc, Model<IRentCommercialDoc>>(
@@ -36,6 +36,11 @@ export const RentCommercialsSchema = new Schema<IRentCommercialDoc, Model<IRentC
     publish_date: {
       type: Schema.Types.Date,
       required: [ true, 'Publish date is required' ],
+    },
+    source: {
+      type: String,
+      enum: SourceArray,
+      required: [ true, 'Source is required' ],
     },
     city: {
       type: String,
@@ -66,10 +71,6 @@ export const RentCommercialsSchema = new Schema<IRentCommercialDoc, Model<IRentC
     'reference-number': String,
     'registration-number': String,
     'registration-block': String,
-    'square-meter-price': {
-      type: Number,
-      required: [ true, 'Square meter price is required' ],
-    },
     condition: {
       type: String,
       enum: ConditionArray,
@@ -110,11 +111,6 @@ export const RentCommercialsSchema = new Schema<IRentCommercialDoc, Model<IRentC
     },
     coords: {
       type: CoordsSchema,
-    },
-    mode: {
-      type: String,
-      enum: ModeArray,
-      default: Mode.Prod,
     },
   },
   { collection: 'rentcommercials' },

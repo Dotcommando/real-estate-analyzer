@@ -4,4 +4,3 @@ export * from './db-url-relation.service';
 export * from './dummy-logger.service';
 export * from './logger.service';
 export * from './mongoose-config.service';
-export * from './proxy-factory.service';

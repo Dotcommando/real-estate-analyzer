@@ -8,7 +8,6 @@ export interface ISalePlots extends IRealEstate {
   'plot-type': string;
   share?: Share;
   'planning-zone'?: string;
-  'square-meter-price': number;
   density?: string;
   coverage?: string;
   'parcel-number'?: string;
