@@ -57,7 +57,7 @@ export function parseDate(
     : values['M']
       ? ('0' + values['M']).slice(-2)
       : values['MMM']
-        ? ('0' + (monthNames.findIndex(m => m.toLowerCase() === values['MMM']) + 1)).slice(-2)
+        ? ('0' + (monthNames.findIndex(m => m === values['MMM'].toLowerCase()) + 1)).slice(-2)
         : fillRestFromCurrentDate
           ? ('0' + String(today.getMonth() + 1)).slice(-2)
           : '01';
