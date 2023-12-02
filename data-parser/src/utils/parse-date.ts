@@ -1,16 +1,3 @@
-import { timeoffsetToHumanReadableFormat } from './timeoffset-to-human-readable-format';
-
-
-const getMultipleLetter = (letter: string, multiplier: number): string => {
-  let result = '';
-
-  for (let i = 0; i < multiplier; i++) {
-    result += letter;
-  }
-
-  return result;
-};
-
 export function parseDate(
   dateToParse: string,
   format = 'DD.MM.YYYY',
@@ -21,89 +8,61 @@ export function parseDate(
   }
 
   const monthNames = [ 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec' ];
-  const supportedPatterns = [ 'YYYY', 'YY', 'MMM', 'MM', 'M', 'DD', 'D', 'HH', 'H', 'mm', 'm', 'ss', 's', 'SSS', 'SS', 'S', 'Z' ];
-  const sortedByLengthPatterns = supportedPatterns.sort((a, b) => a.length > b.length
-    ? -1
-    : a.length === b.length
-      ? 0
-      : 1,
-  );
-
+  const supportedPatterns = [ 'YYYY', 'YY', 'MMM', 'MM', 'M', 'DD', 'D', 'HH', 'H', 'mm', 'm', 'ss', 's', 'SSS', 'SS', 'S' ];
   const values = {};
 
   let mutableFormat = format;
 
-  for (const pattern of sortedByLengthPatterns) {
-    const startIndex = mutableFormat.indexOf(pattern);
+  supportedPatterns.forEach(pattern => {
+    const regex = new RegExp(pattern);
+    const match = regex.exec(mutableFormat);
 
-    if (startIndex === -1) continue;
-
-    values[pattern] = dateToParse.substring(startIndex, startIndex + pattern.length);
-    mutableFormat = mutableFormat.replace(pattern, getMultipleLetter('X', pattern.length));
-  }
-
-  let resultDateString = '';
+    if (match) {
+      values[pattern] = dateToParse.substring(match.index, match.index + pattern.length);
+      mutableFormat = mutableFormat.replace(pattern, 'X'.repeat(pattern.length));
+    }
+  });
 
   const today = new Date();
-
-  resultDateString += values['YYYY']
-    ? values['YYYY']
-    : values['YY']
-      ? '20' + values['YY']
-      : today.getFullYear();
-  resultDateString += '-';
-  resultDateString += values['MM']
-    ? values['MM']
-    : values['M']
-      ? ('0' + values['M']).slice(-2)
-      : values['MMM']
-        ? ('0' + (monthNames.findIndex(m => m === values['MMM'].toLowerCase()) + 1)).slice(-2)
-        : fillRestFromCurrentDate
-          ? ('0' + String(today.getMonth() + 1)).slice(-2)
-          : '01';
-  resultDateString += '-';
-  resultDateString += values['DD']
-    ? values['DD']
-    : values['D']
-      ? ('0' + values['D']).slice(-2)
-      : fillRestFromCurrentDate
-        ? ('0' + String(today.getDate())).slice(-2)
-        : '01';
-  resultDateString += 'T';
-  resultDateString += values['HH']
-    ? values['HH']
-    : values['H']
-      ? ('0' + values['H']).slice(-2)
-      : fillRestFromCurrentDate
-        ? ('0' + String(today.getHours())).slice(-2)
-        : '00';
-  resultDateString += ':';
-  resultDateString += values['mm']
-    ? values['mm']
-    : values['m']
-      ? ('0' + values['m']).slice(-2)
-      : fillRestFromCurrentDate
-        ? ('0' + String(today.getMinutes())).slice(-2)
-        : '00';
-  resultDateString += ':';
-  resultDateString += values['ss']
-    ? values['ss']
-    : values['s']
-      ? ('0' + values['s']).slice(-2)
-      : fillRestFromCurrentDate
-        ? ('0' + String(today.getSeconds())).slice(-2)
-        : '00';
-  resultDateString += '.';
-  resultDateString += values['SSS']
-    ? values['SSS']
+  const year = values['YYYY']
+    ? parseInt(values['YYYY'])
+    : (values['YY']
+      ? 2000 + parseInt(values['YY'])
+      : today.getFullYear());
+  const month = values['MM']
+    ? parseInt(values['MM'], 10) - 1
+    : (values['M']
+      ? parseInt(values['M'], 10) - 1
+      : (values['MMM']
+        ? monthNames.indexOf(values['MMM'].toLowerCase())
+        : (fillRestFromCurrentDate ? today.getMonth() : 0)));
+  const day = values['DD']
+    ? parseInt(values['DD'])
+    : (values['D']
+      ? parseInt(values['D'])
+      : (fillRestFromCurrentDate ? today.getDate() : 1));
+  const hours = values['HH']
+    ? parseInt(values['HH'])
+    : (values['H']
+      ? parseInt(values['H'])
+      : (fillRestFromCurrentDate ? today.getHours() : 0));
+  const minutes = values['mm']
+    ? parseInt(values['mm'])
+    : (values['m']
+      ? parseInt(values['m'])
+      : (fillRestFromCurrentDate ? today.getMinutes() : 0));
+  const seconds = values['ss']
+    ? parseInt(values['ss'])
+    : (values['s']
+      ? parseInt(values['s'])
+      : (fillRestFromCurrentDate ? today.getSeconds() : 0));
+  const ms = values['SSS']
+    ? parseInt(values['SSS'])
     : values['SS']
-      ? ('0' + values['SS']).slice(-2)
-      : values['SSS']
-        ? ('00' + values['SSS']).slice(-3)
-        : fillRestFromCurrentDate
-          ? String(today.getMilliseconds())
-          : '000';
-  resultDateString += values['Z'] ?? timeoffsetToHumanReadableFormat(today.getTimezoneOffset());
+      ? parseInt(values['SS']) * 10
+      : values['S']
+        ? parseInt(values['S']) * 100
+        : (fillRestFromCurrentDate ? today.getMilliseconds() : 0);
 
-  return new Date(resultDateString);
+  return new Date(year, month, day, hours, minutes, seconds, ms);
 }

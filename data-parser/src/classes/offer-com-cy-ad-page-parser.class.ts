@@ -1,5 +1,4 @@
 import * as cheerio from 'cheerio';
-import * as levenshtein from 'fast-levenshtein';
 import * as fs from 'fs';
 import * as path from 'path';
 import Root = cheerio.Root;
@@ -30,36 +29,31 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
     super(pageContent, url, collection);
 
     this.$ = cheerio.load(pageContent);
-
-    const [ city, district ] = this.getCityDistrict();
+    const cityDistrictText = this.$('.top_mar_c').text().trim();
+    const title = this.$('#clsdetblo h1').text().trim();
+    const priceText = this.$('#clsdetblo .ad_price').text();
+    const [ city, district ] = this.getCityDistrict(cityDistrictText);
+    const publishText = this.$('#clsdetblo .col_a small').first().text();
 
     this.resultData = {
-      title: this.getTitle(),
+      title,
       description: this.getDescription(),
       // description: this.$('.announcement-description .js-description').text().trim().substring(0, 30) + '...',
       url,
-      publish_date: this.getPublishDate(),
+      publish_date: this.getPublishDate(publishText),
       source: Source.OFFER,
       // publish_date_human_readable: dateInHumanReadableFormat(new Date(this.getPublishDate())),
       city,
       district,
       currency: this.getCurrency(),
-      price: this.getPrice(),
+      price: this.getPrice(priceText),
       ad_id: this.getAdId(),
       expired: this.getExpiredStatus(),
       coords: this.getCoords(),
       ...(this.getCharacteristics('.tmp_list')),
     };
 
-    this.resultData['type'] = this.getDefaultType();
-  }
-
-  private getTitle(): string {
-    try {
-      return this.$('#clsdetblo h1').text().trim();
-    } catch (e) {
-      return '';
-    }
+    this.resultData['type'] = this.getDefaultType(title.toLowerCase(), collection);
   }
 
   private getDescription(): string {
@@ -74,9 +68,8 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
     }
   }
 
-  private getPublishDate(): number {
+  private getPublishDate(publishText: string): number {
     try {
-      const publishText = this.$('#clsdetblo .col_a small').first().text();
       const dateMatch = publishText.match(/Publish:\s*(.*?), views:/);
 
       if (!dateMatch || !dateMatch[1]) {
@@ -125,10 +118,8 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
     }
   }
 
-
-  private getPrice(): number {
+  private getPrice(priceText: string): number {
     try {
-      const priceText = this.$('#clsdetblo .ad_price').text();
       const cleanedPriceText = priceText.replace(/[^0-9]/g, '');
       const price = parseFloat(cleanedPriceText);
 
@@ -146,9 +137,8 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
     }
   }
 
-  private getCityDistrict(): [string, string?] {
+  private getCityDistrict(addressText: string): [string, string?] {
     try {
-      const addressText = this.$('.top_mar_c').text().trim();
       const cityMapping = {
         'Ammochosto': 'Famagusta',
         'Nicosia': 'Nicosia',
@@ -343,15 +333,14 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
     }
   }
 
-  private getDefaultType(): string {
-    const title = this.$('#clsdetblo h1').text().trim().toLowerCase();
+  private getDefaultType(title: string, collection: string): string {
     const typeObject = {};
     let defaultType: string = '';
 
-    if (this.collection === 'rentapartmentsflats' || this.collection === 'saleapartmentsflats') {
+    if (collection === 'rentapartmentsflats' || collection === 'saleapartmentsflats') {
       ApartmentsFlatsTypeArray.forEach((value: string) => typeObject[value.toLowerCase()] = value);
       defaultType = ApartmentsFlatsType.Apartment;
-    } else if (this.collection === 'renthouses' || this.collection === 'salehouses') {
+    } else if (collection === 'renthouses' || collection === 'salehouses') {
       HousesTypeArray.forEach((value: string) => typeObject[value.toLowerCase()] = value);
       typeObject['detached'] = HousesType.Detached;
       typeObject['Ανεξαρτητη Κατοικια'.toLowerCase()] = HousesType.Detached;
@@ -359,7 +348,7 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
       typeObject['ημιμονοκατοικια'] = HousesType.SemiDetached;
       typeObject['house'] = HousesType.Detached;
       defaultType = HousesType.NotSpecified;
-    } else if (this.collection === 'rentcommercials' || this.collection === 'salecommercials') {
+    } else if (collection === 'rentcommercials' || collection === 'salecommercials') {
       typeObject['office'] = CommercialType.Offices;
       typeObject['shop'] = CommercialType.Shops;
       typeObject['showroom'] = CommercialType.Shops;

@@ -22,22 +22,51 @@ export function dateInHumanReadableFormat(date: Date, format = 'DD.MM.YYYY HH:mm
   const offset = date.getTimezoneOffset();
   const Z = timeoffsetToHumanReadableFormat(offset);
 
-  return format
-    .replace(/YYYY/g, YYYY)
-    .replace(/YY/g, YY)
-    .replace(/MMM/g, MMM)
-    .replace(/MM/g, MM)
-    .replace(/M/g, M)
-    .replace(/DD/g, DD)
-    .replace(/D/g, D)
-    .replace(/HH/g, HH)
-    .replace(/H/g, H)
-    .replace(/mm/g, mm)
-    .replace(/m/g, m)
-    .replace(/ss/g, ss)
-    .replace(/s/g, s)
-    .replace(/SSS/g, SSS)
-    .replace(/SS/g, SS)
-    .replace(/S/g, S)
-    .replace(/Z/g, Z);
+  const replacements = {
+    'YYYY': '<YYYY>',
+    'YY': '<YY>',
+    'MMM': '<MMM>',
+    'MM': '<MM>',
+    'M': '<M>',
+    'DD': '<DD>',
+    'D': '<D>',
+    'HH': '<HH>',
+    'H': '<H>',
+    'mm': '<mm>',
+    'm': '<m>',
+    'ss': '<ss>',
+    's': '<s>',
+    'SSS': '<SSS>',
+    'SS': '<SS>',
+    'S': '<S>',
+    'Z': '<Z>',
+  };
+
+  Object.keys(replacements).forEach(key => {
+    const negativeLookBehind = '(?<!' + key[0] + ')';
+    const negativeLookahead = '(?!' + key[key.length - 1] + ')';
+
+    format = format.replace(new RegExp(negativeLookBehind + key + negativeLookahead, 'g'), replacements[key]);
+  });
+
+  format = format
+    .replace('<YYYY>', YYYY)
+    .replace('<YY>', YY)
+    .replace('<MMM>', MMM)
+    .replace('<MM>', MM)
+    .replace('<M>', M)
+    .replace('<DD>', DD)
+    .replace('<D>', D)
+    .replace('<HH>', HH)
+    .replace('<H>', H)
+    .replace('<mm>', mm)
+    .replace('<m>', m)
+    .replace('<ss>', ss)
+    .replace('<s>', s)
+    .replace('<SSS>', SSS)
+    .replace('<SS>', SS)
+    .replace('<S>', S)
+    .replace('<Z>', Z);
+
+  return format;
 }
