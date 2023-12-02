@@ -14,7 +14,7 @@ import { IRealEstate } from '../types';
 
 @Injectable()
 export class ParserFactory implements OnModuleInit {
-  private adPageParserClass: new (pageContent: string, url: string) => AdPageParserAbstract<IRealEstate>;
+  private adPageParserClass: new (pageContent: string, url: string, collection: string) => AdPageParserAbstract<IRealEstate>;
   private paginationParserClass: new (pageContent: string, url: string) => PaginationParserAbstract;
 
   constructor(private readonly configService: ConfigService) {}
@@ -33,8 +33,8 @@ export class ParserFactory implements OnModuleInit {
     }
   }
 
-  public createAdPageParser(pageContent: string, url: string): AdPageParserAbstract<IRealEstate> {
-    return new this.adPageParserClass(pageContent, url);
+  public createAdPageParser(pageContent: string, url: string, collection: string): AdPageParserAbstract<IRealEstate> {
+    return new this.adPageParserClass(pageContent, url, collection);
   }
 
   public createPaginationParser(pageContent: string, url: string): PaginationParserAbstract {

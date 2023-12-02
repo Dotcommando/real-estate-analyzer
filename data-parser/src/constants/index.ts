@@ -14,6 +14,7 @@ export * from './online-viewing.enum';
 export * from './parking.enum';
 export * from './pets.enum';
 export * from './plot-type.enum';
+export * from './pool-type.enum';
 export * from './share.enum';
 export * from './source.enum';
 export * from './time.const';

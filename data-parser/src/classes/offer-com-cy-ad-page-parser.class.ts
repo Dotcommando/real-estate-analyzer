@@ -1,12 +1,24 @@
 import * as cheerio from 'cheerio';
 import * as levenshtein from 'fast-levenshtein';
+import * as fs from 'fs';
+import * as path from 'path';
 import Root = cheerio.Root;
 
 import { AdPageParserAbstract } from './ad-page-parser.abstract';
 
-import { coordsRegexp, Source } from '../constants';
+import {
+  ApartmentsFlatsType,
+  ApartmentsFlatsTypeArray,
+  CommercialType,
+  Furnishing,
+  HousesType,
+  HousesTypeArray,
+  Parking,
+  PoolType,
+  Source,
+} from '../constants';
 import { IRealEstate } from '../types';
-import { dateInHumanReadableFormat, getRoundYesterday, parseDate, roundDate } from '../utils';
+import { dateInHumanReadableFormat, getRoundYesterday, parseDate, parseInteger, roundDate } from '../utils';
 
 
 export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
@@ -14,8 +26,8 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
   private resultData: Partial<IRealEstate>;
   private category: string;
 
-  constructor(pageContent: string, url: string) {
-    super(pageContent, url);
+  constructor(pageContent: string, url: string, collection: string) {
+    super(pageContent, url, collection);
 
     this.$ = cheerio.load(pageContent);
 
@@ -36,10 +48,10 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
       ad_id: this.getAdId(),
       expired: this.getExpiredStatus(),
       coords: this.getCoords(),
-      ...(this.getCharacteristics('.announcement-characteristics .chars-column')),
+      ...(this.getCharacteristics('.tmp_list')),
     };
 
-    this.category = this.$('.breadcrumbs > li:last-child > a').attr('href');
+    this.resultData['type'] = this.getDefaultType();
   }
 
   private getTitle(): string {
@@ -178,20 +190,57 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
     return tableData;
   }
 
+  private analyzeVariants(tableData: { [key: string]: string }): void {
+    const variantsFilePath = path.join(__dirname, '../../logs/variants.json');
+
+    if (!fs.existsSync(variantsFilePath)) {
+      fs.writeFileSync(variantsFilePath, '{}', 'utf8');
+    }
+
+    let variants: { [key: string]: string[] };
+
+    try {
+      const existingVariants = fs.readFileSync(variantsFilePath, 'utf8');
+
+      variants = JSON.parse(existingVariants);
+    } catch (error) {
+      variants = {};
+    }
+
+    for (const [ key, value ] of Object.entries(tableData)) {
+      if (!variants[key]) {
+        variants[key] = [];
+      }
+
+      if (!variants[key].includes(value)) {
+        variants[key].push(value);
+      }
+    }
+
+    try {
+      fs.writeFileSync(variantsFilePath, JSON.stringify(variants, null, 2));
+    } catch (error) {
+      console.error('Error writing variants to file:', error);
+    }
+  }
+
   private getCharacteristics(selector: string): Partial<IRealEstate> & { [key: string]: unknown } {
     try {
       const tableData = this.parseTableToJSON(selector);
+
+      // this.analyzeVariants(tableData);
+
       const characteristics: Partial<IRealEstate> & { [key: string]: unknown } = {};
 
       for (const [ key, value ] of Object.entries(tableData)) {
         switch (key) {
           case 'Bedroom(s)':
-            characteristics.bedrooms = parseInt(value);
+            characteristics.bedrooms = parseInteger(value, 1);
 
             break;
 
           case 'Toilets':
-            characteristics.toilets = parseInt(value);
+            characteristics.toilets = parseInteger(value, 1);
 
             break;
 
@@ -201,13 +250,13 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
             break;
 
           case 'Plot area (sqm)':
-            characteristics['plot-area'] = parseInt(value);
+            characteristics['plot-area'] = parseInteger(value);
             characteristics['plot-area-unit'] = 'm²';
 
             break;
 
           case 'Covered area (sqm)':
-            characteristics['property-area'] = parseInt(value);
+            characteristics['property-area'] = parseInteger(value);
             characteristics['property-area-unit'] = 'm²';
 
             break;
@@ -218,7 +267,11 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
             break;
 
           case 'Furnished':
-            characteristics.furnishing = value;
+            characteristics.furnishing = value.trim() === 'Partially'
+              ? Furnishing.FullyFurnished
+              : value === 'Partially'
+                ? Furnishing.SemiFurnished
+                : Furnishing.Unfurnished;
 
             break;
 
@@ -227,8 +280,40 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
 
             break;
 
+          case 'Pool':
+            if (!characteristics['included']) {
+              characteristics['included'] = [];
+            }
+
+            (characteristics['included'] as string[]).push('Pool');
+
+            if (value.trim().includes('Yes')) {
+              characteristics['pool-type'] = value.trim() === 'Yes (private)'
+                ? PoolType.Private
+                : PoolType.Shared;
+            }
+
+            break;
+
           case 'Suitable for':
             characteristics['type'] = value;
+
+            break;
+
+          case 'Parking':
+            if (!characteristics['included']) {
+              characteristics['included'] = [];
+            }
+
+            characteristics['parking'] = Parking.Uncovered;
+            characteristics['parking-places'] = parseInteger(value, 1);
+
+            break;
+
+          case 'Type':
+            characteristics['type'] = value.trim();
+
+            break;
         }
       }
 
@@ -251,27 +336,61 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
     }
   }
 
-
-  private getCoords(): { lat: number; lng: number } {
+  private getCoords(): { lat: number; lng: number } | null {
     try {
-      const coordsData = this.$('.announcement__location').data('coords');
+      const mapElement = this.$('.cls-map');
+      const lat = parseFloat(mapElement.data('lat'));
+      const lng = parseFloat(mapElement.data('lon'));
 
-      if (!coordsData) {
-        return null;
-      }
-
-      const coords = coordsData.match(coordsRegexp())?.[0]
-        ?.replace(/[\(\)]/, '')
-        ?.split(/\s{1,2}/);
-      const lng = parseFloat(coords[0]);
-      const lat = parseFloat(coords[1]);
-
-      return !isNaN(lng) && !isNaN(lat)
+      return !isNaN(lat) && !isNaN(lng)
         ? { lat, lng }
         : null;
     } catch (e) {
       return null;
     }
+  }
+
+  private getDefaultType(): string {
+    const title = this.$('#clsdetblo h1').text().trim().toLowerCase();
+    const typeObject = {};
+    let defaultType: string = '';
+
+    if (this.collection === 'rentapartmentsflats' || this.collection === 'saleapartmentsflats') {
+      ApartmentsFlatsTypeArray.forEach((value: string) => typeObject[value.toLowerCase()] = value);
+      defaultType = ApartmentsFlatsType.Apartment;
+    } else if (this.collection === 'renthouses' || this.collection === 'salehouses') {
+      HousesTypeArray.forEach((value: string) => typeObject[value.toLowerCase()] = value);
+      typeObject['detached'] = HousesType.Detached;
+      typeObject['Ανεξαρτητη Κατοικια'.toLowerCase()] = HousesType.Detached;
+      typeObject['ΚΑΤΟΙΚΙΑ'.toLowerCase()] = HousesType.Detached;
+      typeObject['ημιμονοκατοικια'] = HousesType.SemiDetached;
+      typeObject['house'] = HousesType.Detached;
+      defaultType = HousesType.NotSpecified;
+    } else if (this.collection === 'rentcommercials' || this.collection === 'salecommercials') {
+      typeObject['office'] = CommercialType.Offices;
+      typeObject['shop'] = CommercialType.Shops;
+      typeObject['showroom'] = CommercialType.Shops;
+      typeObject['restaurant'] = CommercialType.Restaurants;
+      typeObject['bar'] = CommercialType.Restaurants;
+      typeObject['residential'] = CommercialType.ResidentialBuildings;
+      typeObject['industrial'] = CommercialType.IndustrialBuildings;
+      typeObject['storage'] = CommercialType.Storage;
+      typeObject['warehouse'] = CommercialType.Storage;
+      typeObject['mixed use'] = CommercialType.MixedUse;
+      typeObject['mixed-use'] = CommercialType.MixedUse;
+
+      defaultType = CommercialType.Other;
+    }
+
+    const keys = Object.keys(typeObject);
+
+    for (const key of keys) {
+      if (title.includes(key)) {
+        return typeObject[key];
+      }
+    }
+
+    return defaultType;
   }
 
   public getPageData(): Partial<IRealEstate> {

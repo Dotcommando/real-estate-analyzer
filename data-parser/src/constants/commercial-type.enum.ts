@@ -6,6 +6,7 @@ export enum CommercialType {
   Storage = 'Storage, warehouses',
   Restaurants = 'Restaurants, bars',
   ResidentialBuildings = 'Residential buildings',
+  IndustrialBuildings = 'Industrial buildings',
   Other = 'Other',
 }
 

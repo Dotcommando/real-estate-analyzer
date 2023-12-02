@@ -313,9 +313,13 @@ export class AppService implements OnModuleInit {
 
   public async processAdPage(dataToParse: string, task: ITask): Promise<void> {
     try {
-      const adParser: AdPageParserAbstract<IRealEstate> = this.parserFactory.createAdPageParser(dataToParse, task.url);
+      const adParser: AdPageParserAbstract<IRealEstate> = this.parserFactory.createAdPageParser(dataToParse, task.url, task.collection);
       const parsedAdPage: Partial<IRealEstate> = adParser.getPageData();
       const typeCastedPageData: Partial<IRealEstate> = this.dbAccessService.typecastingFields(parsedAdPage);
+
+      console.log(' ');
+      console.log(typeCastedPageData);
+
       const saveAdResult: IAdDBOperationResult = await this.dbAccessService.saveNewAnnouncement(task.collection, typeCastedPageData);
 
       this.logger.log(`${dateInHumanReadableFormat(new Date(), 'DD.MM.YYYY HH:mm:ss')} Saving result to DB: \x1b[33m${task.url.replace(this.sourceUrl, '')}\x1b[0m ${this.getStatusColor(saveAdResult.status)}${saveAdResult.status}\x1b[0m`);

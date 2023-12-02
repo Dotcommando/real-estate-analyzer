@@ -20,12 +20,14 @@ import {
   ParkingArray,
   Pets,
   PetsArray,
+  PoolType,
+  PoolTypeArray,
   Share,
   ShareArray,
   SlugByCollection,
 } from '../constants';
 import { IAdDBOperationResult, IRealEstate, IRealEstateDoc } from '../types';
-import { castToNumber, roundDate } from '../utils';
+import { castToNumber, parseInteger, roundDate } from '../utils';
 
 
 export enum AdProcessingStatus {
@@ -63,12 +65,23 @@ export class DbAccessService {
       'plot-area',
       'area',
       'bedrooms',
-      'bathrooms',
       'registration-number',
       'registration-block',
     ];
 
     announcementData = castToNumber(announcementData, forceMakeNumberProps);
+
+    if ('bathrooms' in announcementData) {
+      announcementData['bathrooms'] = parseInteger(String(announcementData['bathrooms']), 1);
+    }
+
+    if ('toilets' in announcementData) {
+      announcementData['toilets'] = parseInteger(String(announcementData['toilets']), 1);
+    }
+
+    if ('parking-places' in announcementData) {
+      announcementData['parking-places'] = parseInteger(String(announcementData['parking-places']), 1);
+    }
 
     if ('online-viewing' in announcementData && !OnlineViewingArray.includes(announcementData['online-viewing'])) {
       announcementData['online-viewing'] = OnlineViewing.No;
@@ -104,6 +117,10 @@ export class DbAccessService {
 
     if (typeof announcementData['type'] !== 'string') {
       announcementData['type'] = String(announcementData['type']);
+    }
+
+    if ('pool-type' in announcementData && !PoolTypeArray.includes(announcementData['pool-type'] as PoolType)) {
+      announcementData['pool-type'] = PoolType.Shared;
     }
 
     if ('coords' in announcementData && announcementData['coords'] !== null) {

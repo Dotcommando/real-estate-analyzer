@@ -14,8 +14,8 @@ export class BazarakiAdPageParser extends AdPageParserAbstract<IRealEstate> {
   private resultData: Partial<IRealEstate>;
   private category: string;
 
-  constructor(pageContent: string, url: string) {
-    super(pageContent, url);
+  constructor(pageContent: string, url: string, collection: string) {
+    super(pageContent, url, collection);
 
     this.$ = cheerio.load(pageContent);
 
