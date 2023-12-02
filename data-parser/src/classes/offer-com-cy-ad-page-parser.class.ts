@@ -146,35 +146,28 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
     }
   }
 
-  private getCityDistrict(): [ string, string? ] {
-    const sourceCityDistrict = this.$('.announcement-meta span[itemprop=address]').text().trim();
+  private getCityDistrict(): [string, string?] {
+    try {
+      const addressText = this.$('.top_mar_c').text().trim();
+      const cityMapping = {
+        'Ammochosto': 'Famagusta',
+        'Nicosia': 'Nicosia',
+        'Larnaca': 'Larnaca',
+        'Larnaka': 'Larnaca',
+        'Limassol': 'Limassol',
+        'Paphos': 'Paphos',
+        'Pafos': 'Paphos',
+      };
 
-    if (sourceCityDistrict.indexOf(',') === -1) return [ sourceCityDistrict ];
+      const parts = addressText.split(',');
+      const cityPart = parts[0].split(' ').find(part => cityMapping[part]);
+      const city = cityPart ? cityMapping[cityPart] : undefined;
+      const district = parts.length > 1 ? parts.slice(1).join(',').trim() : undefined;
 
-    const splitSource = sourceCityDistrict.split(', ');
-    const city = splitSource[0].trim();
-    const district = splitSource[1].trim();
-
-    if (city === district) {
-      return [ city ];
+      return [ city, district ].filter(Boolean) as [string, string?];
+    } catch (e) {
+      return [ '', undefined ];
     }
-
-    if (district.indexOf('-') === -1 && district.indexOf(' ')) {
-      return [ city, district ];
-    }
-
-    const splitDistrict = district.split('-');
-    const subDistrict1 = splitDistrict[0].trim();
-
-    splitDistrict.shift();
-
-    const subDistrict2 = splitDistrict.join('-').trim();
-
-    if (subDistrict1 === city || levenshtein.get(city, subDistrict1) === 1) {
-      return [ city, subDistrict2 ];
-    }
-
-    return [ city, district ];
   }
 
   private parseTableToJSON(selector: string): { [key: string]: string } {
