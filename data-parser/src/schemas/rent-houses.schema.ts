@@ -15,6 +15,7 @@ import {
   ParkingArray,
   Pets,
   PetsArray,
+  PoolTypeArray,
   SourceArray,
 } from '../constants';
 import { IRentHouses } from '../types/real-estate-to-rent';
@@ -103,6 +104,11 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
       type: String,
       enum: ParkingArray,
     },
+    'parking-places': Number,
+    'pool-type': {
+      type: String,
+      enum: PoolTypeArray,
+    },
     furnishing: {
       type: String,
       enum: FurnishingArray,
@@ -116,6 +122,10 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
       default: 1,
     },
     bathrooms: {
+      type: Number,
+      default: 1,
+    },
+    toilets: {
       type: Number,
       default: 1,
     },

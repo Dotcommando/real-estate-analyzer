@@ -17,6 +17,7 @@ import {
   ParkingArray,
   Pets,
   PetsArray,
+  PoolTypeArray,
   SourceArray,
 } from '../constants';
 import { IRentApartmentsFlats } from '../types/real-estate-to-rent';
@@ -97,6 +98,11 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
       type: String,
       enum: ParkingArray,
     },
+    'parking-places': Number,
+    'pool-type': {
+      type: String,
+      enum: PoolTypeArray,
+    },
     'property-area': {
       type: Number,
       default: 0,
@@ -116,6 +122,10 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
       default: 1,
     },
     bathrooms: {
+      type: Number,
+      default: 1,
+    },
+    toilets: {
       type: Number,
       default: 1,
     },

@@ -15,6 +15,7 @@ import {
   OnlineViewing,
   OnlineViewingArray,
   ParkingArray,
+  PoolTypeArray,
   SourceArray,
 } from '../constants';
 import { ISaleApartmentsFlats } from '../types/real-estate-for-sale';
@@ -95,6 +96,11 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       type: String,
       enum: ParkingArray,
     },
+    'parking-places': Number,
+    'pool-type': {
+      type: String,
+      enum: PoolTypeArray,
+    },
     'property-area': {
       type: Number,
       default: 0,
@@ -114,6 +120,10 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       default: 1,
     },
     bathrooms: {
+      type: Number,
+      default: 1,
+    },
+    toilets: {
       type: Number,
       default: 1,
     },

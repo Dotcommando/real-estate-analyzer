@@ -13,6 +13,7 @@ import {
   OnlineViewing,
   OnlineViewingArray,
   ParkingArray,
+  PoolTypeArray,
   SourceArray,
 } from '../constants';
 import { ISaleHouses } from '../types/real-estate-for-sale';
@@ -101,6 +102,11 @@ export const SaleHousesSchema = new Schema<ISaleHousesDoc, Model<ISaleHousesDoc>
       type: String,
       enum: ParkingArray,
     },
+    'parking-places': Number,
+    'pool-type': {
+      type: String,
+      enum: PoolTypeArray,
+    },
     furnishing: {
       type: String,
       enum: FurnishingArray,
@@ -114,6 +120,10 @@ export const SaleHousesSchema = new Schema<ISaleHousesDoc, Model<ISaleHousesDoc>
       default: 1,
     },
     bathrooms: {
+      type: Number,
+      default: 1,
+    },
+    toilets: {
       type: Number,
       default: 1,
     },
