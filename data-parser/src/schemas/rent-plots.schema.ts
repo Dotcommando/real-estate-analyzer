@@ -4,8 +4,6 @@ import { Document, Model, Schema } from 'mongoose';
 import { CoordsSchema } from './coords.schema';
 
 import {
-  Mode,
-  ModeArray,
   OnlineViewing,
   OnlineViewingArray,
   Share,

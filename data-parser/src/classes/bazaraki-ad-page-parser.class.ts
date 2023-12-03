@@ -12,7 +12,6 @@ import { dateInHumanReadableFormat, getRoundYesterday, parseDate, roundDate } fr
 export class BazarakiAdPageParser extends AdPageParserAbstract<IRealEstate> {
   private $: Root;
   private resultData: Partial<IRealEstate>;
-  private category: string;
 
   constructor(pageContent: string, url: string, collection: string) {
     super(pageContent, url, collection);
@@ -38,8 +37,6 @@ export class BazarakiAdPageParser extends AdPageParserAbstract<IRealEstate> {
       coords: this.getCoords(),
       ...(this.getCharacteristics('.announcement-characteristics .chars-column')),
     };
-
-    this.category = this.$('.breadcrumbs > li:last-child > a').attr('href');
   }
 
   private getTitle(): string {

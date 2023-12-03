@@ -8,8 +8,6 @@ import {
   ConditionArray,
   EnergyEfficiency,
   EnergyEfficiencyArray,
-  Mode,
-  ModeArray,
   OnlineViewing,
   OnlineViewingArray,
   SourceArray,

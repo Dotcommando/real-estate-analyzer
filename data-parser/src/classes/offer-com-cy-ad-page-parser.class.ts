@@ -23,7 +23,6 @@ import { dateInHumanReadableFormat, getRoundYesterday, parseDate, parseInteger, 
 export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
   private $: Root;
   private resultData: Partial<IRealEstate>;
-  private category: string;
 
   constructor(pageContent: string, url: string, collection: string) {
     super(pageContent, url, collection);
@@ -131,7 +130,9 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
 
   private getAdId(): string {
     try {
-      return this.$('.number-announcement span[itemprop=sku]').text().trim();
+      const adId = this.$('a[data-adid]').data('adid');
+
+      return adId ? String(adId) : '';
     } catch (e) {
       return '';
     }

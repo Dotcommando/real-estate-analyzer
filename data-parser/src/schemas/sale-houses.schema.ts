@@ -10,8 +10,6 @@ import {
   EnergyEfficiency,
   EnergyEfficiencyArray,
   FurnishingArray,
-  Mode,
-  ModeArray,
   OnlineViewing,
   OnlineViewingArray,
   ParkingArray,
