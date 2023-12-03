@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { ModuleRef } from '@nestjs/core';
 
 import { Model } from 'mongoose';
@@ -13,19 +12,20 @@ import {
   EnergyEfficiencyArray,
   Furnishing,
   FurnishingArray,
-  Mode,
   OnlineViewing,
   OnlineViewingArray,
   Parking,
   ParkingArray,
   Pets,
   PetsArray,
+  PoolType,
+  PoolTypeArray,
   Share,
   ShareArray,
   SlugByCollection,
 } from '../constants';
 import { IAdDBOperationResult, IRealEstate, IRealEstateDoc } from '../types';
-import { castToNumber, roundDate } from '../utils';
+import { castToNumber, parseInteger, roundDate } from '../utils';
 
 
 export enum AdProcessingStatus {
@@ -40,11 +40,8 @@ export enum AdProcessingStatus {
 @Injectable()
 export class DbAccessService {
   constructor(
-    private readonly configService: ConfigService,
     private moduleRef: ModuleRef,
   ) {}
-
-  private readonly mode = this.configService.get<Mode>('MODE');
 
   private getModelByCollection(collectionName: string): Model<any> | null {
     try {
@@ -58,18 +55,28 @@ export class DbAccessService {
 
   public typecastingFields(announcementData: Partial<IRealEstate>): Partial<IRealEstate> {
     const forceMakeNumberProps = [
-      'square-meter-price',
       'price',
       'property-area',
       'plot-area',
       'area',
       'bedrooms',
-      'bathrooms',
       'registration-number',
       'registration-block',
     ];
 
     announcementData = castToNumber(announcementData, forceMakeNumberProps);
+
+    if ('bathrooms' in announcementData) {
+      announcementData['bathrooms'] = parseInteger(String(announcementData['bathrooms']), 1);
+    }
+
+    if ('toilets' in announcementData) {
+      announcementData['toilets'] = parseInteger(String(announcementData['toilets']), 1);
+    }
+
+    if ('parking-places' in announcementData) {
+      announcementData['parking-places'] = parseInteger(String(announcementData['parking-places']), 1);
+    }
 
     if ('online-viewing' in announcementData && !OnlineViewingArray.includes(announcementData['online-viewing'])) {
       announcementData['online-viewing'] = OnlineViewing.No;
@@ -105,6 +112,10 @@ export class DbAccessService {
 
     if (typeof announcementData['type'] !== 'string') {
       announcementData['type'] = String(announcementData['type']);
+    }
+
+    if ('pool-type' in announcementData && !PoolTypeArray.includes(announcementData['pool-type'] as PoolType)) {
+      announcementData['pool-type'] = PoolType.Shared;
     }
 
     if ('coords' in announcementData && announcementData['coords'] !== null) {
@@ -155,7 +166,6 @@ export class DbAccessService {
       } else {
         const newAnnouncement = new Model({
           ...this.typecastingFields(announcementData),
-          mode: this.mode,
         });
 
         newAnnouncement.active_dates = [ roundDate(new Date()) ];

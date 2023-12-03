@@ -5,6 +5,7 @@ import { ScheduleModule, SchedulerRegistry } from '@nestjs/schedule';
 
 import { AppController } from './app.controller';
 import { LOGGER } from './constants';
+import { ParserFactory, ProxyFactory } from './factories';
 import {
   RentApartmentsFlatsSchema,
   RentCommercialsSchema,
@@ -22,7 +23,6 @@ import {
   DummyLoggerService,
   LoggerService,
   MongoConfigService,
-  ProxyFactoryService,
 } from './services';
 
 
@@ -97,7 +97,8 @@ import {
     DbAccessService,
     DbUrlRelationService,
     AppService,
-    ProxyFactoryService,
+    ParserFactory,
+    ProxyFactory,
     SchedulerRegistry,
     {
       provide: LOGGER,

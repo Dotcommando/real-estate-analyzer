@@ -8,10 +8,13 @@ import { lastValueFrom, timeout } from 'rxjs';
 
 import { AdProcessingStatus, DbAccessService } from './db-access.service';
 import { DbUrlRelationService } from './db-url-relation.service';
-import { ProxyFactoryService } from './proxy-factory.service';
 
-import { BazarakiAdPageParser, BazarakiPaginationParser } from '../classes';
+import {
+  AdPageParserAbstract,
+  PaginationParserAbstract,
+} from '../classes';
 import { LOGGER, UrlTypes, WebScraperMessages } from '../constants';
+import { ParserFactory, ProxyFactory } from '../factories';
 import {
   IAdDBOperationResult,
   IAddToQueueResult,
@@ -74,7 +77,8 @@ export class AppService implements OnModuleInit {
     private readonly dbAccessService: DbAccessService,
     private readonly dbUrlRelationService: DbUrlRelationService,
     private readonly configService: ConfigService,
-    private readonly proxyFactory: ProxyFactoryService,
+    private readonly parserFactory: ParserFactory,
+    private readonly proxyFactory: ProxyFactory,
   ) {
   }
 
@@ -194,17 +198,16 @@ export class AppService implements OnModuleInit {
 
   public async processIndexPage(dataToParse: string, task: ITask): Promise<void> {
     try {
-      const parsedPagination: [ Set<string>, Set<string> ] = new BazarakiPaginationParser(dataToParse, task.url)
-        .getPaginationAndAds();
-
-      const maxPaginationNumber: number = this.getMaxNumberOfPagination(parsedPagination[0]);
+      const paginationParser: PaginationParserAbstract = this.parserFactory.createPaginationParser(dataToParse, task.url);
+      const parsedPagination: [ Set<string>, Set<string> ] = paginationParser.getPaginationAndAds();
+      const maxPaginationNumber: number = paginationParser.getMaxNumberOfPagination(parsedPagination[0]);
       const depth: number = typeof task.depth === 'number' && !isNaN(task.depth)
         ? task.depth === 0
           ? maxPaginationNumber
           : Math.min(task.depth, maxPaginationNumber)
         : maxPaginationNumber;
       const categoryIndexURL: string = this.dbUrlRelationService.getUrlByCollection(task.collection);
-      const setOfPaginationUrls: Set<string> = this.getPaginationUrlsSet(2, depth, categoryIndexURL);
+      const setOfPaginationUrls: Set<string> = paginationParser.getPaginationUrlsSet(2, depth, categoryIndexURL);
       const adsPagesUrls: string[] = this.dbUrlRelationService.addBaseUrlToSetOfPaths(parsedPagination[1]);
       const paginationPagesTasks: ITask[] = Array.from(setOfPaginationUrls)
         .map((url: string) => ({
@@ -251,7 +254,8 @@ export class AppService implements OnModuleInit {
 
   public async processPaginationPage(dataToParse: string, task: ITask): Promise<void> {
     try {
-      const parsedAdUrls: Set<string> = new BazarakiPaginationParser(dataToParse, task.url).getAdsUrls();
+      const paginationParser: PaginationParserAbstract = this.parserFactory.createPaginationParser(dataToParse, task.url);
+      const parsedAdUrls: Set<string> = paginationParser.getAdsUrls();
       const adsPagesUrls: string[] = this.dbUrlRelationService.addBaseUrlToSetOfPaths(parsedAdUrls);
       const adsPagesTasks: ITask[] = adsPagesUrls
         .map((url: string) => ({
@@ -309,9 +313,14 @@ export class AppService implements OnModuleInit {
 
   public async processAdPage(dataToParse: string, task: ITask): Promise<void> {
     try {
-      const parsedAdPage: Partial<IRealEstate> = new BazarakiAdPageParser(dataToParse, task.url).getPageData();
+      const adParser: AdPageParserAbstract<IRealEstate> = this.parserFactory.createAdPageParser(dataToParse, task.url, task.collection);
+      const parsedAdPage: Partial<IRealEstate> = adParser.getPageData();
       const typeCastedPageData: Partial<IRealEstate> = this.dbAccessService.typecastingFields(parsedAdPage);
       const saveAdResult: IAdDBOperationResult = await this.dbAccessService.saveNewAnnouncement(task.collection, typeCastedPageData);
+
+      if ('errorMsg' in saveAdResult) {
+        this.logger.error(saveAdResult['errorMsg']);
+      }
 
       this.logger.log(`${dateInHumanReadableFormat(new Date(), 'DD.MM.YYYY HH:mm:ss')} Saving result to DB: \x1b[33m${task.url.replace(this.sourceUrl, '')}\x1b[0m ${this.getStatusColor(saveAdResult.status)}${saveAdResult.status}\x1b[0m`);
     } catch (e) {
@@ -321,48 +330,5 @@ export class AppService implements OnModuleInit {
       await this.logger.error(task);
       await this.logger.error(e);
     }
-  }
-
-  private getMaxNumberOfPagination(setOfUrls: Set<string>): number {
-    if (!setOfUrls.size) {
-      return 0;
-    }
-
-    try {
-      const arrayOfUrls = Array.from(setOfUrls);
-      const maxPageNumber = arrayOfUrls.reduce((prev: number, curr: string) => {
-        const currPageNumberString = Number(curr.match(/[\d]*$/)?.[0]);
-        const currPageNumber = !isNaN(currPageNumberString)
-          ? Number(currPageNumberString)
-          : 0;
-
-        return Math.max(prev, currPageNumber);
-      }, 0);
-
-      return isNaN(maxPageNumber) ? 0 : maxPageNumber;
-    } catch (e) {
-      this.logger.error('Error happened in \'getMaxNumberOfPagination\' method of app.service.ts');
-      this.logger.error(e);
-
-      return 0;
-    }
-  }
-
-  private getPaginationUrlsSet(from: number, to: number, categoryUrl: string): Set<string> {
-    if (from > to) {
-      return new Set<string>();
-    }
-
-    const clearCategoryUrl = categoryUrl.replace(/[?&]{1}page=[\d]{1,}$/, '');
-    const result = new Set<string>();
-    const delimiter = clearCategoryUrl.substring(clearCategoryUrl.length - 1) === '/'
-      ? ''
-      : '/';
-
-    for (let i = from; i <= to; i++) {
-      result.add(`${clearCategoryUrl}${delimiter}?page=${i}`);
-    }
-
-    return result;
   }
 }

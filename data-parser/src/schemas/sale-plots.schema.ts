@@ -4,11 +4,10 @@ import { Document, Model, Schema } from 'mongoose';
 import { CoordsSchema } from './coords.schema';
 
 import {
-  Mode,
-  ModeArray,
   OnlineViewing,
   OnlineViewingArray,
   ShareArray,
+  SourceArray,
 } from '../constants';
 import { ISalePlots } from '../types/real-estate-for-sale';
 import { roundDate } from '../utils';
@@ -16,7 +15,6 @@ import { roundDate } from '../utils';
 
 export interface ISalePlotsDoc extends ISalePlots, Document {
   active_dates: Date[];
-  mode?: Mode;
 }
 
 export const SalePlotsSchema = new Schema<ISalePlotsDoc, Model<ISalePlotsDoc>>(
@@ -33,6 +31,11 @@ export const SalePlotsSchema = new Schema<ISalePlotsDoc, Model<ISalePlotsDoc>>(
     publish_date: {
       type: Schema.Types.Date,
       required: [ true, 'Publish date is required' ],
+    },
+    source: {
+      type: String,
+      enum: SourceArray,
+      required: [ true, 'Source is required' ],
     },
     city: {
       type: String,
@@ -63,10 +66,6 @@ export const SalePlotsSchema = new Schema<ISalePlotsDoc, Model<ISalePlotsDoc>>(
     'reference-number': String,
     'registration-number': Number,
     'registration-block': Number,
-    'square-meter-price': {
-      type: Number,
-      required: [ true, 'Square meter price is required' ],
-    },
     'plot-area': {
       type: Number,
       default: 0,
@@ -94,11 +93,6 @@ export const SalePlotsSchema = new Schema<ISalePlotsDoc, Model<ISalePlotsDoc>>(
     },
     coords: {
       type: CoordsSchema,
-    },
-    mode: {
-      type: String,
-      enum: ModeArray,
-      default: Mode.Prod,
     },
   },
   { collection: 'saleplots' },

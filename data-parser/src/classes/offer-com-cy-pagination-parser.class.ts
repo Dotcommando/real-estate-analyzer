@@ -3,7 +3,7 @@ import Root = cheerio.Root;
 import { PaginationParserAbstract } from './pagination-parser.abstract';
 
 
-export class BazarakiPaginationParser extends PaginationParserAbstract {
+export class OfferComCyPaginationParser extends PaginationParserAbstract {
   private $: Root;
 
   constructor(pageContent: string, url: string) {
@@ -15,7 +15,7 @@ export class BazarakiPaginationParser extends PaginationParserAbstract {
   public getPaginationUrls(): Set<string> {
     const pagination = new Set<string>();
 
-    this.$('ul.number-list a.page-number').each((index, element) => {
+    this.$('.pagination a').each((index, element) => {
       pagination.add(this.$(element).attr('href') || '');
     });
 
@@ -27,7 +27,7 @@ export class BazarakiPaginationParser extends PaginationParserAbstract {
   public getAdsUrls(): Set<string> {
     const ads = new Set<string>();
 
-    this.$('.advert .advert__content-title').each((index, element) => {
+    this.$('#clsList .item .title-a a').each((index, element) => {
       ads.add(this.$(element).attr('href') || '');
     });
 
@@ -45,14 +45,16 @@ export class BazarakiPaginationParser extends PaginationParserAbstract {
       return new Set<string>();
     }
 
-    const clearCategoryUrl = categoryUrl.replace(/[?&]{1}page=[\d]{1,}$/, '');
+    const baseUrl = categoryUrl.split('#')[0];
+    const clearCategoryUrl = baseUrl.replace(/([?&])dpn=\d+&?/, '$1');
     const result = new Set<string>();
-    const delimiter = clearCategoryUrl.substring(clearCategoryUrl.length - 1) === '/'
-      ? ''
-      : '/';
 
     for (let i = from; i <= to; i++) {
-      result.add(`${clearCategoryUrl}${delimiter}?page=${i}`);
+      const pageNumber = (i - 1) * 10;
+      const delimiter = clearCategoryUrl.includes('?') ? '&' : '?';
+      const pageUrl = `${clearCategoryUrl}${delimiter}dpn=${pageNumber}`;
+
+      result.add(pageUrl);
     }
 
     return result;
@@ -64,17 +66,16 @@ export class BazarakiPaginationParser extends PaginationParserAbstract {
     }
 
     try {
-      const arrayOfUrls = Array.from(setOfUrls);
-      const maxPageNumber = arrayOfUrls.reduce((prev: number, curr: string) => {
-        const currPageNumberString = Number(curr.match(/[\d]*$/)?.[0]);
-        const currPageNumber = !isNaN(currPageNumberString)
-          ? Number(currPageNumberString)
-          : 0;
+      const maxPageNumber = Array.from(setOfUrls).reduce((prev: number, url: string) => {
+        const match = url.match(/[?&]dpn=(\d+)/);
+        const pageNumber = match ? parseInt(match[1], 10) : 0;
 
-        return Math.max(prev, currPageNumber);
+        return Math.max(prev, pageNumber);
       }, 0);
 
-      return isNaN(maxPageNumber) ? 0 : maxPageNumber;
+      return maxPageNumber === 0
+        ? 0
+        : Math.ceil(maxPageNumber / 10) + 1;
     } catch (e) {
       return 0;
     }
