@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { ModuleRef } from '@nestjs/core';
 
 import { Model } from 'mongoose';
@@ -13,7 +12,6 @@ import {
   EnergyEfficiencyArray,
   Furnishing,
   FurnishingArray,
-  Mode,
   OnlineViewing,
   OnlineViewingArray,
   Parking,
@@ -42,11 +40,8 @@ export enum AdProcessingStatus {
 @Injectable()
 export class DbAccessService {
   constructor(
-    private readonly configService: ConfigService,
     private moduleRef: ModuleRef,
   ) {}
-
-  private readonly mode = this.configService.get<Mode>('MODE');
 
   private getModelByCollection(collectionName: string): Model<any> | null {
     try {
@@ -171,7 +166,6 @@ export class DbAccessService {
       } else {
         const newAnnouncement = new Model({
           ...this.typecastingFields(announcementData),
-          mode: this.mode,
         });
 
         newAnnouncement.active_dates = [ roundDate(new Date()) ];

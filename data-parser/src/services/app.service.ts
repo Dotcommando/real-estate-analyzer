@@ -318,6 +318,10 @@ export class AppService implements OnModuleInit {
       const typeCastedPageData: Partial<IRealEstate> = this.dbAccessService.typecastingFields(parsedAdPage);
       const saveAdResult: IAdDBOperationResult = await this.dbAccessService.saveNewAnnouncement(task.collection, typeCastedPageData);
 
+      if ('errorMsg' in saveAdResult) {
+        this.logger.error(saveAdResult['errorMsg']);
+      }
+
       this.logger.log(`${dateInHumanReadableFormat(new Date(), 'DD.MM.YYYY HH:mm:ss')} Saving result to DB: \x1b[33m${task.url.replace(this.sourceUrl, '')}\x1b[0m ${this.getStatusColor(saveAdResult.status)}${saveAdResult.status}\x1b[0m`);
     } catch (e) {
       await this.logger.error(' ');
