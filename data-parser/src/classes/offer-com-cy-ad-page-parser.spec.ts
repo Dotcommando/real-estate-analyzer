@@ -23,7 +23,7 @@ describe('OfferComCyAdPageParser', () => {
 
       return today.getTime();
     } else {
-      const match = dateText.match(/Publish: (\d{2}) (\w{3}) (\d{2}), views:/);
+      const match = dateText.match(/Publish: (\d{2}) (\w{3}) (\d{2}), views: \d{1,4}/);
 
       if (match) {
         const day = parseInt(match[1], 10);
@@ -45,7 +45,7 @@ describe('OfferComCyAdPageParser', () => {
       const parser = new OfferComCyAdPageParser(htmlWithDate, 'https://example.com', 'renthouses');
       const pageData = parser.getPageData();
 
-      expect(pageData.publish_date).toBe(expectedTimestamps[index]);
+      expect(String(new Date(pageData.publish_date).toLocaleString())).toBe(String(new Date(expectedTimestamps[index]).toLocaleString()));
     });
   });
 });

@@ -38,11 +38,9 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
     this.resultData = {
       title,
       description: this.getDescription(),
-      // description: this.$('.announcement-description .js-description').text().trim().substring(0, 30) + '...',
       url,
       publish_date: this.getPublishDate(publishText),
       source: Source.OFFER,
-      // publish_date_human_readable: dateInHumanReadableFormat(new Date(this.getPublishDate())),
       city,
       district,
       currency: this.getCurrency(),
@@ -87,7 +85,9 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
         publishDateStr = publishDateStr.replace('Yesterday', dateInHumanReadableFormat(yesterday, 'DD MMM YY'));
       }
 
-      const publishDate = parseDate(publishDateStr, 'DD MMM YY HH:mm');
+      const publishDate = /\d{1,2}\s+\w{3}\s+\d{2}\s+\d{1,2}:\d{1,2}/.test(publishDateStr)
+        ? parseDate(publishDateStr, 'DD MMM YY HH:mm')
+        : parseDate(publishDateStr, 'DD MMM YY');
 
       return publishDate.getTime();
     } catch (e) {
