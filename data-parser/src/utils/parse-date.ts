@@ -59,9 +59,9 @@ export function parseDate(
   const ms = values['SSS']
     ? parseInt(values['SSS'])
     : values['SS']
-      ? parseInt(values['SS']) * 10
+      ? parseInt(values['SS'])
       : values['S']
-        ? parseInt(values['S']) * 100
+        ? parseInt(values['S'])
         : (fillRestFromCurrentDate ? today.getMilliseconds() : 0);
 
   return new Date(year, month, day, hours, minutes, seconds, ms);
