@@ -23,6 +23,7 @@ import {
   Share,
   ShareArray,
   SlugByCollection,
+  Source,
 } from '../constants';
 import { IAdDBOperationResult, IRealEstate, IRealEstateDoc } from '../types';
 import { castToNumber, parseInteger, roundDate } from '../utils';
@@ -65,6 +66,14 @@ export class DbAccessService {
     ];
 
     announcementData = castToNumber(announcementData, forceMakeNumberProps);
+
+    if (!announcementData['source'] || (typeof announcementData['source'] !== 'string')) {
+      announcementData['source'] = announcementData.url.includes(Source.BAZARAKI)
+        ? Source.BAZARAKI
+        : announcementData.url.includes(Source.OFFER)
+          ? Source.OFFER
+          : 'unknown';
+    }
 
     if ('bathrooms' in announcementData) {
       announcementData['bathrooms'] = parseInteger(String(announcementData['bathrooms']), 1);
@@ -148,6 +157,17 @@ export class DbAccessService {
       if (existingAnnouncement) {
         const roundedDate = roundDate(new Date());
         const roundedDateAsString = roundedDate.toString();
+        let changed = false;
+
+        if (!existingAnnouncement.source) {
+          existingAnnouncement.source = existingAnnouncement.url.includes(Source.BAZARAKI)
+            ? Source.BAZARAKI
+            : existingAnnouncement.url.includes(Source.OFFER)
+              ? Source.OFFER
+              : 'unknown';
+
+          changed = true;
+        }
 
         if (
           !existingAnnouncement.active_dates
@@ -155,12 +175,16 @@ export class DbAccessService {
             .includes(roundedDateAsString)
         ) {
           existingAnnouncement.active_dates.push(roundedDate);
-          await existingAnnouncement.save();
-
-          status = AdProcessingStatus.ACTIVE_DATE_ADDED;
-        } else {
-          status = AdProcessingStatus.NO_CHANGES;
+          changed = true;
         }
+
+        if (changed) {
+          await existingAnnouncement.save();
+        }
+
+        status = changed
+          ? AdProcessingStatus.ACTIVE_DATE_ADDED
+          : AdProcessingStatus.NO_CHANGES;
 
         return { ad: existingAnnouncement.toObject(), status };
       } else {
