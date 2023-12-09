@@ -19,4 +19,4 @@ services:
 
 networks:
   common-net:
-    name: parser-network-1
+    external: true

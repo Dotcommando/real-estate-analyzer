@@ -7,9 +7,9 @@
   "license": "UNLICENSED",
   "scripts": {
     "start": "npm i && npm run build && node -r dotenv/config dist/generate-mongo-init.js && npm run db:up",
-    "db:up": "docker-compose -f docker-compose.prod.yml up -d",
-    "db:restart": "docker-compose -f docker-compose.prod.yml restart",
-    "db:stop": "docker-compose -f docker-compose.prod.yml down",
+    "db:up": "docker-compose up -d",
+    "db:restart": "docker-compose restart",
+    "db:stop": "docker-compose down",
     "lint": "eslint \"**/*.[jt]s\" --fix",
     "build": "rimraf dist && tsc -p tsconfig.build.json",
     "dump": "npm run build && node -r dotenv/config dist/dump.js dotenv_config_path=.env",
