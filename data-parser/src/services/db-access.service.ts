@@ -159,12 +159,19 @@ export class DbAccessService {
         const roundedDateAsString = roundedDate.toString();
         let changed = false;
 
+        // Remove after migration to 1.0.0
         if (!existingAnnouncement.source) {
           existingAnnouncement.source = existingAnnouncement.url.includes(Source.BAZARAKI)
             ? Source.BAZARAKI
             : existingAnnouncement.url.includes(Source.OFFER)
               ? Source.OFFER
               : Source.UNKNOWN;
+
+          changed = true;
+        }
+
+        if (!existingAnnouncement['plot-area'] && (typeof announcementData['plot-area'] === 'number' && announcementData['plot-area'] !== 0)) {
+          existingAnnouncement['plot-area'] = announcementData['plot-area'];
 
           changed = true;
         }
