@@ -148,7 +148,9 @@ export class BazarakiAdPageParser extends AdPageParserAbstract<IRealEstate> {
           } else if (kebabKey === 'property-area' || kebabKey === 'bedrooms' || kebabKey === 'bathrooms') {
             characteristics[kebabKey] = parseFloat(value);
           } else if (kebabKey === 'plot-area') {
-            const plotAreaText = characteristics[kebabKey].replace(/["']+/gm, '');
+            const plotAreaText = value
+              .replace(/["']+/gm, '')
+              .trim();
             const parsedNumber = parseInt(plotAreaText);
 
             characteristics[kebabKey] = isNaN(parsedNumber) ? 0 : parsedNumber;
