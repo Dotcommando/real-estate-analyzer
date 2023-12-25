@@ -10,4 +10,5 @@ export * from './parse-date';
 export * from './parse-integer';
 export * from './parse-number';
 export * from './round-date';
+export * from './set-default-standard-value';
 export * from './timeoffset-to-human-readable-format';

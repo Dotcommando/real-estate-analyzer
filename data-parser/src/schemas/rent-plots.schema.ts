@@ -96,6 +96,18 @@ export const RentPlotsSchema = new Schema<IRentPlotsDoc, Model<IRentPlotsDoc>>(
     coords: {
       type: CoordsSchema,
     },
+    version: {
+      type: String,
+      required: [ true, 'Document version is required' ],
+    },
+    'ad_last_updated': {
+      type: Schema.Types.Date,
+      required: [ true, 'Last updated date is required' ],
+    },
+    'updated_at': {
+      type: Schema.Types.Date,
+      required: [ true, 'Date of update is required' ],
+    },
   },
   { collection: 'rentplots' },
 );

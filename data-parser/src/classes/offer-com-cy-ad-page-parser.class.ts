@@ -51,6 +51,7 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
     };
 
     this.resultData['type'] = this.getDefaultType(title.toLowerCase(), collection);
+    this.resultData['ad_last_updated'] = new Date(this.resultData['publish_date']);
   }
 
   private getDescription(): string {
@@ -224,7 +225,7 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
             break;
 
           case 'Toilets':
-            characteristics.toilets = parseInteger(value, 1);
+            characteristics.bathrooms = parseInteger(value, 1);
 
             break;
 
@@ -251,10 +252,12 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
             break;
 
           case 'Furnished':
-            characteristics.furnishing = value.trim() === 'Partially'
-              ? Furnishing.FullyFurnished
-              : value === 'Partially'
-                ? Furnishing.SemiFurnished
+            const clearedFurnishingValue = value.trim();
+
+            characteristics.furnishing = clearedFurnishingValue === 'Partially'
+              ? Furnishing.SemiFurnished
+              : clearedFurnishingValue.startsWith('Yes')
+                ? Furnishing.FullyFurnished
                 : Furnishing.Unfurnished;
 
             break;
@@ -265,17 +268,13 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
             break;
 
           case 'Pool':
-            if (!characteristics['included']) {
-              characteristics['included'] = [];
-            }
+            const clearedPoolValue = value.trim();
 
-            (characteristics['included'] as string[]).push('Pool');
-
-            if (value.trim().includes('Yes')) {
-              characteristics['pool-type'] = value.trim() === 'Yes (private)'
+            characteristics['pool'] = clearedPoolValue.includes('Yes')
+              ? clearedPoolValue.includes('private')
                 ? PoolType.Private
-                : PoolType.Shared;
-            }
+                : PoolType.Shared
+              : PoolType.No;
 
             break;
 
@@ -285,10 +284,6 @@ export class OfferComCyAdPageParser extends AdPageParserAbstract<IRealEstate> {
             break;
 
           case 'Parking':
-            if (!characteristics['included']) {
-              characteristics['included'] = [];
-            }
-
             characteristics['parking'] = Parking.Uncovered;
             characteristics['parking-places'] = parseInteger(value, 1);
 

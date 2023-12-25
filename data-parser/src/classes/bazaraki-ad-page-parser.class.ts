@@ -4,10 +4,25 @@ import * as levenshtein from 'fast-levenshtein';
 import Root = cheerio.Root;
 import { AdPageParserAbstract } from './ad-page-parser.abstract';
 
-import { coordsRegexp, OnlineViewing, OnlineViewingArray, Source } from '../constants';
+import { coordsRegexp, OnlineViewing, OnlineViewingArray, Source, StandardSet } from '../constants';
 import { IRealEstate } from '../types';
 import { dateInHumanReadableFormat, getRoundYesterday, parseDate, roundDate } from '../utils';
 
+
+const lowerCasedKeysToFields = {
+  alarm: 'alarm',
+  'attic/loft': 'attic',
+  balcony: 'balcony',
+  elevator: 'elevator',
+  fireplace: 'fireplace',
+  garden: 'garden',
+  playroom: 'playroom',
+  pool: 'pool',
+  storageroom: 'storage',
+  parking: 'parking',
+};
+
+const lowerCasedKeysToFieldsArray = Object.keys(lowerCasedKeysToFields);
 
 export class BazarakiAdPageParser extends AdPageParserAbstract<IRealEstate> {
   private $: Root;
@@ -37,6 +52,8 @@ export class BazarakiAdPageParser extends AdPageParserAbstract<IRealEstate> {
       coords: this.getCoords(),
       ...(this.getCharacteristics('.announcement-characteristics .chars-column')),
     };
+
+    this.resultData['ad_last_updated'] = new Date(this.resultData['publish_date']);
   }
 
   private getTitle(): string {
@@ -144,7 +161,14 @@ export class BazarakiAdPageParser extends AdPageParserAbstract<IRealEstate> {
           const kebabKey = dashify(key);
 
           if (kebabKey === 'included' && value !== '') {
-            characteristics[kebabKey] = (value.split(',')).map(item => item.trim());
+            const included = (value.split(','))
+              .map((item: string) => item.replace(/\s+/g, '').toLowerCase());
+
+            for (const include of included) {
+              if (lowerCasedKeysToFieldsArray.includes(include)) {
+                characteristics[lowerCasedKeysToFields[include]] = StandardSet.YES;
+              }
+            }
           } else if (kebabKey === 'property-area' || kebabKey === 'bedrooms' || kebabKey === 'bathrooms') {
             characteristics[kebabKey] = parseFloat(value);
           } else if (kebabKey === 'plot-area') {
