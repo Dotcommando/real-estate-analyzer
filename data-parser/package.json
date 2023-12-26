@@ -11,6 +11,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "TZ='Asia/Nicosia' node dist/main",
+    "replicate": "node replicate.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test:unit": "jest"
   },

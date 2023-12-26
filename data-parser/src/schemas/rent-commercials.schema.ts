@@ -10,7 +10,11 @@ import {
   EnergyEfficiencyArray,
   OnlineViewing,
   OnlineViewingArray,
+  PoolType,
+  PoolTypeArray,
   SourceArray,
+  StandardSet,
+  StandardSetArray,
 } from '../constants';
 import { IRentCommercials } from '../types/real-estate-to-rent';
 import { roundDate } from '../utils';
@@ -79,7 +83,6 @@ export const RentCommercialsSchema = new Schema<IRentCommercialDoc, Model<IRentC
       enum: EnergyEfficiencyArray,
       default: EnergyEfficiency.NA,
     },
-    included: [ String ],
     'construction-year': String,
     type: {
       type: String,
@@ -103,12 +106,69 @@ export const RentCommercialsSchema = new Schema<IRentCommercialDoc, Model<IRentC
       default: 'm²',
       required: [ true, 'Plot Area Unit is required' ],
     },
+    alarm: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    attic: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    balcony: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    elevator: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    fireplace: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    garden: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    playroom: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    pool: {
+      type: String,
+      enum: PoolTypeArray,
+      default: PoolType.No,
+    },
+    storage: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
     active_dates: {
       type: [ Schema.Types.Date ] as unknown as Date[],
       required: [ true, 'Active dates are required' ],
     },
     coords: {
       type: CoordsSchema,
+    },
+    version: {
+      type: String,
+      required: [ true, 'Document version is required' ],
+    },
+    'ad_last_updated': {
+      type: Schema.Types.Date,
+      required: [ true, 'Last updated date is required' ],
+    },
+    'updated_at': {
+      type: Schema.Types.Date,
+      required: [ true, 'Date of update is required' ],
     },
   },
   { collection: 'rentcommercials' },

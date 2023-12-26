@@ -15,8 +15,11 @@ import {
   ParkingArray,
   Pets,
   PetsArray,
+  PoolType,
   PoolTypeArray,
   SourceArray,
+  StandardSet,
+  StandardSetArray,
 } from '../constants';
 import { IRentHouses } from '../types/real-estate-to-rent';
 import { roundDate } from '../utils';
@@ -85,7 +88,6 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
       enum: EnergyEfficiencyArray,
       default: EnergyEfficiency.NA,
     },
-    included: [ String ],
     'construction-year': String,
     'property-area': {
       type: Number,
@@ -105,10 +107,6 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
       enum: ParkingArray,
     },
     'parking-places': Number,
-    'pool-type': {
-      type: String,
-      enum: PoolTypeArray,
-    },
     furnishing: {
       type: String,
       enum: FurnishingArray,
@@ -125,14 +123,55 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
       type: Number,
       default: 1,
     },
-    toilets: {
-      type: Number,
-      default: 1,
-    },
     pets: {
       type: String,
       enum: PetsArray,
       default: Pets.NotAllowed,
+    },
+    alarm: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    attic: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    balcony: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    elevator: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    fireplace: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    garden: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    playroom: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    pool: {
+      type: String,
+      enum: PoolTypeArray,
+      default: PoolType.No,
+    },
+    storage: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
     },
     'plot-area': {
       type: Number,
@@ -149,6 +188,18 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
     },
     coords: {
       type: CoordsSchema,
+    },
+    version: {
+      type: String,
+      required: [ true, 'Document version is required' ],
+    },
+    'ad_last_updated': {
+      type: Schema.Types.Date,
+      required: [ true, 'Last updated date is required' ],
+    },
+    'updated_at': {
+      type: Schema.Types.Date,
+      required: [ true, 'Date of update is required' ],
     },
   },
   { collection: 'renthouses' },

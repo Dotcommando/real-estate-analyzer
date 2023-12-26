@@ -108,26 +108,6 @@ class DataPreparer:
 
         return df
 
-    def convert_included(self, df):
-        # Проверяем, есть ли столбец 'included' в датафрейме
-        if 'included' not in df.columns:
-            return df
-
-        # Фильтрация значений 'included', чтобы исключить строки из одного символа
-        df['included'] = df['included'].apply(lambda x: [item for item in x if len(item) > 1])
-
-        # Преобразование списков в included в серии и затем преобразование их в dummy-переменные
-        included_dummies = df['included'].apply(pd.Series, dtype=object).stack().str.get_dummies().groupby(level=0).sum()
-
-        # Присоединение этих dummy-переменных к исходному датафрейму
-        df = df.drop('included', axis=1).join(included_dummies)
-
-        # Замена NaN на False и преобразование 1 и 0 в True и False
-        for column in included_dummies.columns:
-            df[column] = df[column].fillna(0).astype(bool)
-
-        return df
-
     def remove_fields(self, df, fields_to_exclude):
         return df.drop(columns=[field for field in fields_to_exclude if field in df.columns], errors='ignore')
 
@@ -362,7 +342,10 @@ class DataPreparer:
             'url', 'ad_id',  'currency', 'reference-number',
             'registration-number', 'registration-block',
             'property-area-unit', 'mode', '__v', 'coords',
-            'plot-area-unit', 'square-meter-price', 'postal-code' ]
+            'plot-area-unit', 'square-meter-price', 'postal-code',
+            'updated_at', 'version', 'source', 'ad_last_updated',
+            'expired'
+        ]
 
         df = self.remove_fields(df, fields_to_exclude)
         df = self.remove_duplicates(df)
@@ -377,14 +360,14 @@ class DataPreparer:
         df = self.clean_price(df)
         df = self.clean_area(df)
         df = self.clean_districts(df)
-        df = self.convert_included(df)
-        df = self.remove_fields(df, [ 'included' ])
 
         ignored_fields = [
             'url', 'ad_id', 'title', 'description', 'currency',
             'reference-number', 'registration-number', 'registration-block',
             'property-area-unit', 'mode', '_id', '__v', 'active_dates',
-            'plot-area-unit', 'included', 'publish_date', 'coords' ]
+            'plot-area-unit', 'included', 'publish_date', 'coords',
+            'updated_at', 'version', 'source', 'ad_last_updated', 'expired'
+        ]
 
         energy_efficiency_values = [ 'A+++', 'A++', 'A+', 'A', 'B+', 'B', 'C+', 'C', 'D+', 'D', 'E+', 'E', 'N/A', 'In Progress' ]
 
@@ -404,13 +387,22 @@ class DataPreparer:
         df = self.set_default_value(df, 'condition', [ 'Brand new', 'Resale', 'Under construction' ], [ 'Resale' ])
         df = self.set_default_value(df, 'energy-efficiency', energy_efficiency_values, [ 'In Progress' ])
         df = self.set_default_value(df, 'type', 'str')
-        df = self.set_default_value(df, 'parking', [ 'No', 'Covered', 'Uncovered' ], 'No')
+        df = self.set_default_value(df, 'parking', [ 'No', 'Covered', 'Uncovered', 'Yes', 'N/A' ], 'No')
         df = self.set_default_value(df, 'furnishing', [ 'Fully Furnished', 'Semi-Furnished', 'Unfurnished', 'Appliances οnly' ], 'Unfurnished')
         df = self.set_default_value(df, 'air-conditioning', [ 'Full, all rooms', 'Partly', 'No' ], 'No')
         df = self.set_default_value(df, 'bedrooms', 'int', 1)
         df = self.set_default_value(df, 'bathrooms', 'int', 1)
         df = self.set_default_value(df, 'floor', valid_floor_values, '1st')
         df = self.set_default_value(df, 'construction-year', valid_construction_year_values, 'Older')
+        df = self.set_default_value(df, 'pool', [ 'Yes', 'No', 'Private', 'Shared', 'N/A' ], 'No')
+        df = self.set_default_value(df, 'alarm', [ 'Yes', 'No', 'N/A' ], 'No')
+        df = self.set_default_value(df, 'attic', [ 'Yes', 'No', 'N/A' ], 'No')
+        df = self.set_default_value(df, 'balcony', [ 'Yes', 'No', 'N/A' ], 'No')
+        df = self.set_default_value(df, 'elevator', [ 'Yes', 'No', 'N/A' ], 'No')
+        df = self.set_default_value(df, 'fireplace', [ 'Yes', 'No', 'N/A' ], 'No')
+        df = self.set_default_value(df, 'garden', [ 'Yes', 'No', 'N/A' ], 'No')
+        df = self.set_default_value(df, 'playroom', [ 'Yes', 'No', 'N/A' ], 'No')
+        df = self.set_default_value(df, 'storage', [ 'Yes', 'No', 'N/A' ], 'No')
 
         field_analysis_result, columns_to_drop = self.field_analysis(df, ignored_fields)
         df = df.drop(columns=columns_to_drop)

@@ -1,0 +1,40 @@
+{
+  "name": "migration",
+  "version": "1.0.0",
+  "description": "",
+  "author": "Mikhail Filchushkin <webestet@gmail.com>",
+  "main": "index.ts",
+  "scripts": {
+    "start": "npm i && npm run build && node -r dotenv/config dist/index.js",
+    "build": "rimraf dist && tsc -p tsconfig.build.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "dotenv": "16.0.3",
+    "lodash.clonedeep": "4.5.0",
+    "mongoose": "7.4"
+  },
+  "devDependencies": {
+    "@types/node": "20.9.0",
+    "@typescript-eslint/eslint-plugin": "6.11.0",
+    "@typescript-eslint/parser": "6.11.0",
+    "eslint": "8.53.0",
+    "eslint-plugin-import": "2.29.1",
+    "eslint-plugin-simple-import-sort": "10.0.0",
+    "rimraf": "5.0.5",
+    "ts-loader": "9.5.1",
+    "ts-node": "10.9.1",
+    "tsc-watch": "6.0.4",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "5.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dotcommando/bazaraki-scraper.git"
+  },
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/Dotcommando/bazaraki-scraper/issues"
+  },
+  "homepage": "https://github.com/Dotcommando/bazaraki-scraper#readme"
+}

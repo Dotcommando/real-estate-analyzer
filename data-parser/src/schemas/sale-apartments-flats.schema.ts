@@ -15,8 +15,11 @@ import {
   OnlineViewing,
   OnlineViewingArray,
   ParkingArray,
+  PoolType,
   PoolTypeArray,
   SourceArray,
+  StandardSet,
+  StandardSetArray,
 } from '../constants';
 import { ISaleApartmentsFlats } from '../types/real-estate-for-sale';
 import { roundDate } from '../utils';
@@ -85,7 +88,6 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       enum: EnergyEfficiencyArray,
       default: EnergyEfficiency.NA,
     },
-    included: [ String ],
     'construction-year': String,
     type: {
       type: String,
@@ -97,10 +99,6 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       enum: ParkingArray,
     },
     'parking-places': Number,
-    'pool-type': {
-      type: String,
-      enum: PoolTypeArray,
-    },
     'property-area': {
       type: Number,
       default: 0,
@@ -123,14 +121,55 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       type: Number,
       default: 1,
     },
-    toilets: {
-      type: Number,
-      default: 1,
-    },
     'air-conditioning': {
       type: String,
       enum: AirConditioningArray,
       default: AirConditioning.No,
+    },
+    alarm: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    attic: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    balcony: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    elevator: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    fireplace: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    garden: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    playroom: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    pool: {
+      type: String,
+      enum: PoolTypeArray,
+      default: PoolType.No,
+    },
+    storage: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
     },
     active_dates: {
       type: [ Schema.Types.Date ] as unknown as Date[],
@@ -138,6 +177,18 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     },
     coords: {
       type: CoordsSchema,
+    },
+    version: {
+      type: String,
+      required: [ true, 'Document version is required' ],
+    },
+    'ad_last_updated': {
+      type: Schema.Types.Date,
+      required: [ true, 'Last updated date is required' ],
+    },
+    'updated_at': {
+      type: Schema.Types.Date,
+      required: [ true, 'Date of update is required' ],
     },
   },
   { collection: 'saleapartmentsflats' },

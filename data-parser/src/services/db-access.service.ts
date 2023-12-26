@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ModuleRef } from '@nestjs/core';
 
 import { Model } from 'mongoose';
@@ -24,9 +25,11 @@ import {
   ShareArray,
   SlugByCollection,
   Source,
+  StandardSet,
+  StandardSetArray,
 } from '../constants';
 import { IAdDBOperationResult, IRealEstate, IRealEstateDoc } from '../types';
-import { castToNumber, parseInteger, roundDate } from '../utils';
+import { castToNumber, parseInteger, roundDate, setDefaultStandardValue } from '../utils';
 
 
 export enum AdProcessingStatus {
@@ -41,8 +44,11 @@ export enum AdProcessingStatus {
 @Injectable()
 export class DbAccessService {
   constructor(
+    private readonly configService: ConfigService,
     private moduleRef: ModuleRef,
   ) {}
+
+  private dbDocVersion = this.configService.get('DB_DOC_VERSION') ?? '1.0.0';
 
   private getModelByCollection(collectionName: string): Model<any> | null {
     try {
@@ -61,6 +67,7 @@ export class DbAccessService {
       'plot-area',
       'area',
       'bedrooms',
+      'bathrooms',
       'registration-number',
       'registration-block',
     ];
@@ -73,14 +80,6 @@ export class DbAccessService {
         : announcementData.url.includes(Source.OFFER)
           ? Source.OFFER
           : Source.UNKNOWN;
-    }
-
-    if ('bathrooms' in announcementData) {
-      announcementData['bathrooms'] = parseInteger(String(announcementData['bathrooms']), 1);
-    }
-
-    if ('toilets' in announcementData) {
-      announcementData['toilets'] = parseInteger(String(announcementData['toilets']), 1);
     }
 
     if ('parking-places' in announcementData) {
@@ -123,10 +122,6 @@ export class DbAccessService {
       announcementData['type'] = String(announcementData['type']);
     }
 
-    if ('pool-type' in announcementData && !PoolTypeArray.includes(announcementData['pool-type'] as PoolType)) {
-      announcementData['pool-type'] = PoolType.Shared;
-    }
-
     if ('coords' in announcementData && announcementData['coords'] !== null) {
       if (typeof announcementData['coords'].lng !== 'number' || isNaN(announcementData['coords'].lng)) {
         delete announcementData['coords'];
@@ -139,6 +134,29 @@ export class DbAccessService {
     } else if (announcementData['coords'] === null) {
       delete announcementData['coords'];
     }
+
+    if ('pool' in announcementData && !PoolTypeArray.includes(announcementData['pool'] as PoolType)) {
+      announcementData['pool'] = PoolType.No;
+    }
+
+    if (!('version' in announcementData)) {
+      announcementData['version'] = this.dbDocVersion;
+    }
+
+    const fieldsWithStandardValues = [
+      'alarm',
+      'attic',
+      'balcony',
+      'elevator',
+      'fireplace',
+      'garden',
+      'playroom',
+      'storage',
+    ];
+
+    announcementData = setDefaultStandardValue(announcementData, fieldsWithStandardValues, StandardSetArray, StandardSet.NO);
+
+    announcementData['updated_at'] = new Date();
 
     return announcementData;
   }
@@ -158,17 +176,6 @@ export class DbAccessService {
         const roundedDate = roundDate(new Date());
         const roundedDateAsString = roundedDate.toString();
         let changed = false;
-
-        // Remove after migration to 1.0.0
-        if (!existingAnnouncement.source) {
-          existingAnnouncement.source = existingAnnouncement.url.includes(Source.BAZARAKI)
-            ? Source.BAZARAKI
-            : existingAnnouncement.url.includes(Source.OFFER)
-              ? Source.OFFER
-              : Source.UNKNOWN;
-
-          changed = true;
-        }
 
         if (!existingAnnouncement['plot-area'] && (typeof announcementData['plot-area'] === 'number' && announcementData['plot-area'] !== 0)) {
           existingAnnouncement['plot-area'] = announcementData['plot-area'];
@@ -195,6 +202,10 @@ export class DbAccessService {
 
         return { ad: existingAnnouncement.toObject(), status };
       } else {
+        announcementData['ad_last_updated'] = announcementData['publish_date'] instanceof Date
+          ? announcementData['publish_date']
+          : new Date(announcementData['publish_date']);
+
         const newAnnouncement = new Model({
           ...this.typecastingFields(announcementData),
         });

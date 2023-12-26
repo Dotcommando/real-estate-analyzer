@@ -2,7 +2,7 @@ import { Document } from 'mongoose';
 
 import { ICoords } from './coords.interface';
 
-import { Mode, OnlineViewing, Source } from '../constants';
+import { OnlineViewing, Source } from '../constants';
 
 
 export interface IRealEstate {
@@ -23,9 +23,11 @@ export interface IRealEstate {
   'registration-block'?: number;
   coords?: ICoords;
   expired?: boolean;
+  updated_at: Date;
+  ad_last_updated: Date;
+  version: string;
 }
 
 export interface IRealEstateDoc extends IRealEstate, Document {
   active_dates: Date[];
-  mode?: Mode;
 }
