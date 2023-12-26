@@ -1,5 +1,12 @@
 version: '3.8'
 
+services:
+  dummy-service:
+    image: alpine
+    command: tail -f /dev/null
+    networks:
+      - common-net
+
 networks:
   common-net:
     name: parser-network-1
