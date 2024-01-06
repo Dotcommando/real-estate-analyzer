@@ -3,6 +3,7 @@ export * from './air-conditioning.enum';
 export * from './analysis-period.enum';
 export * from './analysis-type.enum';
 export * from './apartments-flats-type.enum';
+export * from './categories.enum';
 export * from './commercial-type.enum';
 export * from './condition.enum';
 export * from './coords.regexp';
