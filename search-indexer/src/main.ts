@@ -13,8 +13,6 @@ async function bootstrap() {
     },
   });
 
-  // app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
-
   app.enableShutdownHooks();
 
   await app.listen();
