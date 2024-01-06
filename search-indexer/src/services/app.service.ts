@@ -1,9 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
+
+import { IResponse } from '../types';
 
 
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return 'Hello World!';
+  public checkHealth(): IResponse<{ alive: boolean }> {
+    return {
+      status: HttpStatus.OK,
+      data: {
+        alive: true,
+      },
+    };
   }
 }

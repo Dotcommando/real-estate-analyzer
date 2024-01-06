@@ -11,4 +11,5 @@ export * from './district-stats.interface';
 export * from './district-stats-doc.interface';
 export * from './real-estate';
 export * from './rent-property';
+export * from './response.interface';
 export * from './sale-property';
