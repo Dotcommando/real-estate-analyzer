@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 
 import { AppController } from './app.controller';
+import { LOGGER } from './constants';
 import {
   AnalysisCityStatsSchema,
   AnalysisDistrictStatsSchema,
@@ -18,7 +19,13 @@ import {
   SalePlotsSchema,
   SaleResidentialSchema,
 } from './schemas';
-import { AppService, MongoConfigService } from './services';
+import {
+  AppService,
+  CacheService,
+  DummyLoggerService,
+  LoggerService,
+  MongoConfigService,
+} from './services';
 
 
 @Module({
@@ -124,6 +131,20 @@ import { AppService, MongoConfigService } from './services';
     ]),
   ],
   controllers: [ AppController ],
-  providers: [ AppService ],
+  providers: [
+    AppService,
+    CacheService,
+    {
+      provide: LOGGER,
+      useFactory: (configService: ConfigService) => {
+        const environment = configService.get('MODE');
+
+        return environment === 'prod'
+          ? new DummyLoggerService()
+          : new LoggerService();
+      },
+      inject: [ ConfigService ],
+    },
+  ],
 })
 export class AppModule {}
