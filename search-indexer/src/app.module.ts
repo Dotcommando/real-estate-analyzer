@@ -16,6 +16,7 @@ import {
   SaleCommercialsSchema,
   SaleHousesSchema,
   SalePlotsSchema,
+  SaleResidentialSchema,
 } from './schemas';
 import { AppService, MongoConfigService } from './services';
 
@@ -114,6 +115,11 @@ import { AppService, MongoConfigService } from './services';
         name: 'RentResidentials',
         useFactory: () => RentResidentialSchema,
         collection: 'sr_rentresidentials',
+      },
+      {
+        name: 'SaleResidentials',
+        useFactory: () => SaleResidentialSchema,
+        collection: 'sr_saleresidentials',
       },
     ]),
   ],

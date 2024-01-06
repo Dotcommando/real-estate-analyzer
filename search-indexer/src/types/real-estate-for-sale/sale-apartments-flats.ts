@@ -1,18 +1,15 @@
-import {
-  AirConditioning,
-  Furnishing,
-} from '../../constants';
+import { AirConditioning, Furnishing } from '../../constants';
 import { ISaleProperty } from '../sale-property';
 
 
 export interface ISaleApartmentsFlats extends ISaleProperty {
-  type: string;
-  floor?: string;
-  'parking-places'?: number;
   'property-area': number;
   'property-area-unit': 'm²';
+  type: string;
+  'parking-places'?: number;
   furnishing?: Furnishing;
+  'air-conditioning': AirConditioning;
   bedrooms: number;
   bathrooms: number;
-  'air-conditioning': AirConditioning;
+  floor?: string;
 }
