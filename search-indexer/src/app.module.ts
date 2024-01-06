@@ -5,6 +5,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 import { AppController } from './app.controller';
 import {
+  AnalysisCityStatsSchema,
+  AnalysisDistrictStatsSchema,
   RentApartmentsFlatsSchema,
   RentCommercialsSchema,
   RentHousesSchema,
@@ -32,54 +34,80 @@ import { AppService, MongoConfigService } from './services';
         useFactory: () => RentApartmentsFlatsSchema,
         collection: 'rentapartmentsflats',
       },
-    ]),
-    MongooseModule.forFeatureAsync([
       {
         name: 'RentCommercials',
         useFactory: () => RentCommercialsSchema,
         collection: 'rentcommercials',
       },
-    ]),
-    MongooseModule.forFeatureAsync([
       {
         name: 'RentHouses',
         useFactory: () => RentHousesSchema,
         collection: 'renthouses',
       },
-    ]),
-    MongooseModule.forFeatureAsync([
       {
         name: 'RentPlots',
         useFactory: () => RentPlotsSchema,
         collection: 'rentplots',
       },
-    ]),
-    MongooseModule.forFeatureAsync([
       {
         name: 'SaleApartmentsFlats',
         useFactory: () => SaleApartmentsFlatsSchema,
         collection: 'saleapartmentsflats',
       },
-    ]),
-    MongooseModule.forFeatureAsync([
       {
         name: 'SaleCommercials',
         useFactory: () => SaleCommercialsSchema,
         collection: 'salecommercials',
       },
-    ]),
-    MongooseModule.forFeatureAsync([
       {
         name: 'SaleHouses',
         useFactory: () => SaleHousesSchema,
         collection: 'salehouses',
       },
-    ]),
-    MongooseModule.forFeatureAsync([
       {
         name: 'SalePlots',
         useFactory: () => SalePlotsSchema,
         collection: 'saleplots',
+      },
+      {
+        name: 'CityStatsRentFlats',
+        useFactory: () => AnalysisCityStatsSchema,
+        collection: 'rentapartmentsflats_analysis',
+      },
+      {
+        name: 'CityStatsRentHouses',
+        useFactory: () => AnalysisCityStatsSchema,
+        collection: 'renthouses_analysis',
+      },
+      {
+        name: 'DistrictStatsRentFlats',
+        useFactory: () => AnalysisDistrictStatsSchema,
+        collection: 'rentapartmentsflats_analysis',
+      },
+      {
+        name: 'DistrictStatsRentHouses',
+        useFactory: () => AnalysisDistrictStatsSchema,
+        collection: 'renthouses_analysis',
+      },
+      {
+        name: 'CityStatsSaleFlats',
+        useFactory: () => AnalysisCityStatsSchema,
+        collection: 'saleapartmentsflats_analysis',
+      },
+      {
+        name: 'CityStatsSaleHouses',
+        useFactory: () => AnalysisCityStatsSchema,
+        collection: 'salehouses_analysis',
+      },
+      {
+        name: 'DistrictStatsSaleFlats',
+        useFactory: () => AnalysisDistrictStatsSchema,
+        collection: 'saleapartmentsflats_analysis',
+      },
+      {
+        name: 'DistrictStatsSaleHouses',
+        useFactory: () => AnalysisDistrictStatsSchema,
+        collection: 'salehouses_analysis',
       },
     ]),
   ],

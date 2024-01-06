@@ -1,4 +1,7 @@
+export * from './ads.enum';
 export * from './air-conditioning.enum';
+export * from './analysis-period.enum';
+export * from './analysis-type.enum';
 export * from './apartments-flats-type.enum';
 export * from './commercial-type.enum';
 export * from './condition.enum';
