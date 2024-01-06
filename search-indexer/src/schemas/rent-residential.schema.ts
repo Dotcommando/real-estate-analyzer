@@ -29,9 +29,7 @@ import {
 import { IRentResidential } from '../types';
 
 
-export interface IRentResidentialDoc extends IRentResidential, Document {}
-
-export const RentResidentialSchema = new Schema<IRentResidentialDoc, Model<IRentResidentialDoc>>(
+export const RentResidentialSchema = new Schema<IRentResidential, Model<IRentResidential>>(
   {
     url: {
       type: String,
@@ -221,4 +219,4 @@ export const RentResidentialSchema = new Schema<IRentResidentialDoc, Model<IRent
   { collection: 'sr_rentresidentials' },
 );
 
-export const RentResidentialModel = mongoose.model<IRentResidentialDoc, Model<IRentResidentialDoc>>('RentResidentials', RentResidentialSchema);
+export const RentResidentialModel = mongoose.model<IRentResidential, Model<IRentResidential>>('RentResidentials', RentResidentialSchema);

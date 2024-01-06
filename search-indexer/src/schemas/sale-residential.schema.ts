@@ -27,9 +27,7 @@ import {
 import { ISaleResidential } from '../types';
 
 
-export interface ISaleResidentialDoc extends ISaleResidential, Document {}
-
-export const SaleResidentialSchema = new Schema<ISaleResidentialDoc, Model<ISaleResidentialDoc>>(
+export const SaleResidentialSchema = new Schema<ISaleResidential, Model<ISaleResidential>>(
   {
     url: {
       type: String,
@@ -205,4 +203,4 @@ export const SaleResidentialSchema = new Schema<ISaleResidentialDoc, Model<ISale
   { collection: 'sr_saleresidentials' },
 );
 
-export const SaleResidentialModel = mongoose.model<ISaleResidentialDoc, Model<ISaleResidentialDoc>>('SaleResidentials', SaleResidentialSchema);
+export const SaleResidentialModel = mongoose.model<ISaleResidential, Model<ISaleResidential>>('SaleResidentials', SaleResidentialSchema);
