@@ -5,7 +5,7 @@ import * as mongoose from 'mongoose';
 import { DistrictStatsSchema } from './district-stats.schema';
 
 import { AnalysisPeriodArray, AnalysisTypeArray } from '../constants';
-import { IAnalysisDoc, IDistrictStats, IDistrictStatsDoc } from '../types';
+import { IAnalysisDoc, IDistrictStats } from '../types';
 
 
 function safeValue(doc, ret: { [key: string]: unknown }) {

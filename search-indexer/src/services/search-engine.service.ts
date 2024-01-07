@@ -9,8 +9,14 @@ import { CacheService } from './cache.service';
 import { DbAccessService } from './db-access.service';
 
 import { AnalysisPeriod, AnalysisType, LOGGER } from '../constants';
-import { IAnalysis, IDistrictStats } from '../types';
-import { analysisDistrictMapper, restoreAnalysisDistrictFromCache, roundDate } from '../utils';
+import { IAnalysis, ICityStats, IDistrictStats } from '../types';
+import {
+  analysisCityMapper,
+  analysisDistrictMapper,
+  restoreAnalysisCityFromCache,
+  restoreAnalysisDistrictFromCache,
+  roundDate,
+} from '../utils';
 
 
 config();
@@ -48,7 +54,7 @@ export class SearchEngineService {
       return this.getDistrictStats(adCollectionName, previousMonth, AnalysisPeriod.MONTHLY_TOTAL);
     }
 
-    const cacheKey = `${roundDate(date).toLocaleString()}_${adCollectionName}_${analysisPeriod}`;
+    const cacheKey = `${roundDate(date).toLocaleString()}_${adCollectionName}_${AnalysisType.DISTRICT_AVG_MEAN}_${analysisPeriod}`;
     const fromCache = this.cacheManager.get(cacheKey);
 
     if (fromCache) {
@@ -59,8 +65,14 @@ export class SearchEngineService {
     const analysisDistrictModel = this.dbAccessService
       .getAnalysisModelByCollection(analysisCollectionName, AnalysisType.DISTRICT_AVG_MEAN);
 
-    const startDate = roundDate(new Date(date.getFullYear(), date.getMonth(), analysisPeriod === AnalysisPeriod.MONTHLY_TOTAL ? 1 : date.getDate() - 1));
-    const endDate = roundDate(new Date(date.getFullYear(), date.getMonth(), analysisPeriod === AnalysisPeriod.MONTHLY_TOTAL ? 0 : date.getDate() - 1));
+    const startDate = analysisPeriod === AnalysisPeriod.MONTHLY_TOTAL
+      ? roundDate(new Date(date.getFullYear(), date.getMonth() - 1, 1))
+      : analysisPeriod === AnalysisPeriod.MONTHLY_INTERMEDIARY
+        ? roundDate(new Date(date.getFullYear(), date.getMonth(), 1))
+        : roundDate(new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1));
+    const endDate = analysisPeriod === AnalysisPeriod.MONTHLY_TOTAL
+      ? roundDate(new Date(date.getFullYear(), date.getMonth(), 0))
+      : roundDate(new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1));
 
     endDate.setUTCHours(23);
     endDate.setUTCMinutes(59, 59);
@@ -79,7 +91,59 @@ export class SearchEngineService {
     if (districtStatDoc) {
       const mappedResult = analysisDistrictMapper(districtStatDoc);
 
-      this.cacheManager.set(cacheKey, mappedResult);
+      await this.cacheManager.set(cacheKey, mappedResult);
+
+      return mappedResult;
+    }
+
+    return null;
+  }
+
+  private async getCityStats(adCollectionName: string, date: Date, analysisPeriod: AnalysisPeriod): Promise<IAnalysis<string, ICityStats> | null> {
+    if (date.getDate() === 1 && analysisPeriod === AnalysisPeriod.MONTHLY_INTERMEDIARY) {
+      const previousMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
+
+      return this.getCityStats(adCollectionName, previousMonth, AnalysisPeriod.MONTHLY_TOTAL);
+    }
+
+    const cacheKey = `${roundDate(date).toLocaleString()}_${adCollectionName}_${AnalysisType.CITY_AVG_MEAN}_${analysisPeriod}`;
+    const fromCache = this.cacheManager.get(cacheKey);
+
+    if (fromCache) {
+      return restoreAnalysisCityFromCache(fromCache);
+    }
+
+    const analysisCollectionName = this.dbAccessService.getRelatedAnalysisCollection(adCollectionName);
+    const analysisCityModel = this.dbAccessService
+      .getAnalysisModelByCollection(analysisCollectionName, AnalysisType.CITY_AVG_MEAN);
+
+    const startDate = analysisPeriod === AnalysisPeriod.MONTHLY_TOTAL
+      ? roundDate(new Date(date.getFullYear(), date.getMonth() - 1, 1))
+      : analysisPeriod === AnalysisPeriod.MONTHLY_INTERMEDIARY
+        ? roundDate(new Date(date.getFullYear(), date.getMonth(), 1))
+        : roundDate(new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1));
+    const endDate = analysisPeriod === AnalysisPeriod.MONTHLY_TOTAL
+      ? roundDate(new Date(date.getFullYear(), date.getMonth(), 0))
+      : roundDate(new Date(date.getFullYear(), date.getMonth(), date.getDate() - 1));
+
+    endDate.setUTCHours(23);
+    endDate.setUTCMinutes(59, 59);
+
+    const cityStatDoc = await analysisCityModel
+      .findOne({
+        $and: [
+          { analysis_period: analysisPeriod },
+          { analysis_type: AnalysisType.CITY_AVG_MEAN },
+          { start_date: { $eq: startDate }},
+          { end_date: { $eq: endDate }},
+        ],
+      })
+      .exec();
+
+    if (cityStatDoc) {
+      const mappedResult = analysisCityMapper(cityStatDoc);
+
+      await this.cacheManager.set(cacheKey, mappedResult);
 
       return mappedResult;
     }
@@ -94,12 +158,15 @@ export class SearchEngineService {
       const districtMonthlyTotalStat = await this.getDistrictStats(fromAdCollectionName, roundDate(new Date()), AnalysisPeriod.MONTHLY_TOTAL);
       const districtMonthlyIntermediaryStat = await this.getDistrictStats(fromAdCollectionName, roundDate(new Date()), AnalysisPeriod.MONTHLY_INTERMEDIARY);
       const districtDailyTotalStat = await this.getDistrictStats(fromAdCollectionName, roundDate(new Date()), AnalysisPeriod.DAILY_TOTAL);
+      const cityMonthlyTotalStat = await this.getCityStats(fromAdCollectionName, roundDate(new Date()), AnalysisPeriod.MONTHLY_TOTAL);
+      const cityMonthlyIntermediaryStat = await this.getCityStats(fromAdCollectionName, roundDate(new Date()), AnalysisPeriod.MONTHLY_INTERMEDIARY);
+      const cityDailyTotalStat = await this.getCityStats(fromAdCollectionName, roundDate(new Date()), AnalysisPeriod.DAILY_TOTAL);
 
       console.log('');
       console.log('');
       console.log('');
       console.log(fromAdCollectionName);
-      console.log(districtMonthlyTotalStat);
+      console.log({ ...districtDailyTotalStat, data: '...' });
 
       const cachedObjectIds: ObjectId[] = this.cacheManager
         .getKeysFilteredBy((key: string): boolean => ObjectId.isValid(key.replace(fromAdCollectionName + '_', '')))
