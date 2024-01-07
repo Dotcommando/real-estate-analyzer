@@ -18,3 +18,4 @@ export * from './rent-residential.interface';
 export * from './response.interface';
 export * from './sale-property';
 export * from './sale-residential.interface';
+export * from './search-index-config.interface';

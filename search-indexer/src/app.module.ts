@@ -22,6 +22,7 @@ import {
 import {
   AppService,
   CacheService,
+  DbAccessService,
   DummyLoggerService,
   LoggerService,
   MongoConfigService,
@@ -134,6 +135,7 @@ import {
   providers: [
     AppService,
     CacheService,
+    DbAccessService,
     {
       provide: LOGGER,
       useFactory: (configService: ConfigService) => {

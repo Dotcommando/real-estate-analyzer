@@ -1,5 +1,6 @@
 export * from './ads.enum';
 export * from './air-conditioning.enum';
+export * from './analysis-model-collection-relation.const';
 export * from './analysis-period.enum';
 export * from './analysis-type.enum';
 export * from './apartments-flats-type.enum';
@@ -18,6 +19,7 @@ export * from './parking.enum';
 export * from './pets.enum';
 export * from './plot-type.enum';
 export * from './pool-type.enum';
+export * from './search-results-model-collection-relation.const';
 export * from './share.enum';
 export * from './source.enum';
 export * from './standard-set.enum';
