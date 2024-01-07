@@ -31,7 +31,7 @@ export class DbAccessService {
     }
   }
 
-  public getAnalyticsModelByCollection(collectionName: string, analysisType: AnalysisType): Model<any> | null {
+  public getAnalysisModelByCollection(collectionName: string, analysisType: AnalysisType): Model<any> | null {
     try {
       let modelName;
 

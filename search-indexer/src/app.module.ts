@@ -26,6 +26,7 @@ import {
   DummyLoggerService,
   LoggerService,
   MongoConfigService,
+  SearchEngineService,
 } from './services';
 
 
@@ -133,7 +134,6 @@ import {
   ],
   controllers: [ AppController ],
   providers: [
-    AppService,
     CacheService,
     DbAccessService,
     {
@@ -147,6 +147,8 @@ import {
       },
       inject: [ ConfigService ],
     },
+    SearchEngineService,
+    AppService,
   ],
 })
 export class AppModule {}

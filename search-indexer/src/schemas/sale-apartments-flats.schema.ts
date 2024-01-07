@@ -201,6 +201,8 @@ SaleApartmentsFlatsSchema.pre<ISaleApartmentsFlatsDoc>('save', async function(ne
     this.active_dates.push(currentDate);
   }
 
+  this.updated_at = new Date();
+
   next();
 });
 

@@ -181,6 +181,8 @@ SaleCommercialsSchema.pre<ISaleCommercialDoc>('save', async function(next) {
     this.active_dates.push(currentDate);
   }
 
+  this.updated_at = new Date();
+
   next();
 });
 

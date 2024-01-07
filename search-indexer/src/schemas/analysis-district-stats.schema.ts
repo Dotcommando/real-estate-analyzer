@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import { Schema, Types } from 'mongoose';
 import * as mongoose from 'mongoose';
 
@@ -48,7 +49,7 @@ export const AnalysisDistrictStatsSchema = new Schema<IAnalysisDoc<Types.ObjectI
   },
 );
 
-export const AnalysisDistrictStatsRentFlatsModel = mongoose.model<IDistrictStatsDoc, mongoose.Model<IDistrictStatsDoc>>('DistrictStatsRentFlats', AnalysisDistrictStatsSchema, 'rentapartmentsflats_analysis');
-export const AnalysisDistrictStatsRentHousesModel = mongoose.model<IDistrictStatsDoc, mongoose.Model<IDistrictStatsDoc>>('DistrictStatsRentHouses', AnalysisDistrictStatsSchema, 'renthouses_analysis');
-export const AnalysisDistrictStatsSaleFlatsModel = mongoose.model<IDistrictStatsDoc, mongoose.Model<IDistrictStatsDoc>>('DistrictStatsSaleFlats', AnalysisDistrictStatsSchema, 'saleapartmentsflats_analysis');
-export const AnalysisDistrictStatsSaleHousesModel = mongoose.model<IDistrictStatsDoc, mongoose.Model<IDistrictStatsDoc>>('DistrictStatsSaleHouses', AnalysisDistrictStatsSchema, 'salehouses_analysis');
+export const AnalysisDistrictStatsRentFlatsModel = mongoose.model<IAnalysisDoc<ObjectId, IDistrictStats>, mongoose.Model<IAnalysisDoc<ObjectId, IDistrictStats>>>('DistrictStatsRentFlats', AnalysisDistrictStatsSchema, 'rentapartmentsflats_analysis');
+export const AnalysisDistrictStatsRentHousesModel = mongoose.model<IAnalysisDoc<ObjectId, IDistrictStats>, mongoose.Model<IAnalysisDoc<ObjectId, IDistrictStats>>>('DistrictStatsRentHouses', AnalysisDistrictStatsSchema, 'renthouses_analysis');
+export const AnalysisDistrictStatsSaleFlatsModel = mongoose.model<IAnalysisDoc<ObjectId, IDistrictStats>, mongoose.Model<IAnalysisDoc<ObjectId, IDistrictStats>>>('DistrictStatsSaleFlats', AnalysisDistrictStatsSchema, 'saleapartmentsflats_analysis');
+export const AnalysisDistrictStatsSaleHousesModel = mongoose.model<IAnalysisDoc<ObjectId, IDistrictStats>, mongoose.Model<IAnalysisDoc<ObjectId, IDistrictStats>>>('DistrictStatsSaleHouses', AnalysisDistrictStatsSchema, 'salehouses_analysis');

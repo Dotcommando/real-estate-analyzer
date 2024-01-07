@@ -115,8 +115,8 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
     }
   }
 
-  public get(key: string): string {
-    return this.cacheMap.get(key) as string;
+  public get(key: string): string | undefined {
+    return this.cacheMap.get(key) as string | undefined;
   }
 
   public clear(): void {
@@ -127,5 +127,17 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
     this.cacheMap.clear();
     this.logger.warn(' ');
     this.logger.warn('    >>>>    Cache fully cleared');
+  }
+
+  public getKeysFilteredBy(filterFn: (key: string) => boolean): string[] {
+    const filteredKeys = [];
+
+    for (const key of this.cacheMap.keys()) {
+      if (filterFn(key)) {
+        filteredKeys.push(key);
+      }
+    }
+
+    return filteredKeys;
   }
 }
