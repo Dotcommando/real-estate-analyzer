@@ -1,11 +1,20 @@
 import { Inject, Injectable, LoggerService, OnApplicationShutdown, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cron } from '@nestjs/schedule';
 
+import { config } from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 
 import { LOGGER } from '../constants';
+import { deepFreeze, isObjectOrArray } from '../utils';
 
+
+config();
+
+export interface AnyObject {
+  [key: string]: unknown;
+}
 
 @Injectable()
 export class CacheService implements OnApplicationShutdown, OnModuleInit {
@@ -82,6 +91,10 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
     this.del(keyToDelete);
   }
 
+  @Cron(process.env.CRON_CACHE_PERSISTENCE_UPDATE, {
+    name: 'update_persistence_cache',
+    timeZone: process.env.TZ,
+  })
   public updatePersistenceCache(): void {
     const filePath = path.join(process.cwd(), this.cacheFolder, this.getFileName());
     const data = JSON.stringify([ ...this.cacheMap ]);
@@ -115,10 +128,36 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
     }
   }
 
+  public async setRawObject(key: string, value: AnyObject | unknown[], ttl?: number): Promise<void> {
+    if (!isObjectOrArray(value)) {
+      throw new Error('\'value\' argument for \'setRawObject\' must have object type.');
+    }
+
+    this.cacheMap.set(key, deepFreeze(value));
+
+    if (this.cacheMap.size > this.maxItems) {
+      this.deleteOldest();
+    }
+
+    if (ttl !== 0) {
+      setTimeout(() => {
+        this.del(key);
+      }, ttl === undefined ? this.ttl : ttl);
+    }
+  }
+
   public get(key: string): string | undefined {
     return this.cacheMap.get(key) as string | undefined;
   }
 
+  public getRawObject<T>(key: string): T | undefined {
+    return this.cacheMap.get(key) as T | undefined;
+  }
+
+  @Cron(process.env.CRON_CLEAR_CACHE, {
+    name: 'clear_cache',
+    timeZone: process.env.TZ,
+  })
   public clear(): void {
     const filePath = path.join(process.cwd(), this.cacheFolder, this.getFileName());
 

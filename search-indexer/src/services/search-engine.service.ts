@@ -1,25 +1,20 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron } from '@nestjs/schedule';
 
-import { config } from 'dotenv';
 import { ObjectId } from 'mongodb';
+import { Model } from 'mongoose';
 
-import { CacheService } from './cache.service';
+import { AnyObject, CacheService } from './cache.service';
 import { DbAccessService } from './db-access.service';
 
 import { AnalysisPeriod, AnalysisType, LOGGER } from '../constants';
-import { IAnalysis, ICityStats, IDistrictStats } from '../types';
+import { IAnalysis, ICityStats, IDistrictStats, ISearchIndexConfig } from '../types';
 import {
   analysisCityMapper,
   analysisDistrictMapper,
-  restoreAnalysisCityFromCache,
-  restoreAnalysisDistrictFromCache,
   roundDate,
 } from '../utils';
 
-
-config();
 
 @Injectable()
 export class SearchEngineService {
@@ -31,20 +26,16 @@ export class SearchEngineService {
   ) {
   }
 
-  @Cron(process.env.CRON_CLEAR_CACHE, {
-    name: 'clear_cache',
-    timeZone: process.env.TZ,
-  })
-  private clearCache() {
-    this.cacheManager.clear();
-  }
+  private searchIndexConfig: ISearchIndexConfig[] = JSON.parse(this.configService.get('SEARCH_INDEX_CONFIG'));
 
-  @Cron(process.env.CRON_CACHE_PERSISTENCE_UPDATE, {
-    name: 'update_persistence_cache',
-    timeZone: process.env.TZ,
-  })
-  private updatePersistenceCache() {
-    this.cacheManager.updatePersistenceCache();
+  private getSearchResultModelByCollectionName(collectionName: string): Model<any> {
+    for (const configEntry of this.searchIndexConfig) {
+      if (configEntry.collections.includes(collectionName)) {
+        return this.dbAccessService.getSearchResultsModelByCollection(configEntry.mapTo);
+      }
+    }
+
+    throw new Error(`Cannot find search result Model by ad collection name: '${collectionName}'.`);
   }
 
   private async getStats<T>(
@@ -53,19 +44,18 @@ export class SearchEngineService {
     analysisPeriod: AnalysisPeriod,
     analysisType: AnalysisType,
     mapperFunction: (doc: any) => IAnalysis<string, T>,
-    restoreFunction: (cacheData: string) => IAnalysis<string, T>,
   ): Promise<IAnalysis<string, T> | null> {
     if (date.getDate() === 1 && analysisPeriod === AnalysisPeriod.MONTHLY_INTERMEDIARY) {
       const previousMonth = new Date(date.getFullYear(), date.getMonth() - 1, 1);
 
-      return this.getStats(adCollectionName, previousMonth, AnalysisPeriod.MONTHLY_TOTAL, analysisType, mapperFunction, restoreFunction);
+      return this.getStats(adCollectionName, previousMonth, AnalysisPeriod.MONTHLY_TOTAL, analysisType, mapperFunction);
     }
 
     const cacheKey = `${roundDate(date).toLocaleString()}_${adCollectionName}_${analysisType}_${analysisPeriod}`;
-    const fromCache = this.cacheManager.get(cacheKey);
+    const fromCache = this.cacheManager.getRawObject<IAnalysis<string, T>>(cacheKey);
 
     if (fromCache) {
-      return restoreFunction(fromCache);
+      return fromCache;
     }
 
     const analysisCollectionName = this.dbAccessService.getRelatedAnalysisCollection(adCollectionName);
@@ -98,7 +88,7 @@ export class SearchEngineService {
     if (statDoc) {
       const mappedResult = mapperFunction(statDoc);
 
-      await this.cacheManager.set(cacheKey, mappedResult);
+      await this.cacheManager.setRawObject(cacheKey, mappedResult as unknown as AnyObject);
 
       return mappedResult;
     }
@@ -109,59 +99,54 @@ export class SearchEngineService {
   public async addNewDocs(fromAdCollectionName: string, toSearchCollectionName: string): Promise<void> {
     try {
       const adModel = this.dbAccessService.getModelByCollection(fromAdCollectionName);
+      const searchResultModel = this.getSearchResultModelByCollectionName(fromAdCollectionName);
       const currentRoundedDate = roundDate(new Date());
-      const districtMonthlyTotalStat = await this.getStats<IDistrictStats>(
+      const districtMonthlyTotalStat: IAnalysis<string, IDistrictStats> = await this.getStats<IDistrictStats>(
         fromAdCollectionName,
         roundDate(new Date()),
         AnalysisPeriod.MONTHLY_TOTAL,
         AnalysisType.DISTRICT_AVG_MEAN,
         analysisDistrictMapper,
-        restoreAnalysisDistrictFromCache,
       );
 
-      const districtMonthlyIntermediaryStat = await this.getStats<IDistrictStats>(
+      const districtMonthlyIntermediaryStat: IAnalysis<string, IDistrictStats> = await this.getStats<IDistrictStats>(
         fromAdCollectionName,
         roundDate(new Date()),
         AnalysisPeriod.MONTHLY_INTERMEDIARY,
         AnalysisType.DISTRICT_AVG_MEAN,
         analysisDistrictMapper,
-        restoreAnalysisDistrictFromCache,
       );
 
-      const districtDailyTotalStat = await this.getStats<IDistrictStats>(
+      const districtDailyTotalStat: IAnalysis<string, IDistrictStats> = await this.getStats<IDistrictStats>(
         fromAdCollectionName,
         roundDate(new Date()),
         AnalysisPeriod.DAILY_TOTAL,
         AnalysisType.DISTRICT_AVG_MEAN,
         analysisDistrictMapper,
-        restoreAnalysisDistrictFromCache,
       );
 
-      const cityMonthlyTotalStat = await this.getStats<ICityStats>(
+      const cityMonthlyTotalStat: IAnalysis<string, ICityStats> = await this.getStats<ICityStats>(
         fromAdCollectionName,
         roundDate(new Date()),
         AnalysisPeriod.MONTHLY_TOTAL,
         AnalysisType.CITY_AVG_MEAN,
         analysisCityMapper,
-        restoreAnalysisCityFromCache,
       );
 
-      const cityMonthlyIntermediaryStat = await this.getStats<ICityStats>(
+      const cityMonthlyIntermediaryStat: IAnalysis<string, ICityStats> = await this.getStats<ICityStats>(
         fromAdCollectionName,
         roundDate(new Date()),
         AnalysisPeriod.MONTHLY_INTERMEDIARY,
         AnalysisType.CITY_AVG_MEAN,
         analysisCityMapper,
-        restoreAnalysisCityFromCache,
       );
 
-      const cityDailyTotalStat = await this.getStats<ICityStats>(
+      const cityDailyTotalStat: IAnalysis<string, ICityStats> = await this.getStats<ICityStats>(
         fromAdCollectionName,
         roundDate(new Date()),
         AnalysisPeriod.DAILY_TOTAL,
         AnalysisType.CITY_AVG_MEAN,
         analysisCityMapper,
-        restoreAnalysisCityFromCache,
       );
 
       console.log('');
@@ -174,7 +159,7 @@ export class SearchEngineService {
         .getKeysFilteredBy((key: string): boolean => ObjectId.isValid(key.replace(fromAdCollectionName + '_', '')))
         .map((objectId: string): string => objectId.replace(fromAdCollectionName + '_', ''))
         .map((objectId: string): ObjectId => new ObjectId(objectId));
-      const docs = await adModel
+      const docsForTransferToSearchResults = await adModel
         .find({
           _id: { $nin: cachedObjectIds },
           updated_at: { $gt: currentRoundedDate },

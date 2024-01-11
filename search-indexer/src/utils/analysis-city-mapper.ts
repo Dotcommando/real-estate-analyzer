@@ -28,17 +28,3 @@ export function analysisCityMapper(doc: IAnalysisDoc<ObjectId, ICityStatsDoc>): 
     data: doc.data.map((statDoc) => cityStatsMapper(statDoc)),
   };
 }
-
-export function restoreAnalysisCityFromCache(doc: string): IAnalysis<string, ICityStats> | null {
-  try {
-    const parsed = JSON.parse(doc);
-
-    return {
-      ...parsed,
-      start_date: new Date(parsed.start_date),
-      end_date: new Date(parsed.end_date),
-    };
-  } catch (e) {
-    return null;
-  }
-}

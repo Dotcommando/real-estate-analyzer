@@ -32,17 +32,3 @@ export function analysisDistrictMapper(doc: IAnalysisDoc<ObjectId, IDistrictStat
     data: doc.data.map((statDoc) => districtStatsMapper(statDoc)),
   };
 }
-
-export function restoreAnalysisDistrictFromCache(doc: string): IAnalysis<string, IDistrictStats> | null {
-  try {
-    const parsed = JSON.parse(doc);
-
-    return {
-      ...parsed,
-      start_date: new Date(parsed.start_date),
-      end_date: new Date(parsed.end_date),
-    };
-  } catch (e) {
-    return null;
-  }
-}
