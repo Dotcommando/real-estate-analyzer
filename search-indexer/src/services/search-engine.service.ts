@@ -236,9 +236,11 @@ export class SearchEngineService {
             await searchResultModel.bulkWrite(operations);
 
             for (const item of itemsForIndexDocs) {
-              this.cacheManager.set(fromAdCollectionName + '_' + item._id.toString(), true);
-
               savedIds.push(item._id.toString());
+            }
+
+            for (const doc of docsForTransferToSearchResults) {
+              this.cacheManager.set(fromAdCollectionName + '_' + doc._id.toString(), true);
             }
 
             this.logger.log(`Processed ${operations.length} documents for ${fromAdCollectionName} of ${ docsForTransferToSearchResults.length }.`);
