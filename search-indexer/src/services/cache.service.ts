@@ -69,9 +69,12 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
 
       const data = fs.readFileSync(filePath, 'utf-8');
       const json = JSON.parse(data);
-      const entries = json.map((key, value) => deserializeCacheValue(value));
 
-      this.cacheMap = new Map(entries);
+      this.cacheMap = new Map();
+
+      for (const entry of json) {
+        this.cacheMap.set(entry[0], deserializeCacheValue(entry[1]));
+      }
     } catch (e) {
       this.logger.error(`Cannot restore cache from the cache file ${this.getFileName()}`);
       this.logger.error(e.message);
@@ -79,7 +82,7 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
   }
 
   private add(key: string, value: string): void {
-    this.cacheMap.set(key, serializeCacheValue(value));
+    this.cacheMap.set(key, value);
   }
 
   private deleteOldest() {

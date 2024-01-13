@@ -171,30 +171,6 @@ export class SearchEngineService {
       );
 
       const searchResultModel = this.getSearchResultModelByCollectionName(fromAdCollectionName);
-
-      // console.log('');
-      // console.log('');
-      // console.log('');
-      // console.log(fromAdCollectionName);
-      // console.log('');
-      // console.log('districtMonthlyTotalStat:');
-      // console.log({ ...districtMonthlyTotalStat, data: [ districtMonthlyTotalStat.data[0], districtMonthlyTotalStat.data[1], districtMonthlyTotalStat.data[2], '...' ]});
-      // console.log('');
-      // console.log('districtMonthlyIntermediaryStat:');
-      // console.log({ ...districtMonthlyIntermediaryStat, data: [ districtMonthlyIntermediaryStat.data[0], districtMonthlyIntermediaryStat.data[1], districtMonthlyIntermediaryStat.data[2], '...' ]});
-      // console.log('');
-      // console.log('districtDailyTotalStat');
-      // console.log({ ...districtDailyTotalStat, data: [ districtDailyTotalStat.data[0], districtDailyTotalStat.data[1], districtDailyTotalStat.data[2], '...' ]});
-      // console.log('');
-      // console.log('cityMonthlyTotalStat');
-      // console.log({ ...cityMonthlyTotalStat, data: [ cityMonthlyTotalStat.data[0], cityMonthlyTotalStat.data[1], cityMonthlyTotalStat.data[2], '...' ]});
-      // console.log('');
-      // console.log('cityMonthlyIntermediaryStat');
-      // console.log({ ...cityMonthlyIntermediaryStat, data: [ cityMonthlyIntermediaryStat.data[0], cityMonthlyIntermediaryStat.data[1], cityMonthlyIntermediaryStat.data[2], '...' ]});
-      // console.log('');
-      // console.log('cityDailyTotalStat');
-      // console.log({ ...cityDailyTotalStat, data: [ cityDailyTotalStat.data[0], cityDailyTotalStat.data[1], cityDailyTotalStat.data[2], '...' ]});
-
       const cachedObjectIds: ObjectId[] = this.cacheManager
         .getKeysFilteredBy((key: string): boolean => ObjectId.isValid(key.replace(fromAdCollectionName + '_', '')))
         .map((objectId: string): string => objectId.replace(fromAdCollectionName + '_', ''))
@@ -207,13 +183,9 @@ export class SearchEngineService {
       const docsToProcess = await adModel
         .countDocuments(filter)
         .exec();
+      const steps = Math.ceil(docsToProcess / this.processDocsPerOneTime);
 
-      console.log('docsToProcess: ', fromAdCollectionName, docsToProcess);
-
-      // const steps = Math.ceil(docsToProcess / this.processDocsPerOneTime);
-      const steps = 1;
-
-      console.log('steps: ', docsToProcess / this.processDocsPerOneTime);
+      this.logger.log(`Collection: ${fromAdCollectionName}. Documents to process: ${docsToProcess}. Steps: ${steps}`);
 
       const stepsArray = Array.from({ length: steps }, (_, index) => index);
       const stepsIterator: IAsyncArrayIterator<number> = getArrayIterator(stepsArray);
@@ -248,14 +220,41 @@ export class SearchEngineService {
             cityDailyTotalStat,
           ));
 
-        for (const item of itemsForIndexDocs) {
-          console.log('');
-          console.log(item._id);
-          console.log('priceDeviations');
-          console.log(item.priceDeviations);
+        const operations = itemsForIndexDocs.map(item => ({
+          updateOne: {
+            filter: { _id: item._id },
+            update: { $set: item },
+            upsert: true,
+          },
+        }));
+        const savedIds = [];
+
+        if (operations.length > 0) {
+          try {
+            await searchResultModel.bulkWrite(operations);
+
+            for (const item of itemsForIndexDocs) {
+              this.cacheManager.set(fromAdCollectionName + '_' + item._id.toString(), true);
+
+              savedIds.push(item._id.toString());
+            }
+
+            this.logger.log(`Processed ${operations.length} documents for ${fromAdCollectionName} of ${ docsForTransferToSearchResults.length }.`);
+          } catch (error) {
+            this.logger.error(`Error during bulk write for '${fromAdCollectionName}': ${error}`);
+          }
+        } else {
+          this.logger.log('No documents saved');
+        }
+
+        for (const doc of docsForTransferToSearchResults) {
+          const id = doc._id.toString();
+
+          if (!savedIds.includes(id)) {
+            this.logger.warn(`${id} does not saved. District: ${ doc.district }, price: ${ doc.price }, property area: ${ doc['property-area']}`);
+          }
         }
       }
-
     } catch (e) {
       this.logger.error(`Cannot add new documents from '${fromAdCollectionName}' to '${toSearchCollectionName}'.`);
       this.logger.error(e);
