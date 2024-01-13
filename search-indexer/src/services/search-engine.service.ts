@@ -9,6 +9,11 @@ import { DbAccessService } from './db-access.service';
 
 import { AnalysisPeriod, AnalysisType, Categories, LOGGER } from '../constants';
 import {
+  adDocToSearchResultMapper,
+  analysisCityMapper,
+  analysisDistrictMapper,
+} from '../mappers';
+import {
   IAnalysis,
   IAsyncArrayIterator,
   ICityStats,
@@ -18,12 +23,9 @@ import {
   ISearchIndexConfig,
 } from '../types';
 import {
-  analysisCityMapper,
-  analysisDistrictMapper,
   calculatePriceDeviations,
   getArrayIterator,
   getIntFromEnv,
-  mapAdDocToSearchResult,
   roundDate,
 } from '../utils';
 
@@ -207,7 +209,7 @@ export class SearchEngineService {
         const itemsForIndex: Array<Omit<IRentResidential | ISaleResidential, 'priceDeviations'> & { _id: ObjectId }> = docsForTransferToSearchResults
           .filter((doc) => doc.price > 0 && doc['property-area'] > 1)
           .filter((doc) => Boolean(doc.district))
-          .map((doc) => mapAdDocToSearchResult<ObjectId>(doc, category));
+          .map((doc) => adDocToSearchResultMapper<ObjectId>(doc, category));
 
         const itemsForIndexDocs = itemsForIndex
           .map((item): (IRentResidential | ISaleResidential) & { _id: ObjectId } => calculatePriceDeviations<ObjectId>(

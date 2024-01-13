@@ -8,12 +8,12 @@ export function cityStatsMapper(doc: ICityStatsDoc): ICityStats {
     city: doc.city,
     'total-area': doc['total-area'],
     'total-price': doc['total-price'],
-    'mean-price': doc['mean-price'],
+    'mean-price': Math.round(doc['mean-price'] * 100) / 100,
     'median-price': doc['median-price'],
-    'price-percentile-25': doc['price-percentile-25'],
-    'price-percentile-75': doc['price-percentile-75'],
-    'mean-price-sqm': doc['mean-price-sqm'],
-    'median-price-sqm': doc['median-price-sqm'],
+    'price-percentile-25': Math.round(doc['price-percentile-25'] * 100) / 100,
+    'price-percentile-75': Math.round(doc['price-percentile-75'] * 100) / 100,
+    'mean-price-sqm': Math.round(doc['mean-price-sqm'] * 100) / 100,
+    'median-price-sqm': Math.round(doc['median-price-sqm'] * 100) / 100,
   };
 }
 

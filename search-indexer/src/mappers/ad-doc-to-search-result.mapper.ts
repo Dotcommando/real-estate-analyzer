@@ -3,7 +3,7 @@ import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc, ISale
 import { IRentResidential, ISaleResidential } from '../types';
 
 
-export function mapAdDocToSearchResult<TObjectId>(
+export function adDocToSearchResultMapper<TObjectId>(
   doc: IRentApartmentsFlatsDoc | IRentHousesDoc | ISaleApartmentsFlatsDoc | ISaleHousesDoc,
   category: Categories,
 ): Omit<IRentResidential | ISaleResidential, 'priceDeviations'> & { _id: TObjectId } {

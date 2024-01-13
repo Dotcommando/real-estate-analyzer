@@ -7,17 +7,17 @@ export function districtStatsMapper(doc: IDistrictStatsDoc): IDistrictStats {
   return {
     city: doc.city,
     district: doc.district,
-    'median-sqm': doc['median-sqm'],
-    'mean-sqm': doc['mean-sqm'],
+    'median-sqm': Math.round(doc['median-sqm'] * 100) / 100,
+    'mean-sqm': Math.round(doc['mean-sqm'] * 100) / 100,
     count: doc.count,
-    'percentile-25-sqm': doc['percentile-25-sqm'],
-    'percentile-75-sqm': doc['percentile-75-sqm'],
+    'percentile-25-sqm': Math.round(doc['percentile-25-sqm'] * 100) / 100,
+    'percentile-75-sqm': Math.round(doc['percentile-75-sqm'] * 100) / 100,
     'total-area': doc['total-area'],
     'total-price': doc['total-price'],
-    'median-price': doc['median-price'],
-    'mean-price': doc['mean-price'],
-    'percentile-25-price': doc['percentile-25-price'],
-    'percentile-75-price': doc['percentile-75-price'],
+    'median-price': Math.round(doc['median-price'] * 100) / 100,
+    'mean-price': Math.round(doc['mean-price'] * 100) / 100,
+    'percentile-25-price': Math.round(doc['percentile-25-price'] * 100) / 100,
+    'percentile-75-price': Math.round(doc['percentile-75-price'] * 100) / 100,
   };
 }
 
