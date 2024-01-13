@@ -1,34 +1,39 @@
 export function serializeCacheValue(value) {
   if (Array.isArray(value)) {
     return {
-      __type: 'Array',
-      value: value.map(serializeCacheValue),
+      __t: 'A',
+      __v: value.map(serializeCacheValue),
     };
   } else if (value instanceof Date) {
     return {
-      __type: 'Date',
-      value: (value as Date).toString(),
+      __t: 'D',
+      __v: (value as Date).getTime(),
     };
   } else if (typeof value === 'number' || value instanceof Number) {
     return {
-      __type: 'Number',
-      isNaN: isNaN(value as number),
+      __t: 'N',
+      ...(isNaN(value as number) && { isNaN: true }),
       ...(value === Infinity && { isInfinity: true }),
       ...(value === -Infinity && { isMinusInfinity: true }),
-      value,
+      __v: value,
     };
   } else if (typeof value === 'string' || value instanceof String) {
     return {
-      __type: 'String',
-      value,
+      __t: 'S',
+      __v: value,
     };
   } else if (value === null || value === undefined) {
     return {
-      __type: value === null ? 'Null' : 'Undefined',
+      __t: value === null ? 'Nl' : 'Un',
+    };
+  } else if (typeof value === 'boolean') {
+    return {
+      __t: 'B',
+      __v: value,
     };
   } else if (typeof value === 'object') {
     const result = {
-      __type: 'Object',
+      __t: 'O',
     };
 
     for (const key in value) {

@@ -1,10 +1,10 @@
 export function deserializeCacheValue(value) {
   if (value && typeof value === 'object') {
-    if (value.__type === 'Array') {
-      return value.value.map(deserializeCacheValue);
-    } else if (value.__type === 'Date') {
-      return new Date(value.value);
-    } else if (value.__type === 'Number') {
+    if (value.__t === 'A') {
+      return value.__v.map(deserializeCacheValue);
+    } else if (value.__t === 'D') {
+      return new Date(value.__v);
+    } else if (value.__t === 'N') {
       if (value.isNaN) {
         return NaN;
       }
@@ -15,18 +15,20 @@ export function deserializeCacheValue(value) {
         return -Infinity;
       }
 
-      return value.value;
-    } else if (value.__type === 'String') {
-      return value.value;
-    } else if (value.__type === 'Null') {
+      return value.__v;
+    } else if (value.__t === 'S') {
+      return value.__v;
+    } else if (value.__t === 'Nl') {
       return null;
-    } else if (value.__type === 'Undefined') {
+    } else if (value.__t === 'Un') {
       return undefined;
-    } else if (value.__type === 'Object') {
+    } else if (value.__t === 'B') {
+      return value.__v === true || value.__v === 'true';
+    } else if (value.__t === 'O') {
       const result = {};
 
       for (const key in value) {
-        if (key !== '__type') {
+        if (key !== '__t') {
           result[key] = deserializeCacheValue(value[key]);
         }
       }
