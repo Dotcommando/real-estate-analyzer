@@ -5,7 +5,7 @@ import { IAnalysis, ICityStats, IDistrictStats, IRentResidential, ISaleResidenti
 
 
 export const calculateDeltaPercent = (statValue: number, itemValue: number): number => {
-  return Math.round((itemValue / statValue) * 100);
+  return Math.round((itemValue / statValue) * 10000) / 100;
 };
 
 const getCityStat = (cityName: string, cityStat: IAnalysis<string, ICityStats>): ICityStats | undefined => {
@@ -24,7 +24,7 @@ const getDistrictStat = (
   const district = districtName.toLowerCase();
 
   return districtStat.data
-    .filter((stat: IDistrictStats) => stat.city.toLowerCase() !== city)
+    .filter((stat: IDistrictStats) => stat.city.toLowerCase() === city)
     .find((stat: IDistrictStats) => stat.district.toLowerCase() === district);
 };
 
@@ -61,15 +61,15 @@ const getDistrictMedianPrice = (cityName: string, districtName: string, district
 const getDistrictMedianPriceSqm = (cityName: string, districtName: string, districtStat: IAnalysis<string, IDistrictStats>): number =>
   getKeyFromStat(getDistrictStat(cityName, districtName, districtStat), 'median-sqm');
 
-export function calculatePriceDeviations(
-  item: Omit<IRentResidential | ISaleResidential, 'priceDeviations'>,
+export function calculatePriceDeviations<TObjectId>(
+  item: Omit<IRentResidential | ISaleResidential, 'priceDeviations'> & { _id: TObjectId },
   districtMonthlyTotalStat: IAnalysis<string, IDistrictStats>,
   districtMonthlyIntermediaryStat: IAnalysis<string, IDistrictStats>,
   districtDailyTotalStat: IAnalysis<string, IDistrictStats>,
   cityMonthlyTotalStat: IAnalysis<string, ICityStats>,
   cityMonthlyIntermediaryStat: IAnalysis<string, ICityStats>,
   cityDailyTotalStat: IAnalysis<string, ICityStats>,
-): IRentResidential | ISaleResidential {
+): (IRentResidential | ISaleResidential) & { _id: TObjectId } {
   const city = item.city;
   const district = processDistrict(item.district);
 

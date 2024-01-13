@@ -232,13 +232,13 @@ export class SearchEngineService {
           .limit(this.processDocsPerOneTime)
           .exec();
 
-        const itemsForIndex: Array<Omit<IRentResidential | ISaleResidential, 'priceDeviations'>> = docsForTransferToSearchResults
+        const itemsForIndex: Array<Omit<IRentResidential | ISaleResidential, 'priceDeviations'> & { _id: ObjectId }> = docsForTransferToSearchResults
           .filter((doc) => doc.price > 0 && doc['property-area'] > 1)
           .filter((doc) => Boolean(doc.district))
-          .map((doc) => mapAdDocToSearchResult(doc, category));
+          .map((doc) => mapAdDocToSearchResult<ObjectId>(doc, category));
 
         const itemsForIndexDocs = itemsForIndex
-          .map((item): IRentResidential | ISaleResidential => calculatePriceDeviations(
+          .map((item): (IRentResidential | ISaleResidential) & { _id: ObjectId } => calculatePriceDeviations<ObjectId>(
             item,
             districtMonthlyTotalStat,
             districtMonthlyIntermediaryStat,
@@ -250,7 +250,9 @@ export class SearchEngineService {
 
         for (const item of itemsForIndexDocs) {
           console.log('');
-          console.log(item);
+          console.log(item._id);
+          console.log('priceDeviations');
+          console.log(item.priceDeviations);
         }
       }
 

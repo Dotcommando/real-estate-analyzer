@@ -3,11 +3,12 @@ import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc, ISale
 import { IRentResidential, ISaleResidential } from '../types';
 
 
-export function mapAdDocToSearchResult(
+export function mapAdDocToSearchResult<TObjectId>(
   doc: IRentApartmentsFlatsDoc | IRentHousesDoc | ISaleApartmentsFlatsDoc | ISaleHousesDoc,
   category: Categories,
-): Omit<IRentResidential | ISaleResidential, 'priceDeviations'> {
+): Omit<IRentResidential | ISaleResidential, 'priceDeviations'> & { _id: TObjectId } {
   return {
+    _id: doc._id,
     category,
     subcategory: doc.type,
     url: doc.url,
