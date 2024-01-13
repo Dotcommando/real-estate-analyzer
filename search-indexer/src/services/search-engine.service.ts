@@ -7,11 +7,23 @@ import { Model } from 'mongoose';
 import { AnyObject, CacheService } from './cache.service';
 import { DbAccessService } from './db-access.service';
 
-import { AnalysisPeriod, AnalysisType, LOGGER } from '../constants';
-import { IAnalysis, ICityStats, IDistrictStats, ISearchIndexConfig } from '../types';
+import { AnalysisPeriod, AnalysisType, Categories, LOGGER } from '../constants';
+import {
+  IAnalysis,
+  IAsyncArrayIterator,
+  ICityStats,
+  IDistrictStats,
+  IRentResidential,
+  ISaleResidential,
+  ISearchIndexConfig,
+} from '../types';
 import {
   analysisCityMapper,
   analysisDistrictMapper,
+  calculatePriceDeviations,
+  getArrayIterator,
+  getIntFromEnv,
+  mapAdDocToSearchResult,
   roundDate,
 } from '../utils';
 
@@ -26,6 +38,7 @@ export class SearchEngineService {
   ) {
   }
 
+  private processDocsPerOneTime = getIntFromEnv('SEARCH_INDEX_CONFIG', 20);
   private searchIndexConfig: ISearchIndexConfig[] = JSON.parse(this.configService.get('SEARCH_INDEX_CONFIG'));
 
   private getSearchResultModelByCollectionName(collectionName: string): Model<any> {
@@ -99,11 +112,10 @@ export class SearchEngineService {
   public async addNewDocs(fromAdCollectionName: string, toSearchCollectionName: string): Promise<void> {
     try {
       const adModel = this.dbAccessService.getModelByCollection(fromAdCollectionName);
-      const searchResultModel = this.getSearchResultModelByCollectionName(fromAdCollectionName);
       const currentRoundedDate = roundDate(new Date());
       const districtMonthlyTotalStat: IAnalysis<string, IDistrictStats> = await this.getStats<IDistrictStats>(
         fromAdCollectionName,
-        roundDate(new Date()),
+        currentRoundedDate,
         AnalysisPeriod.MONTHLY_TOTAL,
         AnalysisType.DISTRICT_AVG_MEAN,
         analysisDistrictMapper,
@@ -111,7 +123,7 @@ export class SearchEngineService {
 
       const districtMonthlyIntermediaryStat: IAnalysis<string, IDistrictStats> = await this.getStats<IDistrictStats>(
         fromAdCollectionName,
-        roundDate(new Date()),
+        currentRoundedDate,
         AnalysisPeriod.MONTHLY_INTERMEDIARY,
         AnalysisType.DISTRICT_AVG_MEAN,
         analysisDistrictMapper,
@@ -119,7 +131,7 @@ export class SearchEngineService {
 
       const districtDailyTotalStat: IAnalysis<string, IDistrictStats> = await this.getStats<IDistrictStats>(
         fromAdCollectionName,
-        roundDate(new Date()),
+        currentRoundedDate,
         AnalysisPeriod.DAILY_TOTAL,
         AnalysisType.DISTRICT_AVG_MEAN,
         analysisDistrictMapper,
@@ -127,7 +139,7 @@ export class SearchEngineService {
 
       const cityMonthlyTotalStat: IAnalysis<string, ICityStats> = await this.getStats<ICityStats>(
         fromAdCollectionName,
-        roundDate(new Date()),
+        currentRoundedDate,
         AnalysisPeriod.MONTHLY_TOTAL,
         AnalysisType.CITY_AVG_MEAN,
         analysisCityMapper,
@@ -135,7 +147,7 @@ export class SearchEngineService {
 
       const cityMonthlyIntermediaryStat: IAnalysis<string, ICityStats> = await this.getStats<ICityStats>(
         fromAdCollectionName,
-        roundDate(new Date()),
+        currentRoundedDate,
         AnalysisPeriod.MONTHLY_INTERMEDIARY,
         AnalysisType.CITY_AVG_MEAN,
         analysisCityMapper,
@@ -143,34 +155,141 @@ export class SearchEngineService {
 
       const cityDailyTotalStat: IAnalysis<string, ICityStats> = await this.getStats<ICityStats>(
         fromAdCollectionName,
-        roundDate(new Date()),
+        currentRoundedDate,
         AnalysisPeriod.DAILY_TOTAL,
         AnalysisType.CITY_AVG_MEAN,
         analysisCityMapper,
       );
 
-      console.log('');
-      console.log('');
-      console.log('');
-      console.log(fromAdCollectionName);
-      console.log({ ...cityDailyTotalStat, data: '...' });
+      this.checkStats(
+        districtMonthlyTotalStat,
+        districtMonthlyIntermediaryStat,
+        districtDailyTotalStat,
+        cityMonthlyTotalStat,
+        cityMonthlyIntermediaryStat,
+        cityDailyTotalStat,
+      );
+
+      const searchResultModel = this.getSearchResultModelByCollectionName(fromAdCollectionName);
+
+      // console.log('');
+      // console.log('');
+      // console.log('');
+      // console.log(fromAdCollectionName);
+      // console.log('');
+      // console.log('districtMonthlyTotalStat:');
+      // console.log({ ...districtMonthlyTotalStat, data: [ districtMonthlyTotalStat.data[0], districtMonthlyTotalStat.data[1], districtMonthlyTotalStat.data[2], '...' ]});
+      // console.log('');
+      // console.log('districtMonthlyIntermediaryStat:');
+      // console.log({ ...districtMonthlyIntermediaryStat, data: [ districtMonthlyIntermediaryStat.data[0], districtMonthlyIntermediaryStat.data[1], districtMonthlyIntermediaryStat.data[2], '...' ]});
+      // console.log('');
+      // console.log('districtDailyTotalStat');
+      // console.log({ ...districtDailyTotalStat, data: [ districtDailyTotalStat.data[0], districtDailyTotalStat.data[1], districtDailyTotalStat.data[2], '...' ]});
+      // console.log('');
+      // console.log('cityMonthlyTotalStat');
+      // console.log({ ...cityMonthlyTotalStat, data: [ cityMonthlyTotalStat.data[0], cityMonthlyTotalStat.data[1], cityMonthlyTotalStat.data[2], '...' ]});
+      // console.log('');
+      // console.log('cityMonthlyIntermediaryStat');
+      // console.log({ ...cityMonthlyIntermediaryStat, data: [ cityMonthlyIntermediaryStat.data[0], cityMonthlyIntermediaryStat.data[1], cityMonthlyIntermediaryStat.data[2], '...' ]});
+      // console.log('');
+      // console.log('cityDailyTotalStat');
+      // console.log({ ...cityDailyTotalStat, data: [ cityDailyTotalStat.data[0], cityDailyTotalStat.data[1], cityDailyTotalStat.data[2], '...' ]});
 
       const cachedObjectIds: ObjectId[] = this.cacheManager
         .getKeysFilteredBy((key: string): boolean => ObjectId.isValid(key.replace(fromAdCollectionName + '_', '')))
         .map((objectId: string): string => objectId.replace(fromAdCollectionName + '_', ''))
         .map((objectId: string): ObjectId => new ObjectId(objectId));
-      const docsForTransferToSearchResults = await adModel
-        .find({
-          _id: { $nin: cachedObjectIds },
-          updated_at: { $gt: currentRoundedDate },
-          // active_dates: { $elemMatch: { $eq: currentRoundedDate }},
-        })
+      const filter = {
+        _id: { $nin: cachedObjectIds },
+        updated_at: { $gt: currentRoundedDate },
+        // active_dates: { $elemMatch: { $eq: currentRoundedDate }},
+      };
+      const docsToProcess = await adModel
+        .countDocuments(filter)
         .exec();
 
+      console.log('docsToProcess: ', fromAdCollectionName, docsToProcess);
+
+      // const steps = Math.ceil(docsToProcess / this.processDocsPerOneTime);
+      const steps = 1;
+
+      console.log('steps: ', docsToProcess / this.processDocsPerOneTime);
+
+      const stepsArray = Array.from({ length: steps }, (_, index) => index);
+      const stepsIterator: IAsyncArrayIterator<number> = getArrayIterator(stepsArray);
+      const lowerCasedAdCollectionName = fromAdCollectionName.toLowerCase();
+      const category: Categories = lowerCasedAdCollectionName.includes('houses')
+        ? Categories.Houses
+        : lowerCasedAdCollectionName.includes('apartments')
+          ? Categories.Apartments
+          : lowerCasedAdCollectionName.includes('plots')
+            ? Categories.Plots
+            : Categories.Commercial;
+
+      for await (const step of stepsIterator) {
+        const docsForTransferToSearchResults = await adModel
+          .find(filter)
+          .limit(this.processDocsPerOneTime)
+          .exec();
+
+        const itemsForIndex: Array<Omit<IRentResidential | ISaleResidential, 'priceDeviations'>> = docsForTransferToSearchResults
+          .filter((doc) => doc.price > 0 && doc['property-area'] > 1)
+          .filter((doc) => Boolean(doc.district))
+          .map((doc) => mapAdDocToSearchResult(doc, category));
+
+        const itemsForIndexDocs = itemsForIndex
+          .map((item): IRentResidential | ISaleResidential => calculatePriceDeviations(
+            item,
+            districtMonthlyTotalStat,
+            districtMonthlyIntermediaryStat,
+            districtDailyTotalStat,
+            cityMonthlyTotalStat,
+            cityMonthlyIntermediaryStat,
+            cityDailyTotalStat,
+          ));
+
+        for (const item of itemsForIndexDocs) {
+          console.log('');
+          console.log(item);
+        }
+      }
 
     } catch (e) {
       this.logger.error(`Cannot add new documents from '${fromAdCollectionName}' to '${toSearchCollectionName}'.`);
       this.logger.error(e);
+    }
+  }
+
+  private checkStats(
+    districtMonthlyTotalStat: IAnalysis<string, IDistrictStats> | null,
+    districtMonthlyIntermediaryStat: IAnalysis<string, IDistrictStats> | null,
+    districtDailyTotalStat: IAnalysis<string, IDistrictStats> | null,
+    cityMonthlyTotalStat: IAnalysis<string, ICityStats> | null,
+    cityMonthlyIntermediaryStat: IAnalysis<string, ICityStats> | null,
+    cityDailyTotalStat: IAnalysis<string, ICityStats> | null,
+  ): void {
+    if (!districtMonthlyTotalStat) {
+      throw new Error('\'districtMonthlyTotalStat\' is empty. Cannot proceed calculations.');
+    }
+
+    if (!districtMonthlyIntermediaryStat) {
+      throw new Error('\'districtMonthlyIntermediaryStat\' is empty. Cannot proceed calculations.');
+    }
+
+    if (!districtDailyTotalStat) {
+      throw new Error('\'districtDailyTotalStat\' is empty. Cannot proceed calculations.');
+    }
+
+    if (!cityMonthlyTotalStat) {
+      throw new Error('\'cityMonthlyTotalStat\' is empty. Cannot proceed calculations.');
+    }
+
+    if (!cityMonthlyIntermediaryStat) {
+      throw new Error('\'cityMonthlyIntermediaryStat\' is empty. Cannot proceed calculations.');
+    }
+
+    if (!cityDailyTotalStat) {
+      throw new Error('\'cityDailyTotalStat\' is empty. Cannot proceed calculations.');
     }
   }
 }

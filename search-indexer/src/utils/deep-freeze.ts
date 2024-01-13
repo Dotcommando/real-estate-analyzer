@@ -5,10 +5,14 @@ export function isObjectOrArray(value: unknown): boolean {
 export function deepFreeze(value: { [key: string]: unknown } | unknown[]): { [key: string]: unknown } | readonly unknown[] {
   if (Array.isArray(value)) {
     const frozenArray = [];
-    const arrayLength = frozenArray.length;
+    const arrayLength = value.length;
 
     for (let i = 0; i < arrayLength; i++) {
-      frozenArray.push(isObjectOrArray(value[i]) ? deepFreeze(value[i]) : value[i]);
+      frozenArray.push(
+        (isObjectOrArray(value[i]) && !(value[i] instanceof Date))
+          ? deepFreeze(value[i] as { [key: string]: unknown } | unknown[])
+          : value[i],
+      );
     }
 
     return Object.freeze(frozenArray);
@@ -17,7 +21,7 @@ export function deepFreeze(value: { [key: string]: unknown } | unknown[]): { [ke
   const frozenObject = {};
 
   for (const key in value) {
-    frozenObject[key] = isObjectOrArray(value[key])
+    frozenObject[key] = (isObjectOrArray(value[key]) && !(value[key] instanceof Date))
       ? deepFreeze({ ...(value[key] as { [key: string]: unknown }) })
       : value[key];
   }

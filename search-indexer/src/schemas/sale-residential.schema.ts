@@ -189,6 +189,10 @@ export const SaleResidentialSchema = new Schema<ISaleResidential, Model<ISaleRes
       type: Number,
       default: 0,
     },
+    'price-sqm': {
+      type: Number,
+      required: [ true, 'Price of a square meter is required' ],
+    },
     priceDeviations: {
       [AnalysisType.CITY_AVG_MEAN]: {
         type: AnalysisTypeDeviationsSchema,

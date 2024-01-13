@@ -5,6 +5,7 @@ import { Categories } from '../constants';
 
 
 export interface IRentResidential extends Omit<IRentApartmentsFlats, 'type' | 'version' | 'expired'>, Omit<IRentHouses, 'type' | 'version' | 'expired'> {
+  'price-sqm': number;
   category: Categories;
   subcategory: string;
   activeDays: number;
