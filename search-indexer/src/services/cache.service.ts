@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { LOGGER } from '../constants';
-import { deepFreeze, isObjectOrArray } from '../utils';
+import { deepFreeze, deserializeCacheValue, isObjectOrArray, serializeCacheValue } from '../utils';
 
 
 config();
@@ -69,11 +69,9 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
 
       const data = fs.readFileSync(filePath, 'utf-8');
       const json = JSON.parse(data);
-      const map = new Map<string, unknown>(json);
+      const entries = json.map((key, value) => deserializeCacheValue(value));
 
-      if (map.size) {
-        this.cacheMap = map;
-      }
+      this.cacheMap = new Map(entries);
     } catch (e) {
       this.logger.error(`Cannot restore cache from the cache file ${this.getFileName()}`);
       this.logger.error(e.message);
@@ -81,7 +79,7 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
   }
 
   private add(key: string, value: string): void {
-    this.cacheMap.set(key, value);
+    this.cacheMap.set(key, serializeCacheValue(value));
   }
 
   private deleteOldest() {
@@ -97,7 +95,10 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
   })
   public updatePersistenceCache(): void {
     const filePath = path.join(process.cwd(), this.cacheFolder, this.getFileName());
-    const data = JSON.stringify([ ...this.cacheMap ]);
+    const serializedMap = Array
+      .from(this.cacheMap.entries())
+      .map(([ key, value ]) => [ key, serializeCacheValue(value) ]);
+    const data = JSON.stringify(serializedMap);
 
     if (this.cacheMap.size) {
       fs.writeFileSync(filePath, data);

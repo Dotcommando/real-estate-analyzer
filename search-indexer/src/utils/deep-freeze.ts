@@ -22,7 +22,7 @@ export function deepFreeze(value: { [key: string]: unknown } | unknown[]): { [ke
 
   for (const key in value) {
     frozenObject[key] = (isObjectOrArray(value[key]) && !(value[key] instanceof Date))
-      ? deepFreeze({ ...(value[key] as { [key: string]: unknown }) })
+      ? deepFreeze(value[key] as { [key: string]: unknown } | unknown[])
       : value[key];
   }
 
