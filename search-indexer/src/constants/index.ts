@@ -14,6 +14,7 @@ export * from './houses-type.enum';
 export * from './logger.const';
 export * from './mode.enum';
 export * from './model-collection-relation.const';
+export * from './no-statistics-data-reason.enum';
 export * from './online-viewing.enum';
 export * from './parking.enum';
 export * from './pets.enum';

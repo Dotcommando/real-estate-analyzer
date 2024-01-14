@@ -1,4 +1,8 @@
-export function processDistrict(originDistrict: string): string {
+export function processDistrict(originDistrict: string): string | null {
+  if (!originDistrict) {
+    return null;
+  }
+
   let district = originDistrict
     .replace(
       /Timiou Prodromou\s+Mesa Geitonias/g,

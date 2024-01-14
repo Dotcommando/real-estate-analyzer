@@ -225,8 +225,6 @@ export class SearchEngineService {
           .exec();
 
         const itemsForIndex: Array<Omit<IRentResidential | ISaleResidential, 'priceDeviations'> & { _id: ObjectId }> = docsForTransferToSearchResults
-          .filter((doc) => doc.price > 0 && doc['property-area'] > 1)
-          .filter((doc) => Boolean(doc.district))
           .map((doc) => adDocToSearchResultMapper<ObjectId>(doc, category));
 
         const itemsForIndexDocs = itemsForIndex
@@ -261,7 +259,7 @@ export class SearchEngineService {
               this.cacheManager.set(fromAdCollectionName + '_' + doc._id.toString(), Date.now());
             }
 
-            this.logger.log(`Processed ${operations.length} documents for ${searchResultModel.collection.collectionName} of ${ docsForTransferToSearchResults.length }.`);
+            this.logger.log(`Processed ${operations.length} documents  of ${ docsForTransferToSearchResults.length }. '${fromAdCollectionName}' ===> '${searchResultModel.collection.collectionName}'`);
           } catch (error) {
             this.logger.error(`Error during bulk write for '${searchResultModel.collection.collectionName}': ${error}`);
           }

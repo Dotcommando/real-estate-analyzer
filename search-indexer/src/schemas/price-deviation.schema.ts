@@ -1,13 +1,27 @@
 import { Schema } from 'mongoose';
 
+import { NoStatisticsDataReasonArray } from '../constants';
+
 
 export const PriceDeviationSchema = new Schema({
   medianDelta: {
     type: Number,
-    required: true,
   },
   meanDelta: {
     type: Number,
-    required: true,
+  },
+  medianDeltaSqm: {
+    type: Number,
+  },
+  meanDeltaSqm: {
+    type: Number,
+  },
+  noDataAbsReason: {
+    type: String,
+    enum: NoStatisticsDataReasonArray,
+  },
+  noDataSqmReason: {
+    type: String,
+    enum: NoStatisticsDataReasonArray,
   },
 });
