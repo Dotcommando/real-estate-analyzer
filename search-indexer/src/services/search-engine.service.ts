@@ -196,7 +196,7 @@ export class SearchEngineService {
         .map((objectId: string): ObjectId => new ObjectId(objectId));
       const filter = {
         _id: { $nin: cachedObjectIds },
-        updated_at: { $gt: currentRoundedDate },
+        updated_at: { $gt: new Date(timeThreshold) },
         // active_dates: { $elemMatch: { $eq: currentRoundedDate }},
       };
       const docsToProcess = await adModel

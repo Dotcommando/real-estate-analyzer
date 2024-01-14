@@ -1,7 +1,7 @@
 import { processDistrict } from './process-district';
 
 import { AnalysisPeriod, AnalysisType, NoStatisticsDataReason } from '../constants';
-import { IAnalysis, ICityStats, IDistrictStats, IPriceDeviations, IRentResidential, ISaleResidential } from '../types';
+import { IAnalysis, ICityStats, IDistrictStats, IRentResidential, ISaleResidential } from '../types';
 
 
 export const calculateDeltaPercent = (statValue: number, itemValue: number): number => {
