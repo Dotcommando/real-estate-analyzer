@@ -7,7 +7,7 @@ import { Model } from 'mongoose';
 import { AnyObject, CacheService } from './cache.service';
 import { DbAccessService } from './db-access.service';
 
-import { AnalysisPeriod, AnalysisType, Categories, LOGGER } from '../constants';
+import { AnalysisPeriod, AnalysisType, Categories, LOGGER, MINUTE_MS } from '../constants';
 import {
   adDocToSearchResultMapper,
   analysisCityMapper,
@@ -42,6 +42,15 @@ export class SearchEngineService {
 
   private processDocsPerOneTime = getIntFromEnv('SEARCH_INDEX_CONFIG', 20);
   private searchIndexConfig: ISearchIndexConfig[] = JSON.parse(this.configService.get('SEARCH_INDEX_CONFIG'));
+  private cronInterval = this.extractCronInterval(this.configService.get('CRON_ADD_NEW'));
+  private timeGapMin = 1;
+
+  private extractCronInterval(cronPattern: string): number {
+    const minutesPart = cronPattern.split(' ')[0]; // "2-59/4"
+    const interval = minutesPart.split('/')[1]; // "4"
+
+    return parseInt(interval);
+  }
 
   private getSearchResultModelByCollectionName(collectionName: string): Model<any> {
     for (const configEntry of this.searchIndexConfig) {
@@ -172,10 +181,18 @@ export class SearchEngineService {
         cityDailyTotalStat,
       );
 
+      const timeThreshold = Date.now() - (this.cronInterval + this.timeGapMin) * MINUTE_MS;
       const searchResultModel = this.getSearchResultModelByCollectionName(fromAdCollectionName);
       const cachedObjectIds: ObjectId[] = this.cacheManager
-        .getKeysFilteredBy((key: string): boolean => ObjectId.isValid(key.replace(fromAdCollectionName + '_', '')))
-        .map((objectId: string): string => objectId.replace(fromAdCollectionName + '_', ''))
+        .getKeysFilteredBy((key: string): boolean =>
+          ObjectId.isValid(key.replace(fromAdCollectionName + '_', '')),
+        )
+        .map((key: string): string => key.replace(fromAdCollectionName + '_', ''))
+        .filter((objectId: string): boolean => {
+          const timestamp = this.cacheManager.get<number>(fromAdCollectionName + '_' + objectId);
+
+          return timestamp && timestamp > timeThreshold;
+        })
         .map((objectId: string): ObjectId => new ObjectId(objectId));
       const filter = {
         _id: { $nin: cachedObjectIds },
@@ -204,6 +221,7 @@ export class SearchEngineService {
         const docsForTransferToSearchResults = await adModel
           .find(filter)
           .limit(this.processDocsPerOneTime)
+          .skip(step * this.processDocsPerOneTime)
           .exec();
 
         const itemsForIndex: Array<Omit<IRentResidential | ISaleResidential, 'priceDeviations'> & { _id: ObjectId }> = docsForTransferToSearchResults
@@ -240,12 +258,12 @@ export class SearchEngineService {
             }
 
             for (const doc of docsForTransferToSearchResults) {
-              this.cacheManager.set(fromAdCollectionName + '_' + doc._id.toString(), true);
+              this.cacheManager.set(fromAdCollectionName + '_' + doc._id.toString(), Date.now());
             }
 
-            this.logger.log(`Processed ${operations.length} documents for ${fromAdCollectionName} of ${ docsForTransferToSearchResults.length }.`);
+            this.logger.log(`Processed ${operations.length} documents for ${searchResultModel.collection.collectionName} of ${ docsForTransferToSearchResults.length }.`);
           } catch (error) {
-            this.logger.error(`Error during bulk write for '${fromAdCollectionName}': ${error}`);
+            this.logger.error(`Error during bulk write for '${searchResultModel.collection.collectionName}': ${error}`);
           }
         } else {
           this.logger.log('No documents saved');

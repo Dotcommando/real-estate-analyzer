@@ -81,7 +81,7 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
     }
   }
 
-  private add(key: string, value: string): void {
+  private add<T>(key: string, value: T): void {
     this.cacheMap.set(key, value);
   }
 
@@ -112,14 +112,8 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
     this.cacheMap.delete(key);
   }
 
-  public async set(key: string, value: unknown, ttl?: number): Promise<void> {
-    const stringifiedValue = typeof value === 'string'
-      ? value
-      : typeof value === 'object'
-        ? JSON.stringify(value)
-        : String(value);
-
-    this.add(key, stringifiedValue);
+  public async set<T>(key: string, value: T, ttl?: number): Promise<void> {
+    this.add<T>(key, value);
 
     if (this.cacheMap.size > this.maxItems) {
       this.deleteOldest();
@@ -150,8 +144,8 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
     }
   }
 
-  public get(key: string): string | undefined {
-    return this.cacheMap.get(key) as string | undefined;
+  public get<T>(key: string): T | undefined {
+    return this.cacheMap.get(key) as T | undefined;
   }
 
   public getRawObject<T>(key: string): T | undefined {
