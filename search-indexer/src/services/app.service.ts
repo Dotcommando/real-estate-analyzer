@@ -8,8 +8,8 @@ import { DbAccessService } from './db-access.service';
 import { SearchEngineService } from './search-engine.service';
 
 import { LOGGER, MINUTE_MS } from '../constants';
-import { IResponse, ISearchIndexConfig } from '../types';
-import { getBoolFromEnv } from '../utils';
+import { IAsyncArrayIterator, IResponse, ISearchIndexConfig } from '../types';
+import { convertTimeToMilliseconds, getArrayIterator, getBoolFromEnv } from '../utils';
 
 
 config();
@@ -20,6 +20,7 @@ export class AppService implements OnModuleInit {
   private firstRunFromDayStart = getBoolFromEnv('FIRST_RUN_FROM_DAY_START', true);
   private firstRunPast: string = this.configService.get('FIRST_RUN_PAST');
   private cronPattern = this.configService.get('CRON_ADD_NEW');
+  private removeExpiredThresholdMsec = convertTimeToMilliseconds(this.configService.get('REMOVE_EXPIRED_THRESHOLD'));
 
   constructor(
     @Inject(LOGGER) private readonly logger: LoggerService,
@@ -41,40 +42,52 @@ export class AppService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     this.searchIndexConfig = await this.getSearchIndexConfig();
 
-    const threshold = this.searchEngineService.determineTimeThreshold(this.cronPattern, {
-      firstRun: true,
-      ...(this.firstRunFromDayStart && { firstRunFromDayStart: true }),
-      ...((!this.firstRunFromDayStart && Boolean(this.firstRunPast)) && { firstRunPast: this.firstRunPast }),
-    });
-
     await this.removeExpiredDocs();
 
-    for (const configEntry of this.searchIndexConfig) {
-      const adCollections = configEntry.collections;
+    const searchConfigIterator: IAsyncArrayIterator<ISearchIndexConfig> = getArrayIterator(this.searchIndexConfig);
 
-      for (const adCollection of adCollections) {
-        this.searchEngineService.addNewDocs(adCollection, configEntry.mapTo, threshold);
-      }
-    }
-  }
+    for await (const configEntry of searchConfigIterator) {
+      const adCollections: string[] = configEntry.collections;
+      const adCollectionsIterator: IAsyncArrayIterator<string> = getArrayIterator(adCollections);
 
-  @Cron(process.env.CRON_REMOVE_EXPIRED)
-  private async addNewDocs(): Promise<void> {
-    const threshold = this.searchEngineService
-      .calculateLastExecutionTimestamp(this.cronPattern, new Date()) - MINUTE_MS;
+      for await (const adCollection of adCollectionsIterator) {
+        const threshold = this.searchEngineService.determineTimeThreshold(this.cronPattern, {
+          firstRun: true,
+          ...(this.firstRunFromDayStart && { firstRunFromDayStart: true }),
+          ...((!this.firstRunFromDayStart && Boolean(this.firstRunPast)) && { firstRunPast: this.firstRunPast }),
+        });
 
-    for (const configEntry of this.searchIndexConfig) {
-      const adCollections = configEntry.collections;
-
-      for (const adCollection of adCollections) {
-        this.searchEngineService.addNewDocs(adCollection, configEntry.mapTo, threshold);
+        await this.searchEngineService.addNewDocs(adCollection, configEntry.mapTo, threshold);
       }
     }
   }
 
   @Cron(process.env.CRON_ADD_NEW)
-  private async removeExpiredDocs(): Promise<void> {
+  private async addNewDocs(): Promise<void> {
+    const searchConfigIterator: IAsyncArrayIterator<ISearchIndexConfig> = getArrayIterator(this.searchIndexConfig);
 
+    for await (const configEntry of searchConfigIterator) {
+      const adCollections: string[] = configEntry.collections;
+      const adCollectionsIterator: IAsyncArrayIterator<string> = getArrayIterator(adCollections);
+
+      for await (const adCollection of adCollectionsIterator) {
+        const threshold = this.searchEngineService
+          .calculateLastExecutionTimestamp(this.cronPattern, new Date()) - MINUTE_MS;
+
+        await this.searchEngineService.addNewDocs(adCollection, configEntry.mapTo, threshold);
+      }
+    }
+  }
+
+  @Cron(process.env.CRON_REMOVE_EXPIRED)
+  private async removeExpiredDocs(): Promise<void> {
+    const searchResultCollectionsIterator: IAsyncArrayIterator<string> = getArrayIterator(
+      this.searchIndexConfig.map((entry: ISearchIndexConfig) => entry.mapTo),
+    );
+
+    for await (const searchCollection of searchResultCollectionsIterator) {
+      await this.searchEngineService.removeOldDocs(searchCollection, this.removeExpiredThresholdMsec);
+    }
   }
 
   private async getSearchIndexConfig(): Promise<ISearchIndexConfig[]> {

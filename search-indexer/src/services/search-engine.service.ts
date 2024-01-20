@@ -7,7 +7,13 @@ import { Model } from 'mongoose';
 import { AnyObject, CacheService } from './cache.service';
 import { DbAccessService } from './db-access.service';
 
-import { AnalysisPeriod, AnalysisType, Categories, LOGGER, MINUTE_MS } from '../constants';
+import {
+  AnalysisPeriod,
+  AnalysisType,
+  Categories,
+  LOGGER,
+  MINUTE_MS,
+} from '../constants';
 import {
   adDocToSearchResultMapper,
   analysisCityMapper,
@@ -96,7 +102,7 @@ export class SearchEngineService {
     return lastExecutionTime.getTime();
   }
 
-  private getSearchResultModelByCollectionName(collectionName: string): Model<any> {
+  private getSearchResultModelByAdCollectionName(collectionName: string): Model<any> {
     for (const configEntry of this.searchIndexConfig) {
       if (configEntry.collections.includes(collectionName)) {
         return this.dbAccessService.getSearchResultsModelByCollection(configEntry.mapTo);
@@ -104,6 +110,12 @@ export class SearchEngineService {
     }
 
     throw new Error(`Cannot find search result Model by ad collection name: '${collectionName}'.`);
+  }
+
+  private getSearchResultModelBySRCollectionName(collectionName: string): Model<any> {
+    return this.dbAccessService.getSearchResultsModelByCollection(collectionName);
+
+    throw new Error(`Cannot find search result Model by search result collection name: '${collectionName}'.`);
   }
 
   private getPastTimeThreshold(currentDate: number, timeString): number {
@@ -255,7 +267,7 @@ export class SearchEngineService {
         cityDailyTotalStat,
       );
 
-      const searchResultModel = this.getSearchResultModelByCollectionName(fromAdCollectionName);
+      const searchResultModel = this.getSearchResultModelByAdCollectionName(fromAdCollectionName);
       const cachedObjectIds: ObjectId[] = this.cacheManager
         .getKeysFilteredBy((key: string): boolean =>
           ObjectId.isValid(key.replace(cacheKeyPrefix, '')),
@@ -351,6 +363,24 @@ export class SearchEngineService {
     } catch (e) {
       this.logger.error(`Cannot add new documents from '${fromAdCollectionName}' to '${toSearchCollectionName}'.`);
       this.logger.error(e);
+    }
+  }
+
+  public async removeOldDocs(
+    searchCollectionName: string,
+    timeThreshold: number,
+  ): Promise<void> {
+    try {
+      const searchResultModel = this.getSearchResultModelBySRCollectionName(searchCollectionName);
+      const deleteResult = await searchResultModel.deleteMany({
+        updated_at: {
+          $lt: new Date(timeThreshold),
+        },
+      }).exec();
+
+      this.logger.log(`Removed ${deleteResult.deletedCount} old documents from '${searchCollectionName}'`);
+    } catch (error) {
+      this.logger.error(`Error during removing old documents from '${searchCollectionName}': ${error}`);
     }
   }
 
