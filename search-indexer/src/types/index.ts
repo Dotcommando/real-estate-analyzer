@@ -10,6 +10,7 @@ export * from './city-stats-doc.interface';
 export * from './coords.interface';
 export * from './district-stats.interface';
 export * from './district-stats-doc.interface';
+export * from './launch-settings.type';
 export * from './price-deviation.interface';
 export * from './price-deviations.interface';
 export * from './real-estate';

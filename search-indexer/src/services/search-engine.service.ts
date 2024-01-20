@@ -21,9 +21,13 @@ import {
   IRentResidential,
   ISaleResidential,
   ISearchIndexConfig,
+  LaunchSettings,
+  LaunchSettingsWithFirstRunFromDayStart,
+  LaunchSettingsWithFirstRunPast,
 } from '../types';
 import {
   calculatePriceDeviations,
+  convertTimeToMilliseconds,
   getArrayIterator,
   getIntFromEnv,
   roundDate,
@@ -40,16 +44,56 @@ export class SearchEngineService {
   ) {
   }
 
-  private processDocsPerOneTime = getIntFromEnv('SEARCH_INDEX_CONFIG', 20);
+  private processDocsPerOneTime = getIntFromEnv('PROCESS_DOCS_PER_ONE_TIME', 20);
   private searchIndexConfig: ISearchIndexConfig[] = JSON.parse(this.configService.get('SEARCH_INDEX_CONFIG'));
-  private cronInterval = this.extractCronInterval(this.configService.get('CRON_ADD_NEW'));
-  private timeGapMin = 1;
 
-  private extractCronInterval(cronPattern: string): number {
-    const minutesPart = cronPattern.split(' ')[0]; // "2-59/4"
-    const interval = minutesPart.split('/')[1]; // "4"
+  private parseCronPattern(cronPattern: string): { interval: number; offsets: number[] } {
+    const minutesPart = cronPattern.split(' ')[0];
+    let interval = 60; // default
+    let offsets = [];
 
-    return parseInt(interval);
+    if (minutesPart.includes('/')) {
+      const parts = minutesPart.split('/');
+
+      interval = parseInt(parts[1]);
+
+      // range "2-59"
+      if (parts[0].includes('-')) {
+        const range = parts[0].split('-').map(Number);
+
+        for (let i = range[0]; i <= range[1]; i += interval) {
+          offsets.push(i);
+        }
+      } else { // "*/4"
+        for (let i = 0; i < 60; i += interval) {
+          offsets.push(i);
+        }
+      }
+    } else if (minutesPart !== '*') { // "25"
+      offsets = minutesPart.split(',').map(Number);
+      offsets.sort((a, b) => a - b);
+    }
+
+    return { interval, offsets };
+  }
+
+  public calculateLastExecutionTimestamp(cronPattern: string, currentTime: Date): number {
+    const { offsets } = this.parseCronPattern(cronPattern);
+    const currentMinute = currentTime.getMinutes();
+    const currentHour = currentTime.getHours();
+
+    let lastExecutionMinute = offsets.slice().reverse().find(offset => currentMinute > offset);
+
+    if (lastExecutionMinute === undefined) {
+      lastExecutionMinute = offsets[offsets.length - 1];
+      currentTime.setHours(currentHour - 1);
+    }
+
+    const lastExecutionTime = new Date(currentTime);
+
+    lastExecutionTime.setMinutes(lastExecutionMinute, 0, 0);
+
+    return lastExecutionTime.getTime();
   }
 
   private getSearchResultModelByCollectionName(collectionName: string): Model<any> {
@@ -60,6 +104,31 @@ export class SearchEngineService {
     }
 
     throw new Error(`Cannot find search result Model by ad collection name: '${collectionName}'.`);
+  }
+
+  private getPastTimeThreshold(currentDate: number, timeString): number {
+    return currentDate - convertTimeToMilliseconds(timeString);
+  }
+
+  public determineTimeThreshold(cronPattern: string, opts: LaunchSettings): number {
+    const { firstRun } = opts;
+    const firstRunFromDayStart = Boolean((opts as LaunchSettingsWithFirstRunFromDayStart)?.firstRunFromDayStart);
+    const firstRunPastEnabled = !firstRunFromDayStart
+      ? Boolean((opts as LaunchSettingsWithFirstRunPast)?.firstRunPast)
+      : false;
+    const firstRunPast = firstRunPastEnabled ? (opts as LaunchSettingsWithFirstRunPast)?.firstRunPast : '';
+
+    if (firstRun && firstRunFromDayStart) {
+      const roundedToday = new Date();
+
+      roundedToday.setHours(0, 0, 0, 0);
+
+      return roundedToday.getTime();
+    } else if (firstRun && firstRunPast) {
+      return this.getPastTimeThreshold(Date.now(), firstRunPast);
+    } else {
+      return this.calculateLastExecutionTimestamp(cronPattern, new Date()) - MINUTE_MS;
+    }
   }
 
   private async getStats<T>(
@@ -120,8 +189,13 @@ export class SearchEngineService {
     return null;
   }
 
-  public async addNewDocs(fromAdCollectionName: string, toSearchCollectionName: string): Promise<void> {
+  public async addNewDocs(
+    fromAdCollectionName: string,
+    toSearchCollectionName: string,
+    timeThreshold: number,
+  ): Promise<void> {
     try {
+      const cacheKeyPrefix = fromAdCollectionName + '_';
       const adModel = this.dbAccessService.getModelByCollection(fromAdCollectionName);
       const currentRoundedDate = roundDate(new Date());
       const districtMonthlyTotalStat: IAnalysis<string, IDistrictStats> = await this.getStats<IDistrictStats>(
@@ -181,15 +255,14 @@ export class SearchEngineService {
         cityDailyTotalStat,
       );
 
-      const timeThreshold = Date.now() - (this.cronInterval + this.timeGapMin) * MINUTE_MS;
       const searchResultModel = this.getSearchResultModelByCollectionName(fromAdCollectionName);
       const cachedObjectIds: ObjectId[] = this.cacheManager
         .getKeysFilteredBy((key: string): boolean =>
-          ObjectId.isValid(key.replace(fromAdCollectionName + '_', '')),
+          ObjectId.isValid(key.replace(cacheKeyPrefix, '')),
         )
-        .map((key: string): string => key.replace(fromAdCollectionName + '_', ''))
+        .map((key: string): string => key.replace(cacheKeyPrefix, ''))
         .filter((objectId: string): boolean => {
-          const timestamp = this.cacheManager.get<number>(fromAdCollectionName + '_' + objectId);
+          const timestamp = this.cacheManager.get<number>(cacheKeyPrefix + objectId);
 
           return timestamp && timestamp > timeThreshold;
         })
@@ -256,7 +329,7 @@ export class SearchEngineService {
             }
 
             for (const doc of docsForTransferToSearchResults) {
-              this.cacheManager.set(fromAdCollectionName + '_' + doc._id.toString(), Date.now());
+              this.cacheManager.set(cacheKeyPrefix + doc._id.toString(), Date.now());
             }
 
             this.logger.log(`Processed ${operations.length} documents  of ${ docsForTransferToSearchResults.length }. '${fromAdCollectionName}' ===> '${searchResultModel.collection.collectionName}'`);

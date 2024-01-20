@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { ModuleRef } from '@nestjs/core';
 
 import { Model } from 'mongoose';
@@ -16,7 +15,6 @@ import {
 @Injectable()
 export class DbAccessService {
   constructor(
-    private readonly configService: ConfigService,
     private moduleRef: ModuleRef,
   ) {
   }

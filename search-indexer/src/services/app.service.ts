@@ -7,8 +7,9 @@ import { config } from 'dotenv';
 import { DbAccessService } from './db-access.service';
 import { SearchEngineService } from './search-engine.service';
 
-import { LOGGER } from '../constants';
+import { LOGGER, MINUTE_MS } from '../constants';
 import { IResponse, ISearchIndexConfig } from '../types';
+import { getBoolFromEnv } from '../utils';
 
 
 config();
@@ -16,6 +17,9 @@ config();
 @Injectable()
 export class AppService implements OnModuleInit {
   private searchIndexConfig: ISearchIndexConfig[];
+  private firstRunFromDayStart = getBoolFromEnv('FIRST_RUN_FROM_DAY_START', true);
+  private firstRunPast: string = this.configService.get('FIRST_RUN_PAST');
+  private cronPattern = this.configService.get('CRON_ADD_NEW');
 
   constructor(
     @Inject(LOGGER) private readonly logger: LoggerService,
@@ -36,17 +40,34 @@ export class AppService implements OnModuleInit {
 
   async onModuleInit(): Promise<void> {
     this.searchIndexConfig = await this.getSearchIndexConfig();
-    await this.removeExpiredDocs();
-    await this.addNewDocs();
-  }
 
-  @Cron(process.env.CRON_REMOVE_EXPIRED)
-  private async addNewDocs(): Promise<void> {
+    const threshold = this.searchEngineService.determineTimeThreshold(this.cronPattern, {
+      firstRun: true,
+      ...(this.firstRunFromDayStart && { firstRunFromDayStart: true }),
+      ...((!this.firstRunFromDayStart && Boolean(this.firstRunPast)) && { firstRunPast: this.firstRunPast }),
+    });
+
+    await this.removeExpiredDocs();
+
     for (const configEntry of this.searchIndexConfig) {
       const adCollections = configEntry.collections;
 
       for (const adCollection of adCollections) {
-        this.searchEngineService.addNewDocs(adCollection, configEntry.mapTo);
+        this.searchEngineService.addNewDocs(adCollection, configEntry.mapTo, threshold);
+      }
+    }
+  }
+
+  @Cron(process.env.CRON_REMOVE_EXPIRED)
+  private async addNewDocs(): Promise<void> {
+    const threshold = this.searchEngineService
+      .calculateLastExecutionTimestamp(this.cronPattern, new Date()) - MINUTE_MS;
+
+    for (const configEntry of this.searchIndexConfig) {
+      const adCollections = configEntry.collections;
+
+      for (const adCollection of adCollections) {
+        this.searchEngineService.addNewDocs(adCollection, configEntry.mapTo, threshold);
       }
     }
   }
