@@ -7,7 +7,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { LOGGER } from '../constants';
-import { deepFreeze, deserializeCacheValue, isObjectOrArray, serializeCacheValue } from '../utils';
+import {
+  deepFreeze,
+  deserializeCacheValue,
+  getBoolFromEnv,
+  getIntFromEnv,
+  isObjectOrArray,
+  serializeCacheValue,
+} from '../utils';
 
 
 config();
@@ -50,12 +57,15 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
     return `cache-${year}-${month}-${day}.json`;
   }
 
-  private readonly ttl = parseInt(this.configService.get('CACHE_TTL_SEC')) * 1000;
-  private readonly maxItems = parseInt(this.configService.get('CACHE_MAX_ITEMS'));
+  private readonly ttl = getIntFromEnv('CACHE_TTL_SEC', 24 * 60 * 60) * 1000;
+  private readonly maxItems = getIntFromEnv('CACHE_MAX_ITEMS', 20000);
+  private readonly dropPersistedCacheOnFirstRun = getBoolFromEnv('CACHE_DROP_PERSISTED_ON_FIRST_RUN', false);
   private cacheMap = new Map<string, unknown>();
 
   public onModuleInit() {
-    this.restoreCacheFromFile();
+    this.dropPersistedCacheOnFirstRun
+      ? this.clear()
+      : this.restoreCacheFromFile();
     this.logger.log('Cache Service initialized');
   }
 
@@ -159,7 +169,9 @@ export class CacheService implements OnApplicationShutdown, OnModuleInit {
   public clear(): void {
     const filePath = path.join(process.cwd(), this.cacheFolder, this.getFileName());
 
-    fs.writeFileSync(filePath, '');
+    if (fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, '');
+    }
 
     this.cacheMap.clear();
     this.logger.warn(' ');
