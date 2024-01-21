@@ -192,6 +192,7 @@ export const SaleResidentialSchema = new Schema<ISaleResidential, Model<ISaleRes
     'price-sqm': {
       type: Number,
       required: [ true, 'Price of a square meter is required' ],
+      set: value => isNaN(value) || value === Infinity || value === -Infinity ? 0 : value,
     },
     priceDeviations: {
       [AnalysisType.CITY_AVG_MEAN]: {
