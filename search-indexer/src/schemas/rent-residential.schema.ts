@@ -208,6 +208,7 @@ export const RentResidentialSchema = new Schema<IRentResidential, Model<IRentRes
     'price-sqm': {
       type: Number,
       required: [ true, 'Price of a square meter is required' ],
+      set: value => isNaN(value) || value === Infinity || value === -Infinity ? 0 : value,
     },
     priceDeviations: {
       [AnalysisType.CITY_AVG_MEAN]: {
