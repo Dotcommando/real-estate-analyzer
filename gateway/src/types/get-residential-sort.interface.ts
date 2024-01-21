@@ -61,3 +61,6 @@ export interface IGetRentResidentialSort {
     };
   };
 }
+
+export interface IGetSaleResidentialSort extends Omit<IGetRentResidentialSort, 'pets' | 'plot-area'> {
+}

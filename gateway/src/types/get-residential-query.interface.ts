@@ -78,3 +78,6 @@ export interface IGetRentResidentialQuery {
     };
   };
 }
+
+export interface IGetSaleResidentialQuery extends Omit<IGetRentResidentialQuery, 'pets' | 'plot-area'> {
+}

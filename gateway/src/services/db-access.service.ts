@@ -22,6 +22,8 @@ import {
   IGetDistrictsParams,
   IGetRentResidentialQuery,
   IGetRentResidentialSort,
+  IGetSaleResidentialQuery,
+  IGetSaleResidentialSort,
   IRentResidential,
   ISaleResidential,
 } from '../types';
@@ -253,15 +255,15 @@ export class DbAccessService {
     return processedDeviations;
   }
 
-  private getRentResidentialPipelineBuilder(
-    filter: IGetRentResidentialQuery,
-    sort: IGetRentResidentialSort,
+  private getResidentialPipelineBuilder(
+    filter: IGetRentResidentialQuery | IGetSaleResidentialQuery,
+    sort: IGetRentResidentialSort | IGetSaleResidentialSort,
     offset: number = 0,
     limit: number = 25,
   ): PipelineStage[] {
     const $match = { $and: []};
 
-    let filterKey: keyof IGetRentResidentialQuery;
+    let filterKey: keyof (IGetRentResidentialQuery | IGetSaleResidentialQuery);
 
     for (filterKey in filter) {
       if (filterKey !== 'priceDeviations') {
