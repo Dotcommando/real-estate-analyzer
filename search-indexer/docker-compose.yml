@@ -10,7 +10,8 @@ services:
       - .:/search-indexer
     hostname: localhost
     ports:
-      - "${SEARCH_INDEXER_SERVICE_PORT}:${SEARCH_INDEXER_SERVICE_PORT}"
+      - "${SEARCH_INDEXER_SERVICE_TCP_PORT}:${SEARCH_INDEXER_SERVICE_TCP_PORT}"
+      - "${SEARCH_INDEXER_SERVICE_HTTP_PORT}:${SEARCH_INDEXER_SERVICE_HTTP_PORT}"
     env_file:
       - .env
     container_name: search-indexer
