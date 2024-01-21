@@ -7,6 +7,8 @@ export function adDocToSearchResultMapper<TObjectId>(
   doc: IRentApartmentsFlatsDoc | IRentHousesDoc | ISaleApartmentsFlatsDoc | ISaleHousesDoc,
   category: Categories,
 ): Omit<IRentResidential | ISaleResidential, 'priceDeviations'> & { _id: TObjectId } {
+  const priceSqm = Math.round((doc.price / doc['property-area']) * 100) / 100;
+
   return {
     _id: doc._id,
     category,
@@ -51,7 +53,7 @@ export function adDocToSearchResultMapper<TObjectId>(
     pool: doc.pool,
     storage: doc.storage,
     parking: doc.parking,
-    'price-sqm': Math.round((doc.price / doc['property-area']) * 100) / 100,
+    'price-sqm': isNaN(priceSqm) ? 0 : priceSqm,
     activeDays: doc.active_dates.length,
   };
 }
