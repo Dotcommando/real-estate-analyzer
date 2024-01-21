@@ -2,12 +2,12 @@ import { AnalysisPeriod, AnalysisType } from '../constants';
 
 
 export interface IStatSort {
-  medianDelta: -1 | 1;
-  meanDelta: -1 | 1;
-  medianDeltaSqm: -1 | 1;
-  meanDeltaSqm: -1 | 1;
-  noDataAbsReason: -1 | 1;
-  noDataSqmReason: -1 | 1;
+  medianDelta?: -1 | 1;
+  meanDelta?: -1 | 1;
+  medianDeltaSqm?: -1 | 1;
+  meanDeltaSqm?: -1 | 1;
+  noDataAbsReason?: -1 | 1;
+  noDataSqmReason?: -1 | 1;
 }
 
 export interface IGetRentResidentialSort {

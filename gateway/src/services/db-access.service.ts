@@ -1,14 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Model } from 'mongoose';
+import { Model, PipelineStage } from 'mongoose';
 import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc, ISaleHousesDoc } from 'src/schemas';
 import { IGetDistrictsResult } from 'src/types/get-districts.interface';
 import { getLastDate } from 'src/utils';
 
-import { AdsEnum, AdsEnumArray, AnalysisType, AnalysisTypeArray } from '../constants';
+import { AdsEnum, AdsEnumArray, AnalysisType, AnalysisTypeArray, NoStatisticsDataReason } from '../constants';
 import { activeDatesMapper, analysisMapper, cityReportMapper, districtReportMapper } from '../mappers';
 import {
+  AG_MayBeArray,
+  AG_MayBeRange,
   IAdsParams,
   IAdsResult,
   IAnalysisParams,
@@ -235,12 +237,60 @@ export class DbAccessService {
     ]);
   }
 
+  private processPriceDeviations(
+    priceDeviations: IGetRentResidentialQuery['priceDeviations'],
+  ): { [key: string]: AG_MayBeRange<number> | AG_MayBeArray<NoStatisticsDataReason> } {
+    const processedDeviations: any = {};
+
+    for (const analysisType in priceDeviations) {
+      for (const analysisPeriod in priceDeviations[analysisType]) {
+        const path = `priceDeviations.${analysisType}.${analysisPeriod}`;
+
+        processedDeviations[path] = priceDeviations[analysisType][analysisPeriod];
+      }
+    }
+
+    return processedDeviations;
+  }
+
   private getRentResidentialPipelineBuilder(
     filter: IGetRentResidentialQuery,
     sort: IGetRentResidentialSort,
-    offset: number,
-    limit: number,
-  ) {
+    offset: number = 0,
+    limit: number = 25,
+  ): PipelineStage[] {
+    const $match = { $and: []};
 
+    let filterKey: keyof IGetRentResidentialQuery;
+
+    for (filterKey in filter) {
+      if (filterKey !== 'priceDeviations') {
+        $match.$and.push({ [filterKey]: filter[filterKey] });
+      } else {
+        const processedDeviations = this.processPriceDeviations(filter[filterKey]);
+
+        for (const key in processedDeviations) {
+          $match.$and.push({ [key]: processedDeviations[key] });
+        }
+      }
+    }
+
+    return [
+      { $match },
+      { $sort: { ...sort }},
+      {
+        $facet: {
+          stage1: [ { $group: { _id: null, total: { $sum: 1 }}} ],
+          stage2: [ { $skip: offset }, { $limit: limit } ],
+        },
+      },
+      { $unwind: '$stage1' },
+      {
+        $project: {
+          total: '$stage1.total',
+          data: '$stage2',
+        },
+      },
+    ] as PipelineStage[];
   }
 }

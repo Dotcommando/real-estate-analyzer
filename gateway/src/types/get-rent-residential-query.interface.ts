@@ -19,12 +19,12 @@ import {
 
 
 export interface IStatFilter {
-  medianDelta: AG_MayBeRange<number>;
-  meanDelta: AG_MayBeRange<number>;
-  medianDeltaSqm: AG_MayBeRange<number>;
-  meanDeltaSqm: AG_MayBeRange<number>;
-  noDataAbsReason: AG_MayBeArray<NoStatisticsDataReason>;
-  noDataSqmReason: AG_MayBeArray<NoStatisticsDataReason>;
+  medianDelta?: AG_MayBeRange<number>;
+  meanDelta?: AG_MayBeRange<number>;
+  medianDeltaSqm?: AG_MayBeRange<number>;
+  meanDeltaSqm?: AG_MayBeRange<number>;
+  noDataAbsReason?: AG_MayBeArray<NoStatisticsDataReason>;
+  noDataSqmReason?: AG_MayBeArray<NoStatisticsDataReason>;
 }
 
 export interface IGetRentResidentialQuery {
