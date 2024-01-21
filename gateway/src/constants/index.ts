@@ -17,6 +17,7 @@ export * from './online-viewing.enum';
 export * from './parking.enum';
 export * from './pets.enum';
 export * from './pool-type.enum';
+export * from './search-results-model-collection-relation.const';
 export * from './share.enum';
 export * from './source.enum';
 export * from './standard-set.enum';

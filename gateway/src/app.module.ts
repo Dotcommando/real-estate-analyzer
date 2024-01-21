@@ -4,7 +4,16 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { AppController } from './app.controller';
 import { LOGGER } from './constants';
-import { AnalysisCityStatsSchema, AnalysisDistrictStatsSchema, RentApartmentsFlatsSchema, RentHousesSchema, SaleApartmentsFlatsSchema, SaleHousesSchema } from './schemas';
+import {
+  AnalysisCityStatsSchema,
+  AnalysisDistrictStatsSchema,
+  RentApartmentsFlatsSchema,
+  RentHousesSchema,
+  RentResidentialSchema,
+  SaleApartmentsFlatsSchema,
+  SaleHousesSchema,
+  SaleResidentialSchema,
+} from './schemas';
 import {
   AppService,
   DbAccessService,
@@ -82,6 +91,16 @@ import {
         name: 'RentHouses',
         useFactory: () => RentHousesSchema,
         collection: 'renthouses',
+      },
+      {
+        name: 'RentResidentials',
+        useFactory: () => RentResidentialSchema,
+        collection: 'sr_rentresidentials',
+      },
+      {
+        name: 'SaleResidentials',
+        useFactory: () => SaleResidentialSchema,
+        collection: 'sr_saleresidentials',
       },
     ]),
   ],

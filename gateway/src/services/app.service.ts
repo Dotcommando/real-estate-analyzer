@@ -14,9 +14,9 @@ import {
   ICityStats,
   IDistrictStats,
   IGetDistrictsParams,
+  IGetDistrictsResult,
   IResponse,
 } from '../types';
-import { IGetDistrictsResult } from '../types/get-districts.interface';
 
 
 @Injectable()
@@ -27,10 +27,12 @@ export class AppService {
   ) {
   }
 
-  getHello(): IResponse<string> {
+  public checkHealth(): IResponse<{ alive: boolean }> {
     return {
       status: HttpStatus.OK,
-      data: 'Hello World!',
+      data: {
+        alive: true,
+      },
     };
   }
 

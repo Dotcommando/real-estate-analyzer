@@ -1,5 +1,4 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Model } from 'mongoose';
@@ -7,7 +6,7 @@ import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc, ISale
 import { IGetDistrictsResult } from 'src/types/get-districts.interface';
 import { getLastDate } from 'src/utils';
 
-import { AdsEnum, AdsEnumArray, AnalysisType, AnalysisTypeArray, LOGGER } from '../constants';
+import { AdsEnum, AdsEnumArray, AnalysisType, AnalysisTypeArray } from '../constants';
 import { activeDatesMapper, analysisMapper, cityReportMapper, districtReportMapper } from '../mappers';
 import {
   IAdsParams,
@@ -19,13 +18,16 @@ import {
   IDistrictStats,
   IDistrictStatsDoc,
   IGetDistrictsParams,
+  IGetRentResidentialQuery,
+  IGetRentResidentialSort,
+  IRentResidential,
+  ISaleResidential,
 } from '../types';
 
 
 @Injectable()
 export class DbAccessService {
   constructor(
-    @Inject(LOGGER) private readonly logger: LoggerService,
     @InjectModel('CityStatsRentFlats') private readonly cityStatsRentFlatsModel: Model<ICityStatsDoc>,
     @InjectModel('CityStatsRentHouses') private readonly cityStatsRentHousesModel: Model<ICityStatsDoc>,
     @InjectModel('CityStatsSaleFlats') private readonly cityStatsSaleFlatsModel: Model<ICityStatsDoc>,
@@ -38,7 +40,8 @@ export class DbAccessService {
     @InjectModel('SaleFlats') private readonly saleFlatsModel: Model<ISaleApartmentsFlatsDoc>,
     @InjectModel('RentFlats') private readonly rentFlatsModel: Model<IRentApartmentsFlatsDoc>,
     @InjectModel('RentHouses') private readonly rentHousesModel: Model<IRentHousesDoc>,
-    private readonly configService: ConfigService,
+    @InjectModel('RentResidentials') private readonly rentResidentialsModel: Model<IRentResidential>,
+    @InjectModel('SaleResidentials') private readonly saleResidentialsModel: Model<ISaleResidential>,
   ) {
   }
 
@@ -230,5 +233,14 @@ export class DbAccessService {
       },
       { $project: { _id: 0 }},
     ]);
+  }
+
+  private getRentResidentialPipelineBuilder(
+    filter: IGetRentResidentialQuery,
+    sort: IGetRentResidentialSort,
+    offset: number,
+    limit: number,
+  ) {
+
   }
 }

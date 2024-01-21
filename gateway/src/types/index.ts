@@ -1,5 +1,6 @@
 export * from './ads.type';
 export * from './ads-params.interface';
+export * from './aggregation.type';
 export * from './analysis.interface';
 export * from './analysis-doc.interface';
 export * from './analysis-params.interface';
@@ -11,6 +12,8 @@ export * from './district-stats.interface';
 export * from './district-stats-doc.interface';
 export * from './get-districts.interface';
 export * from './get-districts-params.interface';
+export * from './get-rent-residential-query.interface';
+export * from './get-rent-residential-sort.interface';
 export * from './price-deviation.interface';
 export * from './price-deviations.interface';
 export * from './real-estate.interface';
