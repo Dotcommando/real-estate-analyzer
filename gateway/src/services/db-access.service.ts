@@ -239,8 +239,8 @@ export class DbAccessService {
     ]);
   }
 
-  private processPriceDeviations(
-    priceDeviations: IGetRentResidentialQuery['priceDeviations'],
+  private processPriceDeviationsFilter(
+    priceDeviations: IGetRentResidentialQuery['priceDeviations'] | IGetSaleResidentialQuery['priceDeviations'],
   ): { [key: string]: AG_MayBeRange<number> | AG_MayBeArray<NoStatisticsDataReason> } {
     const processedDeviations: any = {};
 
@@ -255,6 +255,24 @@ export class DbAccessService {
     return processedDeviations;
   }
 
+  private processPriceDeviationsSort(
+    priceDeviationsSort: IGetRentResidentialSort['priceDeviations'] | IGetSaleResidentialSort['priceDeviations'],
+  ): { [key: string]: 1 | -1 } {
+    const processedSort: { [key: string]: 1 | -1 } = {};
+
+    for (const analysisType in priceDeviationsSort) {
+      for (const analysisPeriod in priceDeviationsSort[analysisType]) {
+        for (const statKey in priceDeviationsSort[analysisType][analysisPeriod]) {
+          const path = `priceDeviations.${analysisType}.${analysisPeriod}.${statKey}`;
+
+          processedSort[path] = priceDeviationsSort[analysisType][analysisPeriod][statKey];
+        }
+      }
+    }
+
+    return processedSort;
+  }
+
   private getResidentialPipelineBuilder(
     filter: IGetRentResidentialQuery | IGetSaleResidentialQuery,
     sort: IGetRentResidentialSort | IGetSaleResidentialSort,
@@ -263,13 +281,13 @@ export class DbAccessService {
   ): PipelineStage[] {
     const $match = { $and: []};
 
-    let filterKey: keyof (IGetRentResidentialQuery | IGetSaleResidentialQuery);
+    let sortKey: keyof (IGetRentResidentialQuery | IGetSaleResidentialQuery);
 
-    for (filterKey in filter) {
-      if (filterKey !== 'priceDeviations') {
-        $match.$and.push({ [filterKey]: filter[filterKey] });
+    for (sortKey in filter) {
+      if (sortKey !== 'priceDeviations') {
+        $match.$and.push({ [sortKey]: filter[sortKey] });
       } else {
-        const processedDeviations = this.processPriceDeviations(filter[filterKey]);
+        const processedDeviations = this.processPriceDeviationsFilter(filter[sortKey]);
 
         for (const key in processedDeviations) {
           $match.$and.push({ [key]: processedDeviations[key] });
@@ -277,9 +295,23 @@ export class DbAccessService {
       }
     }
 
+    const $sort = {};
+
+    for (sortKey in sort) {
+      if (sortKey !== 'priceDeviations') {
+        $sort[sortKey] = sort[sortKey];
+      } else {
+        const processedDeviations = this.processPriceDeviationsSort(sort[sortKey]);
+
+        for (const key in processedDeviations) {
+          $sort[key] = processedDeviations[key];
+        }
+      }
+    }
+
     return [
       { $match },
-      { $sort: { ...sort }},
+      { $sort },
       {
         $facet: {
           stage1: [ { $group: { _id: null, total: { $sum: 1 }}} ],
@@ -294,5 +326,16 @@ export class DbAccessService {
         },
       },
     ] as PipelineStage[];
+  }
+
+  public async getRenResidential(
+    filter: IGetRentResidentialQuery,
+    sort: IGetRentResidentialSort,
+    offset: number = 0,
+    limit: number = 25,
+  ): Promise<any> {
+    return await this.rentResidentialsModel
+      .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))
+      .exec();
   }
 }
