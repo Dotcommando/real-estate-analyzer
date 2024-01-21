@@ -6,7 +6,13 @@ import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc, ISale
 import { IGetDistrictsResult } from 'src/types/get-districts.interface';
 import { getLastDate } from 'src/utils';
 
-import { AdsEnum, AdsEnumArray, AnalysisType, AnalysisTypeArray, NoStatisticsDataReason } from '../constants';
+import {
+  AdsEnum,
+  AdsEnumArray,
+  AnalysisType,
+  AnalysisTypeArray,
+  NoStatisticsDataReason,
+} from '../constants';
 import { activeDatesMapper, analysisMapper, cityReportMapper, districtReportMapper } from '../mappers';
 import {
   AG_MayBeArray,
@@ -246,9 +252,11 @@ export class DbAccessService {
 
     for (const analysisType in priceDeviations) {
       for (const analysisPeriod in priceDeviations[analysisType]) {
-        const path = `priceDeviations.${analysisType}.${analysisPeriod}`;
+        for (const statKey in priceDeviations[analysisType][analysisPeriod]) {
+          const path = `priceDeviations.${analysisType}.${analysisPeriod}.${statKey}`;
 
-        processedDeviations[path] = priceDeviations[analysisType][analysisPeriod];
+          processedDeviations[path] = priceDeviations[analysisType][analysisPeriod][statKey];
+        }
       }
     }
 
@@ -310,7 +318,11 @@ export class DbAccessService {
     }
 
     return [
-      { $match },
+      {
+        $match: $match.$and.length === 1
+          ? $match.$and[0]
+          : $match,
+      },
       { $sort },
       {
         $facet: {
@@ -328,14 +340,15 @@ export class DbAccessService {
     ] as PipelineStage[];
   }
 
-  public async getRenResidential(
+  public async getRentResidential(
     filter: IGetRentResidentialQuery,
     sort: IGetRentResidentialSort,
     offset: number = 0,
     limit: number = 25,
-  ): Promise<any> {
-    return await this.rentResidentialsModel
+  ): Promise<{ data: IRentResidential[]; total: number }> {
+    return (await this.rentResidentialsModel
       .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))
-      .exec();
+      .exec()
+    )[0];
   }
 }
