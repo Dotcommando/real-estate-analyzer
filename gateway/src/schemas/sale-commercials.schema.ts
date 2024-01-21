@@ -4,34 +4,27 @@ import { Document, Model, Schema } from 'mongoose';
 import { CoordsSchema } from './coords.schema';
 
 import {
-  AirConditioning,
-  AirConditioningArray,
   Condition,
   ConditionArray,
   EnergyEfficiency,
   EnergyEfficiencyArray,
-  Furnishing,
-  FurnishingArray,
   OnlineViewing,
   OnlineViewingArray,
-  ParkingArray,
-  Pets,
-  PetsArray,
   PoolType,
   PoolTypeArray,
   SourceArray,
   StandardSet,
   StandardSetArray,
 } from '../constants';
-import { IRentApartmentsFlats } from '../types/real-estate-to-rent';
+import { ISaleCommercials } from '../types/real-estate-for-sale';
 import { roundDate } from '../utils';
 
 
-export interface IRentApartmentsFlatsDoc extends IRentApartmentsFlats, Document {
+export interface ISaleCommercialDoc extends ISaleCommercials, Document {
   active_dates: Date[];
 }
 
-export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Model<IRentApartmentsFlatsDoc>>(
+export const SaleCommercialsSchema = new Schema<ISaleCommercialDoc, Model<ISaleCommercialDoc>>(
   {
     url: {
       type: String,
@@ -95,43 +88,23 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
       type: String,
       default: '',
     },
-    floor: String,
-    parking: {
-      type: String,
-      enum: ParkingArray,
-    },
-    'parking-places': Number,
-    'property-area': {
+    area: {
       type: Number,
       default: 0,
     },
-    'property-area-unit': {
+    'area-unit': {
       type: String,
       default: 'm²',
-      required: [ true, 'Property Area Unit is required' ],
+      required: [ true, 'Area Unit is required' ],
     },
-    furnishing: {
-      type: String,
-      enum: FurnishingArray,
-      default: Furnishing.Unfurnished,
-    },
-    bedrooms: {
+    'plot-area': {
       type: Number,
-      default: 1,
+      default: 0,
     },
-    bathrooms: {
-      type: Number,
-      default: 1,
-    },
-    'air-conditioning': {
+    'plot-area-unit': {
       type: String,
-      enum: AirConditioningArray,
-      default: AirConditioning.No,
-    },
-    pets: {
-      type: String,
-      enum: PetsArray,
-      default: Pets.NotAllowed,
+      default: 'm²',
+      required: [ true, 'Plot Area Unit is required' ],
     },
     alarm: {
       type: String,
@@ -198,10 +171,10 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
       required: [ true, 'Date of update is required' ],
     },
   },
-  { collection: 'rentapartmentsflats' },
+  { collection: 'salecommercials' },
 );
 
-RentApartmentsFlatsSchema.pre<IRentApartmentsFlatsDoc>('save', async function(next) {
+SaleCommercialsSchema.pre<ISaleCommercialDoc>('save', async function(next) {
   const currentDate = roundDate(new Date());
 
   if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
@@ -213,4 +186,4 @@ RentApartmentsFlatsSchema.pre<IRentApartmentsFlatsDoc>('save', async function(ne
   next();
 });
 
-export const RentApartmentsFlatsModel = mongoose.model<IRentApartmentsFlatsDoc, Model<IRentApartmentsFlatsDoc>>('RentApartmentsFlats', RentApartmentsFlatsSchema);
+export const SaleCommercialsModel = mongoose.model<ISaleCommercialDoc, Model<ISaleCommercialDoc>>('SaleCommercials', SaleCommercialsSchema);

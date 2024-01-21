@@ -2,14 +2,15 @@ import { Document } from 'mongoose';
 
 import { ICoords } from './coords.interface';
 
-import { Mode, OnlineViewing } from '../constants';
+import { OnlineViewing, Source } from '../constants';
 
 
 export interface IRealEstate {
   url: string;
   title: string;
   description: string;
-  publish_date: Date;
+  publish_date: Date | number;
+  source: Source;
   city: string;
   district?: string;
   price: number;
@@ -20,12 +21,13 @@ export interface IRealEstate {
   'reference-number'?: string;
   'registration-number'?: number;
   'registration-block'?: number;
-  'square-meter-price': number;
   coords?: ICoords;
   expired?: boolean;
+  updated_at: Date;
+  ad_last_updated: Date;
+  version: string;
 }
 
 export interface IRealEstateDoc extends IRealEstate, Document {
   active_dates: Date[];
-  mode?: Mode;
 }

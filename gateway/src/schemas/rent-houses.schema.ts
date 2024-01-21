@@ -10,21 +10,23 @@ import {
   EnergyEfficiency,
   EnergyEfficiencyArray,
   FurnishingArray,
-  Mode,
-  ModeArray,
   OnlineViewing,
   OnlineViewingArray,
   ParkingArray,
   Pets,
   PetsArray,
+  PoolType,
+  PoolTypeArray,
+  SourceArray,
+  StandardSet,
+  StandardSetArray,
 } from '../constants';
-import { IRentHouses } from '../types';
+import { IRentHouses } from '../types/real-estate-to-rent';
 import { roundDate } from '../utils';
 
 
 export interface IRentHousesDoc extends IRentHouses, Document {
   active_dates: Date[];
-  mode?: Mode;
 }
 
 export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>>(
@@ -41,6 +43,11 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
     publish_date: {
       type: Schema.Types.Date,
       required: [ true, 'Publish date is required' ],
+    },
+    source: {
+      type: String,
+      enum: SourceArray,
+      required: [ true, 'Source is required' ],
     },
     city: {
       type: String,
@@ -71,10 +78,6 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
     'reference-number': String,
     'registration-number': String,
     'registration-block': String,
-    'square-meter-price': {
-      type: Number,
-      required: [ true, 'Square meter price is required' ],
-    },
     condition: {
       type: String,
       enum: ConditionArray,
@@ -85,7 +88,6 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
       enum: EnergyEfficiencyArray,
       default: EnergyEfficiency.NA,
     },
-    included: [ String ],
     'construction-year': String,
     'property-area': {
       type: Number,
@@ -104,6 +106,7 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
       type: String,
       enum: ParkingArray,
     },
+    'parking-places': Number,
     furnishing: {
       type: String,
       enum: FurnishingArray,
@@ -125,6 +128,51 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
       enum: PetsArray,
       default: Pets.NotAllowed,
     },
+    alarm: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    attic: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    balcony: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    elevator: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    fireplace: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    garden: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    playroom: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    pool: {
+      type: String,
+      enum: PoolTypeArray,
+      default: PoolType.No,
+    },
+    storage: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
     'plot-area': {
       type: Number,
       default: 0,
@@ -141,10 +189,17 @@ export const RentHousesSchema = new Schema<IRentHousesDoc, Model<IRentHousesDoc>
     coords: {
       type: CoordsSchema,
     },
-    mode: {
+    version: {
       type: String,
-      enum: ModeArray,
-      default: Mode.Prod,
+      required: [ true, 'Document version is required' ],
+    },
+    'ad_last_updated': {
+      type: Schema.Types.Date,
+      required: [ true, 'Last updated date is required' ],
+    },
+    'updated_at': {
+      type: Schema.Types.Date,
+      required: [ true, 'Date of update is required' ],
     },
   },
   { collection: 'renthouses' },
@@ -156,6 +211,8 @@ RentHousesSchema.pre<IRentHousesDoc>('save', async function(next) {
   if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
     this.active_dates.push(currentDate);
   }
+
+  this.updated_at = new Date();
 
   next();
 });

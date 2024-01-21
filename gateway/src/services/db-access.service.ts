@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Model } from 'mongoose';
-import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc } from 'src/schemas';
+import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc, ISaleHousesDoc } from 'src/schemas';
 import { IGetDistrictsResult } from 'src/types/get-districts.interface';
 import { getLastDate } from 'src/utils';
 
@@ -19,7 +19,6 @@ import {
   IDistrictStats,
   IDistrictStatsDoc,
   IGetDistrictsParams,
-  ISaleHousesDoc,
 } from '../types';
 
 

@@ -1,5 +1,6 @@
 import { Document, Model, Schema } from 'mongoose';
-import { ICoords } from 'src/types';
+
+import { ICoords } from '../types';
 
 
 export interface ICoordsDoc extends ICoords, Document {}

@@ -1,4 +1,4 @@
-import { IRealEstate } from './real-estate';
+import { IRealEstate } from './real-estate.interface';
 
 import { Condition, EnergyEfficiency, Parking, PoolType, StandardSet } from '../constants';
 

@@ -1,11 +1,14 @@
 import * as mongoose from 'mongoose';
-import { Document, Model, Schema } from 'mongoose';
+import { Model, Schema } from 'mongoose';
 
+import { AnalysisTypeDeviationsSchema } from './analysis-type-deviations.schema';
 import { CoordsSchema } from './coords.schema';
 
 import {
   AirConditioning,
   AirConditioningArray,
+  AnalysisType,
+  CategoriesArray,
   Condition,
   ConditionArray,
   EnergyEfficiency,
@@ -23,15 +26,10 @@ import {
   StandardSet,
   StandardSetArray,
 } from '../constants';
-import { IRentApartmentsFlats } from '../types/real-estate-to-rent';
-import { roundDate } from '../utils';
+import { IRentResidential } from '../types';
 
 
-export interface IRentApartmentsFlatsDoc extends IRentApartmentsFlats, Document {
-  active_dates: Date[];
-}
-
-export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Model<IRentApartmentsFlatsDoc>>(
+export const RentResidentialSchema = new Schema<IRentResidential, Model<IRentResidential>>(
   {
     url: {
       type: String,
@@ -91,10 +89,6 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
       default: EnergyEfficiency.NA,
     },
     'construction-year': String,
-    type: {
-      type: String,
-      default: '',
-    },
     floor: String,
     parking: {
       type: String,
@@ -178,16 +172,8 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
       enum: StandardSetArray,
       default: StandardSet.NO,
     },
-    active_dates: {
-      type: [ Schema.Types.Date ] as unknown as Date[],
-      required: [ true, 'Active dates are required' ],
-    },
     coords: {
       type: CoordsSchema,
-    },
-    version: {
-      type: String,
-      required: [ true, 'Document version is required' ],
     },
     'ad_last_updated': {
       type: Schema.Types.Date,
@@ -197,20 +183,44 @@ export const RentApartmentsFlatsSchema = new Schema<IRentApartmentsFlatsDoc, Mod
       type: Schema.Types.Date,
       required: [ true, 'Date of update is required' ],
     },
+    'plot-area': {
+      type: Number,
+      default: 0,
+    },
+    'plot-area-unit': {
+      type: String,
+      default: 'm²',
+      required: [ true, 'Plot Area Unit is required' ],
+    },
+    category: {
+      type: String,
+      enum: CategoriesArray,
+      required: [ true, 'Category required, technically it is a collection where the document from' ],
+    },
+    subcategory: {
+      type: String,
+      default: '',
+    },
+    activeDays: {
+      type: Number,
+      default: 0,
+    },
+    'price-sqm': {
+      type: Number,
+      required: [ true, 'Price of a square meter is required' ],
+    },
+    priceDeviations: {
+      [AnalysisType.CITY_AVG_MEAN]: {
+        type: AnalysisTypeDeviationsSchema,
+        required: true,
+      },
+      [AnalysisType.DISTRICT_AVG_MEAN]: {
+        type: AnalysisTypeDeviationsSchema,
+        required: true,
+      },
+    },
   },
-  { collection: 'rentapartmentsflats' },
+  { collection: 'sr_rentresidentials' },
 );
 
-RentApartmentsFlatsSchema.pre<IRentApartmentsFlatsDoc>('save', async function(next) {
-  const currentDate = roundDate(new Date());
-
-  if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
-    this.active_dates.push(currentDate);
-  }
-
-  this.updated_at = new Date();
-
-  next();
-});
-
-export const RentApartmentsFlatsModel = mongoose.model<IRentApartmentsFlatsDoc, Model<IRentApartmentsFlatsDoc>>('RentApartmentsFlats', RentApartmentsFlatsSchema);
+export const RentResidentialModel = mongoose.model<IRentResidential, Model<IRentResidential>>('RentResidentials', RentResidentialSchema);
