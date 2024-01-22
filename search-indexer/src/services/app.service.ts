@@ -103,9 +103,10 @@ export class AppService implements OnModuleInit {
     const searchResultCollectionsIterator: IAsyncArrayIterator<string> = getArrayIterator(
       this.searchIndexConfig.map((entry: ISearchIndexConfig) => entry.mapTo),
     );
+    const threshold = Date.now() - this.removeExpiredThresholdMsec;
 
     for await (const searchCollection of searchResultCollectionsIterator) {
-      await this.searchEngineService.removeOldDocs(searchCollection, this.removeExpiredThresholdMsec);
+      await this.searchEngineService.removeOldDocs(searchCollection, threshold);
     }
   }
 
