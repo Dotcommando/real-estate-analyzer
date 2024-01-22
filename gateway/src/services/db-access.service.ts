@@ -13,7 +13,14 @@ import {
   AnalysisTypeArray,
   NoStatisticsDataReason,
 } from '../constants';
-import { activeDatesMapper, analysisMapper, cityReportMapper, districtReportMapper } from '../mappers';
+import {
+  activeDatesMapper,
+  analysisMapper,
+  cityReportMapper,
+  districtReportMapper,
+  toRentResidentialIdMapper,
+  toSaleResidentialIdMapper,
+} from '../mappers';
 import {
   AG_MayBeArray,
   AG_MayBeRange,
@@ -31,7 +38,9 @@ import {
   IGetSaleResidentialQuery,
   IGetSaleResidentialSort,
   IRentResidential,
+  IRentResidentialId,
   ISaleResidential,
+  ISaleResidentialId,
 } from '../types';
 
 
@@ -345,10 +354,32 @@ export class DbAccessService {
     sort: IGetRentResidentialSort,
     offset: number = 0,
     limit: number = 25,
-  ): Promise<{ data: IRentResidential[]; total: number }> {
-    return (await this.rentResidentialsModel
+  ): Promise<{ data: IRentResidentialId[]; total: number }> {
+    const result = (await this.rentResidentialsModel
       .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))
       .exec()
     )[0];
+
+    return {
+      total: result.total,
+      data: result.data.map(toRentResidentialIdMapper),
+    };
+  }
+
+  public async getSaleResidential(
+    filter: IGetSaleResidentialQuery,
+    sort: IGetSaleResidentialSort,
+    offset: number = 0,
+    limit: number = 25,
+  ): Promise<{ data: ISaleResidentialId[]; total: number }> {
+    const result = (await this.saleResidentialsModel
+      .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))
+      .exec()
+    )[0];
+
+    return {
+      total: result.total,
+      data: result.data.map(toSaleResidentialIdMapper),
+    };
   }
 }
