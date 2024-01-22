@@ -79,6 +79,25 @@ export class AppService implements OnModuleInit {
     }
   }
 
+  @Cron(process.env.CRON_ADD_NEW_DEEP)
+  private async addNewDocsDeep(): Promise<void> {
+    const searchConfigIterator: IAsyncArrayIterator<ISearchIndexConfig> = getArrayIterator(this.searchIndexConfig);
+    const thresholdTime = new Date();
+
+    thresholdTime.setHours(0, 0, 0, 0);
+
+    const threshold = thresholdTime.getTime();
+
+    for await (const configEntry of searchConfigIterator) {
+      const adCollections: string[] = configEntry.collections;
+      const adCollectionsIterator: IAsyncArrayIterator<string> = getArrayIterator(adCollections);
+
+      for await (const adCollection of adCollectionsIterator) {
+        await this.searchEngineService.addNewDocs(adCollection, configEntry.mapTo, threshold);
+      }
+    }
+  }
+
   @Cron(process.env.CRON_REMOVE_EXPIRED)
   private async removeExpiredDocs(): Promise<void> {
     const searchResultCollectionsIterator: IAsyncArrayIterator<string> = getArrayIterator(
