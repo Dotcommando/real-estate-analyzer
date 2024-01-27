@@ -1,7 +1,8 @@
-import { Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { ArrayMaxSize, IsArray, IsOptional, ValidateNested } from 'class-validator';
 import { configDotenv } from 'dotenv';
 
+import { DateRangeDto } from './date-range.dto';
 import { UrlItem } from './url.dto';
 
 import {
@@ -33,6 +34,9 @@ export class SearchQueryDto {
   @Type(() => UrlItem)
   url?: AG_MayBeArray<string>;
 
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => DateRangeDto)
   publish_date?: AG_MayBeRange<Date>;
 
   @IsOptional()
