@@ -1,7 +1,8 @@
+import { HttpStatus } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AppService } from './services';
 
 
 describe('AppController', () => {
@@ -18,7 +19,12 @@ describe('AppController', () => {
 
   describe('root', () => {
     it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+      expect(appController.checkHealth()).toStrictEqual({
+        status: HttpStatus.OK,
+        data: {
+          alive: true,
+        },
+      });
     });
   });
 });
