@@ -1,9 +1,8 @@
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsArray, IsOptional, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsOptional, IsString, IsUrl, MaxLength, ValidateNested } from 'class-validator';
 import { configDotenv } from 'dotenv';
 
 import { DateRangeDto } from './date-range.dto';
-import { UrlItem } from './url.dto';
 
 import {
   AirConditioning,
@@ -18,7 +17,7 @@ import {
   Source,
   StandardSet,
 } from '../constants';
-import { TransformToArray } from '../decorators';
+import { MaybeArray } from '../decorators';
 import { AG_MayBeArray, AG_MayBeRange } from '../types';
 import { getIntFromEnv } from '../utils';
 
@@ -27,11 +26,12 @@ configDotenv();
 
 export class SearchQueryDto {
   @IsOptional()
-  @TransformToArray()
+  @MaybeArray()
   @IsArray({ message: 'Field \'url\' must contain array of URLs' })
   @ArrayMaxSize(getIntFromEnv('URL_ARRAY_MAX_SIZE', 5))
-  @ValidateNested({ each: true })
-  @Type(() => UrlItem)
+  @IsString({ each: true, message: 'Each URL must be a string' })
+  @IsUrl({}, { each: true, message: 'Each URL must be a valid URL' })
+  @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each URL is ${process.env.STRING_MAX_LENGTH} characters` })
   url?: AG_MayBeArray<string>;
 
   @IsOptional()
@@ -40,11 +40,10 @@ export class SearchQueryDto {
   publish_date?: AG_MayBeRange<Date>;
 
   @IsOptional()
-  @TransformToArray()
+  @ArrayMaxSize(getIntFromEnv('SOURCE_ARRAY_MAX_SIZE', 5))
   source?: AG_MayBeArray<Source>;
 
   @IsOptional()
-  @TransformToArray()
   city?: string[];
 
   district?: AG_MayBeArray<string>;

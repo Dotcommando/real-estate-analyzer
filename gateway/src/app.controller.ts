@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 
 import { AdsDto, DistrictsDto, SearchQueryDto, StatsDto } from './dto';
 import { queryAdsToAds, queryGetDistricts, queryStatsToStats } from './mappers';
@@ -45,6 +45,6 @@ export class AppController {
     @Query() query: SearchQueryDto,
   ) {
     // return this.appService.getSearchResults();
-    return [];
+    return { status: HttpStatus.OK, data: query };
   }
 }
