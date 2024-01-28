@@ -45,6 +45,6 @@ export class AppController {
     @Query() query: SearchQueryDto,
   ) {
     // return this.appService.getSearchResults();
-    return { status: HttpStatus.OK, data: query };
+    return { status: HttpStatus.OK, data: { query }};
   }
 }

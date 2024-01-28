@@ -20,6 +20,10 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     whitelist: true,
+    forbidNonWhitelisted: true,
+    transformOptions: {
+      enableImplicitConversion: true,
+    },
   }));
   app.useGlobalInterceptors(new StatusInterceptor());
   app.setGlobalPrefix('api/v1');
