@@ -2,6 +2,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsDateString,
+  IsIn,
   IsNumber,
   IsOptional,
   IsString,
@@ -14,15 +15,23 @@ import { configDotenv } from 'dotenv';
 
 import {
   AirConditioning,
+  AirConditioningArray,
   Categories,
   Condition,
+  ConditionArray,
   EnergyEfficiency,
+  EnergyEfficiencyArray,
   Furnishing,
+  FurnishingArray,
   OnlineViewing,
+  OnlineViewingArray,
   Parking,
+  ParkingArray,
   Pets,
+  PetsArray,
   PoolType,
   Source,
+  SourceArray,
   StandardSet,
 } from '../constants';
 import { MaybeArray } from '../decorators';
@@ -65,14 +74,26 @@ export class SearchQueryDto {
 
 
   @IsOptional()
-  @ArrayMaxSize(getIntFromEnv('SOURCE_ARRAY_MAX_SIZE', 5))
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('SOURCE_ARRAY_MAX_SIZE', SourceArray.length - 1), { message: `Maximum number of sources is ${getIntFromEnv('SOURCE_ARRAY_MAX_SIZE', SourceArray.length - 1)}` })
+  @IsIn(SourceArray, { each: true, message: 'Each source must be a valid value' })
   source?: AG_MayBeArray<Source>;
 
+
   @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('CITY_ARRAY_MAX_SIZE', 5), { message: `Maximum number of cities is ${getIntFromEnv('CITY_ARRAY_MAX_SIZE', 5)}` })
+  @IsString({ each: true, message: 'Each city must be a string' })
+  @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each city name is ${process.env.STRING_MAX_LENGTH} characters` })
   city?: string[];
 
-  district?: AG_MayBeArray<string>;
 
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('DISTRICT_ARRAY_MAX_SIZE', 5), { message: `Maximum number of districts is ${getIntFromEnv('DISTRICT_ARRAY_MAX_SIZE', 5)}` })
+  @IsString({ each: true, message: 'Each district must be a string' })
+  @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each district name is ${process.env.STRING_MAX_LENGTH} characters` })
+  district?: AG_MayBeArray<string>;
 
 
   @IsOptional()
@@ -106,13 +127,63 @@ export class SearchQueryDto {
   'price[$gte]'?: number;
 
 
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('AD_ID_ARRAY_MAX_SIZE', 5), { message: `Maximum number of ad ids is ${getIntFromEnv('AD_ID_ARRAY_MAX_SIZE', 5)}` })
+  @IsString({ each: true, message: 'Each ad_id must be a string' })
+  @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each ad id is ${process.env.STRING_MAX_LENGTH} characters` })
   ad_id?: AG_MayBeArray<string>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('ONLINE_VIEWING_ARRAY_MAX_SIZE', OnlineViewingArray.length - 1), { message: `Maximum number of online viewing options is ${getIntFromEnv('ONLINE_VIEWING_ARRAY_MAX_SIZE', OnlineViewingArray.length - 1)}` })
+  @IsIn(OnlineViewingArray, { each: true, message: `Each online-viewing must be one of the following values: ${OnlineViewingArray.join(', ')}.` })
   'online-viewing'?: AG_MayBeArray<OnlineViewing>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('POSTAL_CODE_ARRAY_MAX_SIZE', 5), { message: `Maximum number of postal codes is ${getIntFromEnv('POSTAL_CODE_ARRAY_MAX_SIZE', 5)}` })
+  @IsString({ each: true, message: 'Each postal-code must be a string' })
+  @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each postal code is ${getIntFromEnv('STRING_MAX_LENGTH', 64)} characters` })
   'postal-code'?: AG_MayBeArray<string>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('CONDITION_ARRAY_MAX_SIZE', ConditionArray.length - 1), { message: `Maximum number of conditions is ${getIntFromEnv('CONDITION_ARRAY_MAX_SIZE', ConditionArray.length - 1)}` })
+  @IsIn(ConditionArray, { each: true, message: `Each condition must be one of the following values: ${ConditionArray.join(', ')}.` })
   condition?: AG_MayBeArray<Condition>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('ENERGY_EFFICIENCY_ARRAY_MAX_SIZE', EnergyEfficiencyArray.length - 1), { message: `Maximum number of energy efficiency values is ${getIntFromEnv('ENERGY_EFFICIENCY_ARRAY_MAX_SIZE', EnergyEfficiencyArray.length - 1)}` })
+  @IsIn(EnergyEfficiencyArray, { each: true, message: `Each energy efficiency value must be one of the following: ${EnergyEfficiencyArray.join(', ')}.` })
   'energy-efficiency'?: AG_MayBeArray<EnergyEfficiency>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('CONSTRUCTION_YEAR_ARRAY_MAX_SIZE', 5), { message: `Maximum number of construction years is ${getIntFromEnv('CONSTRUCTION_YEAR_ARRAY_MAX_SIZE', 5)}` })
+  @IsString({ each: true, message: 'Each construction year must be a string' })
+  @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 5), { each: true, message: `Maximum length of each construction year is ${getIntFromEnv('STRING_MAX_LENGTH', 5)} characters` })
   'construction-year'?: AG_MayBeArray<string>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('FLOOR_ARRAY_MAX_SIZE', 50), { message: `Maximum number of floors is ${getIntFromEnv('FLOOR_ARRAY_MAX_SIZE', 50)}` })
+  @IsString({ each: true, message: 'Each floor must be a string' })
+  @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 10), { each: true, message: `Maximum length of each floor is ${getIntFromEnv('STRING_MAX_LENGTH', 10)} characters` })
   floor?: AG_MayBeArray<string>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('PARKING_ARRAY_MAX_SIZE', ParkingArray.length - 1), { message: `Maximum number of parking options is ${getIntFromEnv('PARKING_ARRAY_MAX_SIZE', ParkingArray.length - 1)}` })
+  @IsIn(ParkingArray, { each: true, message: `Each parking option must be one of the following values: ${ParkingArray.join(', ')}.` })
   parking?: AG_MayBeArray<Parking>;
 
 
@@ -178,6 +249,10 @@ export class SearchQueryDto {
   'property-area[$gte]'?: number;
 
 
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('FURNISHING_ARRAY_MAX_SIZE', FurnishingArray.length - 1), { message: `Maximum number of furnishing options is ${getIntFromEnv('FURNISHING_ARRAY_MAX_SIZE', FurnishingArray.length - 1)}` })
+  @IsIn(FurnishingArray, { each: true, message: `Each furnishing option must be one of the following values: ${FurnishingArray.join(', ')}.` })
   furnishing?: AG_MayBeArray<Furnishing>;
 
 
@@ -243,8 +318,20 @@ export class SearchQueryDto {
   'bathrooms[$gte]'?: number;
 
 
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('AIR_CONDITIONING_ARRAY_MAX_SIZE', AirConditioningArray.length - 1), { message: `Maximum number of air conditioning options is ${getIntFromEnv('AIR_CONDITIONING_ARRAY_MAX_SIZE', AirConditioningArray.length - 1)}` })
+  @IsIn(AirConditioningArray, { each: true, message: `Each air conditioning option must be one of the following values: ${AirConditioningArray.join(', ')}.` })
   'air-conditioning'?: AG_MayBeArray<AirConditioning>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('PETS_ARRAY_MAX_SIZE', PetsArray.length - 1), { message: `Maximum number of pets options is ${getIntFromEnv('PETS_ARRAY_MAX_SIZE', PetsArray.length - 1)}` })
+  @IsIn(AirConditioningArray, { each: true, message: `Each pets option must be one of the following values: ${PetsArray.join(', ')}.` })
   pets?: AG_MayBeArray<Pets>;
+
+
   alarm?: AG_MayBeArray<StandardSet>;
   attic?: AG_MayBeArray<StandardSet>;
   balcony?: AG_MayBeArray<StandardSet>;
