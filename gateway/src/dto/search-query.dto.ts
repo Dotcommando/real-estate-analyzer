@@ -17,6 +17,7 @@ import {
   AirConditioning,
   AirConditioningArray,
   Categories,
+  CategoriesArray,
   Condition,
   ConditionArray,
   EnergyEfficiency,
@@ -30,9 +31,11 @@ import {
   Pets,
   PetsArray,
   PoolType,
+  PoolTypeArray,
   Source,
   SourceArray,
   StandardSet,
+  StandardSetArray,
 } from '../constants';
 import { MaybeArray } from '../decorators';
 import { AG_MayBeArray } from '../types';
@@ -332,14 +335,66 @@ export class SearchQueryDto {
   pets?: AG_MayBeArray<Pets>;
 
 
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('ALARM_ARRAY_MAX_SIZE', StandardSetArray.length - 1), { message: `Maximum number of alarm options is ${getIntFromEnv('ALARM_ARRAY_MAX_SIZE', StandardSetArray.length - 1)}` })
+  @IsIn(StandardSetArray, { each: true, message: `Each alarm option must be one of the following values: ${StandardSetArray.join(', ')}.` })
   alarm?: AG_MayBeArray<StandardSet>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('ATTIC_ARRAY_MAX_SIZE', StandardSetArray.length - 1), { message: `Maximum number of attic options is ${getIntFromEnv('ATTIC_ARRAY_MAX_SIZE', StandardSetArray.length - 1)}` })
+  @IsIn(StandardSetArray, { each: true, message: `Each attic option must be one of the following values: ${StandardSetArray.join(', ')}.` })
   attic?: AG_MayBeArray<StandardSet>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('BALCONY_ARRAY_MAX_SIZE', StandardSetArray.length - 1), { message: `Maximum number of balcony options is ${getIntFromEnv('BALCONY_ARRAY_MAX_SIZE', StandardSetArray.length - 1)}` })
+  @IsIn(StandardSetArray, { each: true, message: `Each balcony option must be one of the following values: ${StandardSetArray.join(', ')}.` })
   balcony?: AG_MayBeArray<StandardSet>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('ELEVATOR_ARRAY_MAX_SIZE', StandardSetArray.length - 1), { message: `Maximum number of elevator options is ${getIntFromEnv('ELEVATOR_ARRAY_MAX_SIZE', StandardSetArray.length - 1)}` })
+  @IsIn(StandardSetArray, { each: true, message: `Each elevator option must be one of the following values: ${StandardSetArray.join(', ')}.` })
   elevator?: AG_MayBeArray<StandardSet>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('FIREPLACE_ARRAY_MAX_SIZE', StandardSetArray.length - 1), { message: `Maximum number of fireplace options is ${getIntFromEnv('FIREPLACE_ARRAY_MAX_SIZE', StandardSetArray.length - 1)}` })
+  @IsIn(StandardSetArray, { each: true, message: `Each fireplace option must be one of the following values: ${StandardSetArray.join(', ')}.` })
   fireplace?: AG_MayBeArray<StandardSet>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('GARDEN_ARRAY_MAX_SIZE', StandardSetArray.length - 1), { message: `Maximum number of garden options is ${getIntFromEnv('GARDEN_ARRAY_MAX_SIZE', StandardSetArray.length - 1)}` })
+  @IsIn(StandardSetArray, { each: true, message: `Each garden option must be one of the following values: ${StandardSetArray.join(', ')}.` })
   garden?: AG_MayBeArray<StandardSet>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('PLAYROOM_ARRAY_MAX_SIZE', StandardSetArray.length - 1), { message: `Maximum number of playroom options is ${getIntFromEnv('PLAYROOM_ARRAY_MAX_SIZE', StandardSetArray.length - 1)}` })
+  @IsIn(StandardSetArray, { each: true, message: `Each playroom option must be one of the following values: ${StandardSetArray.join(', ')}.` })
   playroom?: AG_MayBeArray<StandardSet>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('POOLTYPE_ARRAY_MAX_SIZE', PoolTypeArray.length - 1), { message: `Maximum number of pool type options is ${getIntFromEnv('POOLTYPE_ARRAY_MAX_SIZE', PoolTypeArray.length - 1)}` })
+  @IsIn(PoolTypeArray, { each: true, message: `Each pool type option must be one of the following values: ${PoolTypeArray.join(', ')}.` })
   pool?: AG_MayBeArray<PoolType>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('STORAGE_ARRAY_MAX_SIZE', StandardSetArray.length - 1), { message: `Maximum number of storage options is ${getIntFromEnv('STORAGE_ARRAY_MAX_SIZE', StandardSetArray.length - 1)}` })
+  @IsIn(StandardSetArray, { each: true, message: `Each storage option must be one of the following values: ${StandardSetArray.join(', ')}.` })
   storage?: AG_MayBeArray<StandardSet>;
 
 
@@ -416,7 +471,18 @@ export class SearchQueryDto {
   'plot-area[gte]'?: number;
 
 
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('CATEGORIES_ARRAY_MAX_SIZE', CategoriesArray.length - 1), { message: `Maximum number of category options is ${getIntFromEnv('CATEGORIES_ARRAY_MAX_SIZE', CategoriesArray.length - 1)}` })
+  @IsIn(CategoriesArray, { each: true, message: `Each category option must be one of the following values: ${CategoriesArray.join(', ')}.` })
   category?: AG_MayBeArray<Categories>;
+
+
+  @IsOptional()
+  @MaybeArray()
+  @ArrayMaxSize(getIntFromEnv('SUBCATEGORY_ARRAY_MAX_SIZE', 50), { message: `Maximum number of subcategories is ${getIntFromEnv('SUBCATEGORY_ARRAY_MAX_SIZE', 50)}` })
+  @IsString({ each: true, message: 'Each subcategory must be a string' })
+  @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 16), { each: true, message: `Maximum length of each subcategory is ${getIntFromEnv('STRING_MAX_LENGTH', 10)} characters` })
   subcategory?: AG_MayBeArray<string>;
 
 
