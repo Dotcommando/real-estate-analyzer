@@ -21,3 +21,4 @@ export * from './search-results-model-collection-relation.const';
 export * from './share.enum';
 export * from './source.enum';
 export * from './standard-set.enum';
+export * from './transaction-type.enum';

@@ -36,6 +36,8 @@ import {
   SourceArray,
   StandardSet,
   StandardSetArray,
+  TransactionType,
+  TransactionTypeArray,
 } from '../constants';
 import { MaybeArray } from '../decorators';
 import { AG_MayBeArray } from '../types';
@@ -45,6 +47,9 @@ import { getIntFromEnv } from '../utils';
 configDotenv();
 
 export class SearchQueryDto {
+  @IsIn(TransactionTypeArray, { message: `Transaction type must be a valid value of ${TransactionTypeArray.join(', ')}.` })
+  type?: TransactionType;
+
   @IsOptional()
   @MaybeArray()
   @IsArray({ message: 'Field \'url\' must contain array of URLs' })
