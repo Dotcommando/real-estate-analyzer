@@ -5,7 +5,7 @@ services:
   front:
     image: node:18-alpine
     working_dir: /front
-    command: sh -c "npm i -f && npm run build && npm install -g serve && serve -s build"
+    command: sh -c "yarn install && yarn build && yarn add serve && npx serve -s build"
     volumes:
       - .:/front
     hostname: localhost
