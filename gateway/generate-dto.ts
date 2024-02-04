@@ -6,10 +6,9 @@ import {
   Project,
   PropertySignature,
   SourceFile,
-  SyntaxKind,
 } from 'ts-morph';
 
-import { getCustomTypeImports, getDecoratorImports } from './dto-generation';
+import { getCustomTypeImports, getCustomTypes, getDecoratorImports, mergeImports } from './dto-generation';
 
 
 config();
@@ -25,55 +24,6 @@ const project = new Project();
 
 if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir, { recursive: true });
-}
-
-function getCustomTypes(interfaceDecl: InterfaceDeclaration): Set<string> {
-  const customTypes = new Set<string>();
-
-  function processTypeNode(typeNode) {
-    if (!typeNode) return;
-    if (typeNode.getKind() === SyntaxKind.TypeReference) {
-      const typeName = typeNode.getTypeName().getText();
-
-      customTypes.add(typeName);
-
-      const typeArguments = typeNode.getTypeArguments();
-
-      typeArguments.forEach(arg => {
-        const argTypeNode = arg;
-
-        if (argTypeNode && argTypeNode.getKind() === SyntaxKind.TypeReference) {
-          processTypeNode(argTypeNode);
-        }
-      });
-    } else if (typeNode.getKind() === SyntaxKind.ArrayType) {
-      const elementType = typeNode.getElementType();
-
-      processTypeNode(elementType);
-    }
-  }
-
-  interfaceDecl.getProperties().forEach((prop: PropertySignature) => {
-    const typeNode = prop.getTypeNode();
-
-    processTypeNode(typeNode);
-  });
-
-  return customTypes;
-}
-
-function mergeImports(sourceMap: Map<string, string[]>, finalImportsMap: Map<string, string[]>): Map<string, string[]> {
-  sourceMap.forEach((imports, moduleSpecifier) => {
-    if (!finalImportsMap.has(moduleSpecifier)) {
-      finalImportsMap.set(moduleSpecifier, Array.from(new Set(imports)));
-    } else {
-      const existingImports: string[] = finalImportsMap.get(moduleSpecifier);
-
-      imports.forEach((importName: string) => existingImports.push(importName));
-    }
-  });
-
-  return new Map([ ...finalImportsMap ]);
 }
 
 function isNestedProperty(propertyName: string): boolean {
@@ -132,7 +82,7 @@ interfacesPaths.forEach(interfacePath => {
     customTypeImportsMap = mergeImports(customTypeImportsMap, getCustomTypeImports(getCustomTypes(interfaceDecl), sourceFile, outputDir));
   });
 
-  const finalImportsMap = mergeImports(decoratorImportsMap, customTypeImportsMap);
+  const finalImportsMap: Map<string, string[]> = mergeImports(decoratorImportsMap, customTypeImportsMap);
 
   finalImportsMap.forEach((imports, moduleSpecifier) => {
     dtoFile.addImportDeclaration({
