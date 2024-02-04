@@ -8,7 +8,21 @@ import {
   SourceFile,
 } from 'ts-morph';
 
-import { getCustomTypeImports, getCustomTypes, getDecoratorImports, mergeImports } from './dto-generation';
+import {
+  generateArrayMaxSize,
+  generateIsArray,
+  generateIsOptional,
+  generateIsString,
+  generateIsUrl,
+  generateMaxLength,
+  generateMaybeArray,
+  getCustomTypeImports,
+  getCustomTypes,
+  getDecoratorImports,
+  getFunctionImports,
+  mergeImports,
+  parseDecorator,
+} from './dto-generation';
 
 
 config();
@@ -16,10 +30,12 @@ config();
 const interfacesPathString = process.env.GENERATE_DTO_FOR_INTERFACES || '[]';
 const nestedPropertiesString = process.env.DTO_GENERATION_PROCESS_NESTED || '[]';
 const decoratorsConfigString = process.env.DTO_GENERATION_USE_DECORATORS || '[]';
+const functionsConfigString = process.env.DTO_GENERATION_USE_FUNCTIONS || '[]';
 const outputDir = process.env.GENERATED_DTOS_OUTPUT_PATH || './src/generated/dto';
 const interfacesPaths: string[] = JSON.parse(interfacesPathString);
 const nestedProperties: string[] = JSON.parse(nestedPropertiesString);
 const decoratorsConfig: { decorators: string; importFrom: string }[] = JSON.parse(decoratorsConfigString);
+const functionsConfig: { functions: string; importFrom: string }[] = JSON.parse(functionsConfigString);
 const project = new Project();
 
 if (!fs.existsSync(outputDir)) {
@@ -30,19 +46,53 @@ function isNestedProperty(propertyName: string): boolean {
   return nestedProperties.includes(propertyName);
 }
 
+function generateDecoratorsForField(
+  fieldName: string,
+  fieldType: string,
+  isOptional: boolean,
+  isUrlField: boolean = false,
+): string[] {
+  const isArray = fieldType.startsWith('AG_MayBeArray');
+  const isString = fieldType.includes('string');
+
+  const decorators = [
+    generateIsOptional(isOptional),
+    generateMaybeArray(),
+    generateIsArray(fieldName),
+    generateArrayMaxSize(fieldName),
+    isString ? generateIsString(fieldName, isArray) : '',
+    isString ? generateMaxLength(fieldName, isArray) : '',
+    isUrlField ? generateIsUrl(fieldName, true, isArray) : '',
+  ];
+
+  return decorators.filter(Boolean);
+}
+
 function addSimpleProperty(dtoClass: any, prop: PropertySignature, firstProperty: boolean) {
   const propName = prop.getName();
   const propType = prop.getTypeNode()?.getText() || 'any';
-
-  dtoClass.addProperty({
+  const isOptional = prop.hasQuestionToken();
+  const isUrlField = propName === 'url';
+  const decorators = generateDecoratorsForField(propName, propType, isOptional, isUrlField);
+  const property = dtoClass.addProperty({
     name: propName,
     type: propType,
-    hasQuestionToken: prop.hasQuestionToken(),
+    hasQuestionToken: isOptional,
+    decorators: [],
     leadingTrivia: writer => {
       if (!firstProperty) {
-        writer.newLine().newLine();
+        writer.blankLine();
       }
     },
+  });
+
+  decorators.forEach(decoratorCode => {
+    const [ decoratorName, decoratorArgs ] = parseDecorator(decoratorCode);
+
+    property.addDecorator({
+      name: decoratorName,
+      arguments: decoratorArgs,
+    });
   });
 }
 
@@ -58,6 +108,7 @@ interfacesPaths.forEach(interfacePath => {
   const dtoFilePath = path.join(outputDir, dtoFileName);
   const dtoFile: SourceFile = project.createSourceFile(dtoFilePath, '', { overwrite: true });
   const decoratorImportsMap: Map<string, string[]> = getDecoratorImports(decoratorsConfig, outputDir);
+  const functionImportsMap: Map<string, string[]> = getFunctionImports(functionsConfig, outputDir);
   let customTypeImportsMap = new Map<string, string[]>();
 
   interfaces.forEach((interfaceDecl: InterfaceDeclaration, index) => {
@@ -82,7 +133,9 @@ interfacesPaths.forEach(interfacePath => {
     customTypeImportsMap = mergeImports(customTypeImportsMap, getCustomTypeImports(getCustomTypes(interfaceDecl), sourceFile, outputDir));
   });
 
-  const finalImportsMap: Map<string, string[]> = mergeImports(decoratorImportsMap, customTypeImportsMap);
+  let finalImportsMap: Map<string, string[]> = mergeImports(decoratorImportsMap, customTypeImportsMap);
+
+  finalImportsMap = mergeImports(finalImportsMap, functionImportsMap);
 
   finalImportsMap.forEach((imports, moduleSpecifier) => {
     dtoFile.addImportDeclaration({

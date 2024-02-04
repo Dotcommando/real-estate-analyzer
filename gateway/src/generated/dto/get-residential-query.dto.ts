@@ -3,137 +3,286 @@ import { ArrayMaxSize, IsArray, IsDateString, IsIn, IsNumber, IsOptional, IsStri
 import { AirConditioning, Categories, Condition, EnergyEfficiency, Furnishing, NoStatisticsDataReason, OnlineViewing, Parking, Pets, PoolType, Source, StandardSet } from '../../constants';
 import { MaybeArray } from '../../decorators/';
 import { AG_MayBeArray, AG_MayBeRange } from '../../types';
+import { getIntFromEnv } from '../../utils/';
 
 
 export class StatFilterDto {
-  medianDelta?: AG_MayBeRange<number>;
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field medianDelta must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('MEDIANDELTA_ARRAY_MAX_SIZE', 5))
+    medianDelta?: AG_MayBeRange<number>;
 
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field meanDelta must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('MEANDELTA_ARRAY_MAX_SIZE', 5))
+    meanDelta?: AG_MayBeRange<number>;
 
-  meanDelta?: AG_MayBeRange<number>;
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field medianDeltaSqm must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('MEDIANDELTASQM_ARRAY_MAX_SIZE', 5))
+    medianDeltaSqm?: AG_MayBeRange<number>;
 
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field meanDeltaSqm must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('MEANDELTASQM_ARRAY_MAX_SIZE', 5))
+    meanDeltaSqm?: AG_MayBeRange<number>;
 
-  medianDeltaSqm?: AG_MayBeRange<number>;
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field noDataAbsReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('NODATAABSREASON_ARRAY_MAX_SIZE', 5))
+    noDataAbsReason?: AG_MayBeArray<NoStatisticsDataReason>;
 
-
-  meanDeltaSqm?: AG_MayBeRange<number>;
-
-
-  noDataAbsReason?: AG_MayBeArray<NoStatisticsDataReason>;
-
-
-  noDataSqmReason?: AG_MayBeArray<NoStatisticsDataReason>;
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field noDataSqmReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('NODATASQMREASON_ARRAY_MAX_SIZE', 5))
+    noDataSqmReason?: AG_MayBeArray<NoStatisticsDataReason>;
 }
 
 export class GetRentResidentialQueryDto {
-  url?: AG_MayBeArray<string>;
-
-
-  publish_date?: AG_MayBeRange<Date>;
-
-
-  source?: AG_MayBeArray<Source>;
-
-
-  city?: AG_MayBeArray<string>;
-
-
-  district?: AG_MayBeArray<string>;
-
-
-  price?: AG_MayBeRange<number>;
-
-
-  ad_id?: AG_MayBeArray<string>;
-
-
-  'online-viewing'?: AG_MayBeArray<OnlineViewing>;
-
-
-  'postal-code'?: AG_MayBeArray<string>;
-
-
-  condition?: AG_MayBeArray<Condition>;
-
-
-  'energy-efficiency'?: AG_MayBeArray<EnergyEfficiency>;
-
-
-  'construction-year'?: AG_MayBeArray<string>;
-
-
-  floor?: AG_MayBeArray<string>;
-
-
-  parking?: AG_MayBeArray<Parking>;
-
-
-  'parking-places'?: AG_MayBeRange<number>;
-
-
-  'property-area'?: AG_MayBeRange<number>;
-
-
-  furnishing?: AG_MayBeArray<Furnishing>;
-
-
-  bedrooms?: AG_MayBeRange<number>;
-
-
-  bathrooms?: AG_MayBeRange<number>;
-
-
-  'air-conditioning'?: AG_MayBeArray<AirConditioning>;
-
-
-  pets?: AG_MayBeArray<Pets>;
-
-
-  alarm?: AG_MayBeArray<StandardSet>;
-
-
-  attic?: AG_MayBeArray<StandardSet>;
-
-
-  balcony?: AG_MayBeArray<StandardSet>;
-
-
-  elevator?: AG_MayBeArray<StandardSet>;
-
-
-  fireplace?: AG_MayBeArray<StandardSet>;
-
-
-  garden?: AG_MayBeArray<StandardSet>;
-
-
-  playroom?: AG_MayBeArray<StandardSet>;
-
-
-  pool?: AG_MayBeArray<PoolType>;
-
-
-  storage?: AG_MayBeArray<StandardSet>;
-
-
-  'ad_last_updated'?: AG_MayBeRange<Date>;
-
-
-  'updated_at'?: AG_MayBeRange<Date>;
-
-
-  'plot-area'?: AG_MayBeRange<number>;
-
-
-  category?: AG_MayBeArray<Categories>;
-
-
-  subcategory?: AG_MayBeArray<string>;
-
-
-  activeDays?: AG_MayBeRange<number>;
-
-
-  'price-sqm'?: AG_MayBeRange<number>;
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field url must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('URL_ARRAY_MAX_SIZE', 5))
+    @IsString({ each: true, message: 'Each url must be a string' })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: 'Maximum length of each url is ${process.env.STRING_MAX_LENGTH} characters' })
+    @IsUrl({}, { each: true, message: 'Each URL in url must be a valid URL' })
+    url?: AG_MayBeArray<string>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field publish_date must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PUBLISH_DATE_ARRAY_MAX_SIZE', 5))
+    publish_date?: AG_MayBeRange<Date>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field source must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('SOURCE_ARRAY_MAX_SIZE', 5))
+    source?: AG_MayBeArray<Source>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field city must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('CITY_ARRAY_MAX_SIZE', 5))
+    @IsString({ each: true, message: 'Each city must be a string' })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: 'Maximum length of each city is ${process.env.STRING_MAX_LENGTH} characters' })
+    city?: AG_MayBeArray<string>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field district must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('DISTRICT_ARRAY_MAX_SIZE', 5))
+    @IsString({ each: true, message: 'Each district must be a string' })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: 'Maximum length of each district is ${process.env.STRING_MAX_LENGTH} characters' })
+    district?: AG_MayBeArray<string>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field price must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICE_ARRAY_MAX_SIZE', 5))
+    price?: AG_MayBeRange<number>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field ad_id must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('AD_ID_ARRAY_MAX_SIZE', 5))
+    @IsString({ each: true, message: 'Each ad_id must be a string' })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: 'Maximum length of each ad_id is ${process.env.STRING_MAX_LENGTH} characters' })
+    ad_id?: AG_MayBeArray<string>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field online-viewing must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('ONLINE_VIEWING_ARRAY_MAX_SIZE', 5))
+    'online-viewing'?: AG_MayBeArray<OnlineViewing>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field postal-code must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('POSTAL_CODE_ARRAY_MAX_SIZE', 5))
+    @IsString({ each: true, message: 'Each postal-code must be a string' })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: 'Maximum length of each postal-code is ${process.env.STRING_MAX_LENGTH} characters' })
+    'postal-code'?: AG_MayBeArray<string>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field condition must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('CONDITION_ARRAY_MAX_SIZE', 5))
+    condition?: AG_MayBeArray<Condition>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field energy-efficiency must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('ENERGY_EFFICIENCY_ARRAY_MAX_SIZE', 5))
+    'energy-efficiency'?: AG_MayBeArray<EnergyEfficiency>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field construction-year must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('CONSTRUCTION_YEAR_ARRAY_MAX_SIZE', 5))
+    @IsString({ each: true, message: 'Each construction-year must be a string' })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: 'Maximum length of each construction-year is ${process.env.STRING_MAX_LENGTH} characters' })
+    'construction-year'?: AG_MayBeArray<string>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field floor must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('FLOOR_ARRAY_MAX_SIZE', 5))
+    @IsString({ each: true, message: 'Each floor must be a string' })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: 'Maximum length of each floor is ${process.env.STRING_MAX_LENGTH} characters' })
+    floor?: AG_MayBeArray<string>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field parking must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PARKING_ARRAY_MAX_SIZE', 5))
+    parking?: AG_MayBeArray<Parking>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field parking-places must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PARKING_PLACES_ARRAY_MAX_SIZE', 5))
+    'parking-places'?: AG_MayBeRange<number>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field property-area must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PROPERTY_AREA_ARRAY_MAX_SIZE', 5))
+    'property-area'?: AG_MayBeRange<number>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field furnishing must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('FURNISHING_ARRAY_MAX_SIZE', 5))
+    furnishing?: AG_MayBeArray<Furnishing>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field bedrooms must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('BEDROOMS_ARRAY_MAX_SIZE', 5))
+    bedrooms?: AG_MayBeRange<number>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field bathrooms must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('BATHROOMS_ARRAY_MAX_SIZE', 5))
+    bathrooms?: AG_MayBeRange<number>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field air-conditioning must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('AIR_CONDITIONING_ARRAY_MAX_SIZE', 5))
+    'air-conditioning'?: AG_MayBeArray<AirConditioning>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field pets must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PETS_ARRAY_MAX_SIZE', 5))
+    pets?: AG_MayBeArray<Pets>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field alarm must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('ALARM_ARRAY_MAX_SIZE', 5))
+    alarm?: AG_MayBeArray<StandardSet>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field attic must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('ATTIC_ARRAY_MAX_SIZE', 5))
+    attic?: AG_MayBeArray<StandardSet>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field balcony must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('BALCONY_ARRAY_MAX_SIZE', 5))
+    balcony?: AG_MayBeArray<StandardSet>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field elevator must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('ELEVATOR_ARRAY_MAX_SIZE', 5))
+    elevator?: AG_MayBeArray<StandardSet>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field fireplace must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('FIREPLACE_ARRAY_MAX_SIZE', 5))
+    fireplace?: AG_MayBeArray<StandardSet>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field garden must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('GARDEN_ARRAY_MAX_SIZE', 5))
+    garden?: AG_MayBeArray<StandardSet>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field playroom must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PLAYROOM_ARRAY_MAX_SIZE', 5))
+    playroom?: AG_MayBeArray<StandardSet>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field pool must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('POOL_ARRAY_MAX_SIZE', 5))
+    pool?: AG_MayBeArray<PoolType>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field storage must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('STORAGE_ARRAY_MAX_SIZE', 5))
+    storage?: AG_MayBeArray<StandardSet>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field ad_last_updated must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('AD_LAST_UPDATED_ARRAY_MAX_SIZE', 5))
+    'ad_last_updated'?: AG_MayBeRange<Date>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field updated_at must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('UPDATED_AT_ARRAY_MAX_SIZE', 5))
+    'updated_at'?: AG_MayBeRange<Date>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field plot-area must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PLOT_AREA_ARRAY_MAX_SIZE', 5))
+    'plot-area'?: AG_MayBeRange<number>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field category must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('CATEGORY_ARRAY_MAX_SIZE', 5))
+    category?: AG_MayBeArray<Categories>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field subcategory must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('SUBCATEGORY_ARRAY_MAX_SIZE', 5))
+    @IsString({ each: true, message: 'Each subcategory must be a string' })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: 'Maximum length of each subcategory is ${process.env.STRING_MAX_LENGTH} characters' })
+    subcategory?: AG_MayBeArray<string>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field activeDays must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('ACTIVEDAYS_ARRAY_MAX_SIZE', 5))
+    activeDays?: AG_MayBeRange<number>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field price-sqm must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICE_SQM_ARRAY_MAX_SIZE', 5))
+    'price-sqm'?: AG_MayBeRange<number>;
 }
 
 export class GetSaleResidentialQueryDto {
