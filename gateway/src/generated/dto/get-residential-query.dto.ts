@@ -1,6 +1,6 @@
 import { ArrayMaxSize, IsArray, IsDateString, IsIn, IsNumber, IsOptional, IsString, IsUrl, Max, MaxLength, Min } from 'class-validator';
 
-import { AirConditioning, Categories, Condition, EnergyEfficiency, Furnishing, NoStatisticsDataReason, OnlineViewing, Parking, Pets, PoolType, Source, StandardSet } from '../../constants';
+import { AirConditioning, AirConditioningArray, Categories, CategoriesArray, Condition, ConditionArray, EnergyEfficiency, EnergyEfficiencyArray, Furnishing, FurnishingArray, NoStatisticsDataReason, NoStatisticsDataReasonArray, OnlineViewing, OnlineViewingArray, Parking, ParkingArray, Pets, PetsArray, PoolType, PoolTypeArray, Source, SourceArray, StandardSet, StandardSetArray } from '../../constants';
 import { MaybeArray } from '../../decorators/';
 import { AG_MayBeArray, AG_MayBeRange } from '../../types';
 import { getIntFromEnv } from '../../utils/';

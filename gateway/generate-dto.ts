@@ -9,6 +9,8 @@ import {
 } from 'ts-morph';
 
 import {
+  addMissingEnumArrayImports,
+  findMissingEnumArrayImports,
   generateArrayMaxSize,
   generateIsArray,
   generateIsInDecorator,
@@ -164,6 +166,21 @@ interfacesPaths.forEach(interfacePath => {
   });
 
   dtoFile.saveSync();
+
+  const dtoText = fs.readFileSync(dtoFilePath, 'utf8');
+  const existingEnums = new Set<string>();
+  const importRegex = /import { ([^}]+) } from ['"]([^'"]*constants)['"]/g;
+  let match;
+
+  while ((match = importRegex.exec(dtoText)) !== null) {
+    match[1].split(',').forEach(enumOrArray => {
+      existingEnums.add(enumOrArray.trim());
+    });
+  }
+
+  const missingImports = findMissingEnumArrayImports(dtoText, existingEnums);
+
+  addMissingEnumArrayImports(dtoFilePath, missingImports);
 });
 
 console.log('DTO generation completed.');

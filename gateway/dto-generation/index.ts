@@ -1,4 +1,7 @@
+export * from './add-missing-enum-array-imports';
 export * from './decorator-generation';
+export * from './enum-import-detail.interface';
+export * from './find-missing-enum-arrays';
 export * from './get-custom-types';
 export * from './get-custom-types-imports';
 export * from './get-decorator-imports';
