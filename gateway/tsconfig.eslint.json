@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["generate-dto.ts", "**/*.ts"],
+  "exclude": []
+}
