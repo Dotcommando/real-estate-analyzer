@@ -27,14 +27,14 @@ export class StatFilterDto {
     @MaybeArray()
     @IsArray({ message: 'Field noDataAbsReason must contain an array' })
     @ArrayMaxSize(getIntFromEnv('NODATAABSREASON_ARRAY_MAX_SIZE', 5))
-    @IsIn(NoDataAbsReasonArray, { each: true, message: 'Each noDataAbsReason must be a valid value' })
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each noDataAbsReason must be a valid value' })
     noDataAbsReason?: AG_MayBeArray<NoStatisticsDataReason>;
 
     @IsOptional()
     @MaybeArray()
     @IsArray({ message: 'Field noDataSqmReason must contain an array' })
     @ArrayMaxSize(getIntFromEnv('NODATASQMREASON_ARRAY_MAX_SIZE', 5))
-    @IsIn(NoDataSqmReasonArray, { each: true, message: 'Each noDataSqmReason must be a valid value' })
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each noDataSqmReason must be a valid value' })
     noDataSqmReason?: AG_MayBeArray<NoStatisticsDataReason>;
 }
 
@@ -180,63 +180,63 @@ export class GetRentResidentialQueryDto {
     @MaybeArray()
     @IsArray({ message: 'Field alarm must contain an array' })
     @ArrayMaxSize(getIntFromEnv('ALARM_ARRAY_MAX_SIZE', 5))
-    @IsIn(AlarmArray, { each: true, message: 'Each alarm must be a valid value' })
+    @IsIn(StandardSetArray, { each: true, message: 'Each alarm must be a valid value' })
     alarm?: AG_MayBeArray<StandardSet>;
 
     @IsOptional()
     @MaybeArray()
     @IsArray({ message: 'Field attic must contain an array' })
     @ArrayMaxSize(getIntFromEnv('ATTIC_ARRAY_MAX_SIZE', 5))
-    @IsIn(AtticArray, { each: true, message: 'Each attic must be a valid value' })
+    @IsIn(StandardSetArray, { each: true, message: 'Each attic must be a valid value' })
     attic?: AG_MayBeArray<StandardSet>;
 
     @IsOptional()
     @MaybeArray()
     @IsArray({ message: 'Field balcony must contain an array' })
     @ArrayMaxSize(getIntFromEnv('BALCONY_ARRAY_MAX_SIZE', 5))
-    @IsIn(BalconyArray, { each: true, message: 'Each balcony must be a valid value' })
+    @IsIn(StandardSetArray, { each: true, message: 'Each balcony must be a valid value' })
     balcony?: AG_MayBeArray<StandardSet>;
 
     @IsOptional()
     @MaybeArray()
     @IsArray({ message: 'Field elevator must contain an array' })
     @ArrayMaxSize(getIntFromEnv('ELEVATOR_ARRAY_MAX_SIZE', 5))
-    @IsIn(ElevatorArray, { each: true, message: 'Each elevator must be a valid value' })
+    @IsIn(StandardSetArray, { each: true, message: 'Each elevator must be a valid value' })
     elevator?: AG_MayBeArray<StandardSet>;
 
     @IsOptional()
     @MaybeArray()
     @IsArray({ message: 'Field fireplace must contain an array' })
     @ArrayMaxSize(getIntFromEnv('FIREPLACE_ARRAY_MAX_SIZE', 5))
-    @IsIn(FireplaceArray, { each: true, message: 'Each fireplace must be a valid value' })
+    @IsIn(StandardSetArray, { each: true, message: 'Each fireplace must be a valid value' })
     fireplace?: AG_MayBeArray<StandardSet>;
 
     @IsOptional()
     @MaybeArray()
     @IsArray({ message: 'Field garden must contain an array' })
     @ArrayMaxSize(getIntFromEnv('GARDEN_ARRAY_MAX_SIZE', 5))
-    @IsIn(GardenArray, { each: true, message: 'Each garden must be a valid value' })
+    @IsIn(StandardSetArray, { each: true, message: 'Each garden must be a valid value' })
     garden?: AG_MayBeArray<StandardSet>;
 
     @IsOptional()
     @MaybeArray()
     @IsArray({ message: 'Field playroom must contain an array' })
     @ArrayMaxSize(getIntFromEnv('PLAYROOM_ARRAY_MAX_SIZE', 5))
-    @IsIn(PlayroomArray, { each: true, message: 'Each playroom must be a valid value' })
+    @IsIn(StandardSetArray, { each: true, message: 'Each playroom must be a valid value' })
     playroom?: AG_MayBeArray<StandardSet>;
 
     @IsOptional()
     @MaybeArray()
     @IsArray({ message: 'Field pool must contain an array' })
     @ArrayMaxSize(getIntFromEnv('POOL_ARRAY_MAX_SIZE', 5))
-    @IsIn(PoolArray, { each: true, message: 'Each pool must be a valid value' })
+    @IsIn(PoolTypeArray, { each: true, message: 'Each pool must be a valid value' })
     pool?: AG_MayBeArray<PoolType>;
 
     @IsOptional()
     @MaybeArray()
     @IsArray({ message: 'Field storage must contain an array' })
     @ArrayMaxSize(getIntFromEnv('STORAGE_ARRAY_MAX_SIZE', 5))
-    @IsIn(StorageArray, { each: true, message: 'Each storage must be a valid value' })
+    @IsIn(StandardSetArray, { each: true, message: 'Each storage must be a valid value' })
     storage?: AG_MayBeArray<StandardSet>;
 
     @IsOptional()
@@ -255,7 +255,7 @@ export class GetRentResidentialQueryDto {
     @MaybeArray()
     @IsArray({ message: 'Field category must contain an array' })
     @ArrayMaxSize(getIntFromEnv('CATEGORY_ARRAY_MAX_SIZE', 5))
-    @IsIn(CategoryArray, { each: true, message: 'Each category must be a valid value' })
+    @IsIn(CategoriesArray, { each: true, message: 'Each category must be a valid value' })
     category?: AG_MayBeArray<Categories>;
 
     @IsOptional()

@@ -55,7 +55,8 @@ function generateDecoratorsForField(
 ): string[] {
   const isArray = fieldType.startsWith('AG_MayBeArray');
   const isRange = fieldType.startsWith('AG_MayBeRange');
-  const isEnum = !fieldType.includes('string') && !isRange;
+  const enumMatch = fieldType.match(/AG_MayBeArray<(.+?)>/);
+  const enumName = (enumMatch && enumMatch[1] !== 'string') ? enumMatch[1] : null;
   const decorators = [
     generateIsOptional(isOptional),
     generateMaybeArray(),
@@ -79,8 +80,8 @@ function generateDecoratorsForField(
     decorators.push(generateIsUrl(fieldName, true, isArray));
   }
 
-  if (isEnum) {
-    decorators.push(generateIsInDecorator(fieldName));
+  if (enumName) {
+    decorators.push(generateIsInDecorator(fieldName, enumName));
   }
 
   return decorators.filter(Boolean);

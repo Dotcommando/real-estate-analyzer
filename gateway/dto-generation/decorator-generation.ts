@@ -32,9 +32,9 @@ export function generateIsUrl(fieldName: string, isUrl: boolean, isArray: boolea
   return isUrl ? `@IsUrl({}, { ${isArray ? 'each: true, ' : ''}message: 'Each URL in ${fieldName} must be a valid URL' })` : '';
 }
 
-export function generateIsInDecorator(fieldName: string, message?: string): string {
+export function generateIsInDecorator(fieldName: string, enumName: string, message?: string): string {
   const field = fieldName.replace(/'/g, '');
-  const enumArrayName = toPascalCase(field) + 'Array';
+  const enumArrayName = toPascalCase(enumName) + 'Array';
   const errorMessage = message || `Each ${field} must be a valid value`;
 
   return `@IsIn(${enumArrayName}, { each: true, message: '${errorMessage}' })`;
