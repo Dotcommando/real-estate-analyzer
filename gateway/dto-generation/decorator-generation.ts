@@ -1,3 +1,6 @@
+import { toPascalCase } from './to-pascal-case';
+
+
 export function generateIsOptional(isOptional: boolean): string {
   return isOptional ? '@IsOptional()' : '';
 }
@@ -22,9 +25,18 @@ export function generateIsString(fieldName: string, isArray: boolean = false): s
 }
 
 export function generateMaxLength(fieldName: string, isArray: boolean = false): string {
-  return `@MaxLength(getIntFromEnv(\'STRING_MAX_LENGTH\', 64), { ${isArray ? 'each: true, ' : ''}message: 'Maximum length of each ${fieldName.replace(/'/g, '')} is \${process.env.STRING_MAX_LENGTH} characters' })`;
+  return `@MaxLength(getIntFromEnv(\'STRING_MAX_LENGTH\', 64), { ${isArray ? 'each: true, ' : ''}message: \`Maximum length of each ${fieldName.replace(/'/g, '')} is \${process.env.STRING_MAX_LENGTH} characters\` })`;
 }
 
 export function generateIsUrl(fieldName: string, isUrl: boolean, isArray: boolean = false): string {
   return isUrl ? `@IsUrl({}, { ${isArray ? 'each: true, ' : ''}message: 'Each URL in ${fieldName} must be a valid URL' })` : '';
 }
+
+export function generateIsInDecorator(fieldName: string, message?: string): string {
+  const field = fieldName.replace(/'/g, '');
+  const enumArrayName = toPascalCase(field) + 'Array';
+  const errorMessage = message || `Each ${field} must be a valid value`;
+
+  return `@IsIn(${enumArrayName}, { each: true, message: '${errorMessage}' })`;
+}
+

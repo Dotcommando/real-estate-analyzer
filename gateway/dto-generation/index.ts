@@ -5,3 +5,4 @@ export * from './get-decorator-imports';
 export * from './get-function-imports';
 export * from './merge-imports';
 export * from './parse-decorator';
+export * from './to-pascal-case';

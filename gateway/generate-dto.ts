@@ -11,6 +11,7 @@ import {
 import {
   generateArrayMaxSize,
   generateIsArray,
+  generateIsInDecorator,
   generateIsOptional,
   generateIsString,
   generateIsUrl,
@@ -53,17 +54,34 @@ function generateDecoratorsForField(
   isUrlField: boolean = false,
 ): string[] {
   const isArray = fieldType.startsWith('AG_MayBeArray');
-  const isString = fieldType.includes('string');
-
+  const isRange = fieldType.startsWith('AG_MayBeRange');
+  const isEnum = !fieldType.includes('string') && !isRange;
   const decorators = [
     generateIsOptional(isOptional),
     generateMaybeArray(),
-    generateIsArray(fieldName),
-    generateArrayMaxSize(fieldName),
-    isString ? generateIsString(fieldName, isArray) : '',
-    isString ? generateMaxLength(fieldName, isArray) : '',
-    isUrlField ? generateIsUrl(fieldName, true, isArray) : '',
   ];
+
+  if (isArray) {
+    decorators.push(
+      generateIsArray(fieldName),
+      generateArrayMaxSize(fieldName),
+    );
+  }
+
+  if (isArray && fieldType.includes('string')) {
+    decorators.push(
+      generateIsString(fieldName, isArray),
+      generateMaxLength(fieldName, isArray),
+    );
+  }
+
+  if (isUrlField) {
+    decorators.push(generateIsUrl(fieldName, true, isArray));
+  }
+
+  if (isEnum) {
+    decorators.push(generateIsInDecorator(fieldName));
+  }
 
   return decorators.filter(Boolean);
 }
