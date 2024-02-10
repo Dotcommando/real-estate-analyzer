@@ -2,6 +2,7 @@ import { config } from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import {
+  ClassDeclaration,
   InterfaceDeclaration,
   Project,
   PropertySignature,
@@ -89,15 +90,48 @@ function generateDecoratorsForField(
   return decorators.filter(Boolean);
 }
 
-function addSimpleProperty(dtoClass: any, prop: PropertySignature, firstProperty: boolean) {
+function addSimpleProperty(dtoClass: ClassDeclaration, prop: PropertySignature, firstProperty: boolean) {
   const propName = prop.getName();
-  const propType = prop.getTypeNode()?.getText() || 'any';
+  const propType = prop.getTypeNode()?.getText() || '';
   const isOptional = prop.hasQuestionToken();
-  const isUrlField = propName === 'url';
-  const decorators = generateDecoratorsForField(propName, propType, isOptional, isUrlField);
+
+  if (!propType.startsWith('AG_MayBeRange')) {
+    const decorators = generateDecoratorsForField(propName, propType, isOptional);
+
+    addPropertyWithDecorators(dtoClass, propName, propType, isOptional, decorators, firstProperty);
+  } else {
+    const typeMatch = propType.match(/AG_MayBeRange<(.+?)>/);
+    const baseType = typeMatch ? typeMatch[1] : 'unknown';
+
+    if (baseType !== 'number' && baseType !== 'Date') {
+      throw new Error(`Unsupported AG_MayBeRange base type: ${baseType}`);
+    }
+
+    const rangeFields = [ '[$lte]', '[$lt]', '[$eq]', '[$gt]', '[$gte]' ];
+
+    rangeFields.forEach(suffix => {
+      const rangePropName = `'${propName.replace(/'/g, '')}${suffix}'`;
+      const decorators = baseType === 'Date'
+        ? [ '@IsOptional()', `@IsDateString({}, { message: "${rangePropName} must be a valid date string" })` ]
+        : [ '@IsOptional()', baseType === 'number' ? `@IsNumber({}, { message: "${rangePropName} must be a valid number" })` : '' ];
+
+      addPropertyWithDecorators(dtoClass, rangePropName, baseType, true, decorators, firstProperty);
+      firstProperty = false;
+    });
+  }
+}
+
+function addPropertyWithDecorators(
+  dtoClass: ClassDeclaration,
+  propName: string,
+  propType: string,
+  isOptional: boolean,
+  decorators: string[],
+  firstProperty: boolean,
+) {
   const property = dtoClass.addProperty({
     name: propName,
-    type: propType,
+    type: propType === 'Date' ? 'string' : propType,
     hasQuestionToken: isOptional,
     decorators: [],
     leadingTrivia: writer => {

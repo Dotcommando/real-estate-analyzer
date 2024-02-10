@@ -8,20 +8,84 @@ import { getIntFromEnv } from '../../utils/';
 
 export class StatFilterDto {
     @IsOptional()
-    @MaybeArray()
-    medianDelta?: AG_MayBeRange<number>;
+    @IsNumber({}, { message: "'medianDelta[$lte]' must be a valid number" })
+    'medianDelta[$lte]'?: number;
 
     @IsOptional()
-    @MaybeArray()
-    meanDelta?: AG_MayBeRange<number>;
+    @IsNumber({}, { message: "'medianDelta[$lt]' must be a valid number" })
+    'medianDelta[$lt]'?: number;
 
     @IsOptional()
-    @MaybeArray()
-    medianDeltaSqm?: AG_MayBeRange<number>;
+    @IsNumber({}, { message: "'medianDelta[$eq]' must be a valid number" })
+    'medianDelta[$eq]'?: number;
 
     @IsOptional()
-    @MaybeArray()
-    meanDeltaSqm?: AG_MayBeRange<number>;
+    @IsNumber({}, { message: "'medianDelta[$gt]' must be a valid number" })
+    'medianDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'medianDelta[$gte]' must be a valid number" })
+    'medianDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'meanDelta[$lte]' must be a valid number" })
+    'meanDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'meanDelta[$lt]' must be a valid number" })
+    'meanDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'meanDelta[$eq]' must be a valid number" })
+    'meanDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'meanDelta[$gt]' must be a valid number" })
+    'meanDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'meanDelta[$gte]' must be a valid number" })
+    'meanDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'medianDeltaSqm[$lte]' must be a valid number" })
+    'medianDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'medianDeltaSqm[$lt]' must be a valid number" })
+    'medianDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'medianDeltaSqm[$eq]' must be a valid number" })
+    'medianDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'medianDeltaSqm[$gt]' must be a valid number" })
+    'medianDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'medianDeltaSqm[$gte]' must be a valid number" })
+    'medianDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'meanDeltaSqm[$lte]' must be a valid number" })
+    'meanDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'meanDeltaSqm[$lt]' must be a valid number" })
+    'meanDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'meanDeltaSqm[$eq]' must be a valid number" })
+    'meanDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'meanDeltaSqm[$gt]' must be a valid number" })
+    'meanDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'meanDeltaSqm[$gte]' must be a valid number" })
+    'meanDeltaSqm[$gte]'?: number;
 
     @IsOptional()
     @MaybeArray()
@@ -45,12 +109,27 @@ export class GetRentResidentialQueryDto {
     @ArrayMaxSize(getIntFromEnv('URL_ARRAY_MAX_SIZE', 5))
     @IsString({ each: true, message: 'Each url must be a string' })
     @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each url is ${process.env.STRING_MAX_LENGTH} characters` })
-    @IsUrl({}, { each: true, message: 'Each URL in url must be a valid URL' })
     url?: AG_MayBeArray<string>;
 
     @IsOptional()
-    @MaybeArray()
-    publish_date?: AG_MayBeRange<Date>;
+    @IsDateString({}, { message: "'publish_date[$lte]' must be a valid date string" })
+    'publish_date[$lte]'?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: "'publish_date[$lt]' must be a valid date string" })
+    'publish_date[$lt]'?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: "'publish_date[$eq]' must be a valid date string" })
+    'publish_date[$eq]'?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: "'publish_date[$gt]' must be a valid date string" })
+    'publish_date[$gt]'?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: "'publish_date[$gte]' must be a valid date string" })
+    'publish_date[$gte]'?: string;
 
     @IsOptional()
     @MaybeArray()
@@ -76,8 +155,24 @@ export class GetRentResidentialQueryDto {
     district?: AG_MayBeArray<string>;
 
     @IsOptional()
-    @MaybeArray()
-    price?: AG_MayBeRange<number>;
+    @IsNumber({}, { message: "'price[$lte]' must be a valid number" })
+    'price[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'price[$lt]' must be a valid number" })
+    'price[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'price[$eq]' must be a valid number" })
+    'price[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'price[$gt]' must be a valid number" })
+    'price[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'price[$gte]' must be a valid number" })
+    'price[$gte]'?: number;
 
     @IsOptional()
     @MaybeArray()
@@ -140,12 +235,44 @@ export class GetRentResidentialQueryDto {
     parking?: AG_MayBeArray<Parking>;
 
     @IsOptional()
-    @MaybeArray()
-    'parking-places'?: AG_MayBeRange<number>;
+    @IsNumber({}, { message: "'parking-places[$lte]' must be a valid number" })
+    'parking-places[$lte]'?: number;
 
     @IsOptional()
-    @MaybeArray()
-    'property-area'?: AG_MayBeRange<number>;
+    @IsNumber({}, { message: "'parking-places[$lt]' must be a valid number" })
+    'parking-places[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'parking-places[$eq]' must be a valid number" })
+    'parking-places[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'parking-places[$gt]' must be a valid number" })
+    'parking-places[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'parking-places[$gte]' must be a valid number" })
+    'parking-places[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'property-area[$lte]' must be a valid number" })
+    'property-area[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'property-area[$lt]' must be a valid number" })
+    'property-area[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'property-area[$eq]' must be a valid number" })
+    'property-area[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'property-area[$gt]' must be a valid number" })
+    'property-area[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'property-area[$gte]' must be a valid number" })
+    'property-area[$gte]'?: number;
 
     @IsOptional()
     @MaybeArray()
@@ -155,12 +282,44 @@ export class GetRentResidentialQueryDto {
     furnishing?: AG_MayBeArray<Furnishing>;
 
     @IsOptional()
-    @MaybeArray()
-    bedrooms?: AG_MayBeRange<number>;
+    @IsNumber({}, { message: "'bedrooms[$lte]' must be a valid number" })
+    'bedrooms[$lte]'?: number;
 
     @IsOptional()
-    @MaybeArray()
-    bathrooms?: AG_MayBeRange<number>;
+    @IsNumber({}, { message: "'bedrooms[$lt]' must be a valid number" })
+    'bedrooms[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'bedrooms[$eq]' must be a valid number" })
+    'bedrooms[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'bedrooms[$gt]' must be a valid number" })
+    'bedrooms[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'bedrooms[$gte]' must be a valid number" })
+    'bedrooms[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'bathrooms[$lte]' must be a valid number" })
+    'bathrooms[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'bathrooms[$lt]' must be a valid number" })
+    'bathrooms[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'bathrooms[$eq]' must be a valid number" })
+    'bathrooms[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'bathrooms[$gt]' must be a valid number" })
+    'bathrooms[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'bathrooms[$gte]' must be a valid number" })
+    'bathrooms[$gte]'?: number;
 
     @IsOptional()
     @MaybeArray()
@@ -240,16 +399,64 @@ export class GetRentResidentialQueryDto {
     storage?: AG_MayBeArray<StandardSet>;
 
     @IsOptional()
-    @MaybeArray()
-    'ad_last_updated'?: AG_MayBeRange<Date>;
+    @IsDateString({}, { message: "'ad_last_updated[$lte]' must be a valid date string" })
+    'ad_last_updated[$lte]'?: string;
 
     @IsOptional()
-    @MaybeArray()
-    'updated_at'?: AG_MayBeRange<Date>;
+    @IsDateString({}, { message: "'ad_last_updated[$lt]' must be a valid date string" })
+    'ad_last_updated[$lt]'?: string;
 
     @IsOptional()
-    @MaybeArray()
-    'plot-area'?: AG_MayBeRange<number>;
+    @IsDateString({}, { message: "'ad_last_updated[$eq]' must be a valid date string" })
+    'ad_last_updated[$eq]'?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: "'ad_last_updated[$gt]' must be a valid date string" })
+    'ad_last_updated[$gt]'?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: "'ad_last_updated[$gte]' must be a valid date string" })
+    'ad_last_updated[$gte]'?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: "'updated_at[$lte]' must be a valid date string" })
+    'updated_at[$lte]'?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: "'updated_at[$lt]' must be a valid date string" })
+    'updated_at[$lt]'?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: "'updated_at[$eq]' must be a valid date string" })
+    'updated_at[$eq]'?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: "'updated_at[$gt]' must be a valid date string" })
+    'updated_at[$gt]'?: string;
+
+    @IsOptional()
+    @IsDateString({}, { message: "'updated_at[$gte]' must be a valid date string" })
+    'updated_at[$gte]'?: string;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'plot-area[$lte]' must be a valid number" })
+    'plot-area[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'plot-area[$lt]' must be a valid number" })
+    'plot-area[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'plot-area[$eq]' must be a valid number" })
+    'plot-area[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'plot-area[$gt]' must be a valid number" })
+    'plot-area[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'plot-area[$gte]' must be a valid number" })
+    'plot-area[$gte]'?: number;
 
     @IsOptional()
     @MaybeArray()
@@ -267,12 +474,44 @@ export class GetRentResidentialQueryDto {
     subcategory?: AG_MayBeArray<string>;
 
     @IsOptional()
-    @MaybeArray()
-    activeDays?: AG_MayBeRange<number>;
+    @IsNumber({}, { message: "'activeDays[$lte]' must be a valid number" })
+    'activeDays[$lte]'?: number;
 
     @IsOptional()
-    @MaybeArray()
-    'price-sqm'?: AG_MayBeRange<number>;
+    @IsNumber({}, { message: "'activeDays[$lt]' must be a valid number" })
+    'activeDays[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'activeDays[$eq]' must be a valid number" })
+    'activeDays[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'activeDays[$gt]' must be a valid number" })
+    'activeDays[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'activeDays[$gte]' must be a valid number" })
+    'activeDays[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'price-sqm[$lte]' must be a valid number" })
+    'price-sqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'price-sqm[$lt]' must be a valid number" })
+    'price-sqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'price-sqm[$eq]' must be a valid number" })
+    'price-sqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'price-sqm[$gt]' must be a valid number" })
+    'price-sqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'price-sqm[$gte]' must be a valid number" })
+    'price-sqm[$gte]'?: number;
 }
 
 export class GetSaleResidentialQueryDto {
