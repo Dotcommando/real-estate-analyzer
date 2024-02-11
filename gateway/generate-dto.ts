@@ -12,6 +12,7 @@ import {
   SourceFile,
   SyntaxKind,
   Type,
+  TypeFormatFlags,
 } from 'ts-morph';
 
 import {
@@ -163,10 +164,12 @@ function addNestedProperty(
   enumsMap: Map<string, EnumDeclaration>,
   basePath: string = '',
 ): void {
-  const propName = prop.getName();
-  const propType = prop.getType();
+  const isParentOptional = prop.hasQuestionToken();
+  const properties = processType(prop.getType(), prop.getName(), basePath, enumsMap, dtoClass, isParentOptional);
 
-  processType(propType, propName, basePath, enumsMap, dtoClass);
+  properties.forEach(({ name, type, isOptional }) => {
+    console.log(`Property: ${name}, Type: ${type}, Optional: ${isOptional}`);
+  });
 }
 
 function processType(
@@ -175,7 +178,10 @@ function processType(
   basePath: string,
   enumsMap: Map<string, EnumDeclaration>,
   dtoClass: ClassDeclaration,
-): void {
+  isParentOptional: boolean,
+): { name: string; type: string; isOptional: boolean }[] {
+  const properties = [];
+
   function replaceEnumNames(propName: string): string {
     return propName.replace(/\[(.*?)\]/g, (match, enumName) => {
       const [ cleanEnumName, enumProp ] = enumName.split('.');
@@ -185,39 +191,42 @@ function processType(
     });
   }
 
-  const fullPropName = basePath ? `${basePath}.${propName}` : propName;
-  const finalPropName = replaceEnumNames(fullPropName);
-  const symbol = type.getSymbol();
-
-  if (symbol && enumsMap.has(symbol.getName())) {
-    console.log(`Enum property: ${finalPropName}`);
-
-    return;
+  function addProperty(name: string, type: string, isOptional: boolean) {
+    properties.push({ name, type, isOptional: isOptional || isParentOptional });
   }
 
+  const fullPropName = basePath ? `${basePath}.${propName}` : propName;
+  const finalPropName = replaceEnumNames(fullPropName);
+
   if (type.isObject()) {
-    console.log(`Object property: ${finalPropName}`);
     type.getProperties().forEach((subPropSymbol) => {
       const subProp = subPropSymbol.getValueDeclarationOrThrow().asKindOrThrow(SyntaxKind.PropertySignature);
+      const subProperties = processType(subProp.getType(), subProp.getName(), finalPropName, enumsMap, dtoClass, isParentOptional);
 
-      processType(subProp.getType(), subProp.getName(), finalPropName, enumsMap, dtoClass);
+      properties.push(...subProperties);
     });
 
-    return;
+    return properties;
   }
 
   const typeArguments = type.getTypeArguments();
 
   if (typeArguments.length > 0) {
-    console.log(`Generic property: ${finalPropName}`);
     typeArguments.forEach((typeArg, index) => {
-      processType(typeArg, `${propName}<${index}>`, basePath, enumsMap, dtoClass);
+      const subProperties = processType(typeArg, `${propName}<${index}>`, basePath, enumsMap, dtoClass, isParentOptional);
+
+      properties.push(...subProperties);
     });
 
-    return;
+    return properties;
   }
 
-  console.log(`Simple property: ${finalPropName}`);
+  const isOptional = type.isNullable() || isParentOptional;
+  const typeText = type.getText(undefined, TypeFormatFlags.NoTruncation);
+
+  addProperty(finalPropName, typeText, isOptional);
+
+  return properties;
 }
 
 async function fillEnumsMapFromImports(
