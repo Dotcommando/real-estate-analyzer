@@ -3,10 +3,15 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {
   ClassDeclaration,
+  EnumDeclaration,
+  ImportDeclaration,
+  ImportSpecifier,
   InterfaceDeclaration,
   Project,
   PropertySignature,
   SourceFile,
+  SyntaxKind,
+  Type,
 } from 'ts-morph';
 
 import {
@@ -23,6 +28,7 @@ import {
   getCustomTypeImports,
   getCustomTypes,
   getDecoratorImports,
+  getEnumFromImport,
   getFunctionImports,
   mergeImports,
   parseDecorator,
@@ -151,70 +157,171 @@ function addPropertyWithDecorators(
   });
 }
 
-function addNestedProperty(dtoClass: any, prop: PropertySignature) {
-  // Реализация будет добавлена позже
+function addNestedProperty(
+  dtoClass: ClassDeclaration,
+  prop: PropertySignature,
+  enumsMap: Map<string, EnumDeclaration>,
+  basePath: string = '',
+): void {
+  const propName = prop.getName();
+  const propType = prop.getType();
+
+  processType(propType, propName, basePath, enumsMap, dtoClass);
 }
 
-interfacesPaths.forEach(interfacePath => {
-  const sourceFile: SourceFile = project.addSourceFileAtPath(interfacePath);
-  const interfaces: InterfaceDeclaration[] = sourceFile.getInterfaces();
-  const interfaceFileName = path.basename(interfacePath);
-  const dtoFileName = interfaceFileName.replace('.interface.ts', '.dto.ts');
-  const dtoFilePath = path.join(outputDir, dtoFileName);
-  const dtoFile: SourceFile = project.createSourceFile(dtoFilePath, '', { overwrite: true });
-  const decoratorImportsMap: Map<string, string[]> = getDecoratorImports(decoratorsConfig, outputDir);
-  const functionImportsMap: Map<string, string[]> = getFunctionImports(functionsConfig, outputDir);
-  let customTypeImportsMap = new Map<string, string[]>();
+function processType(
+  type: Type,
+  propName: string,
+  basePath: string,
+  enumsMap: Map<string, EnumDeclaration>,
+  dtoClass: ClassDeclaration,
+): void {
+  function replaceEnumNames(propName: string): string {
+    return propName.replace(/\[(.*?)\]/g, (match, enumName) => {
+      const [ cleanEnumName, enumProp ] = enumName.split('.');
+      const enumDecl: EnumDeclaration = enumsMap.get(cleanEnumName);
 
-  interfaces.forEach((interfaceDecl: InterfaceDeclaration, index) => {
-    const interfaceName = interfaceDecl.getName();
-    const dtoClassName = interfaceName.replace(/^I/, '') + 'Dto';
-    const dtoClass = dtoFile.addClass({
-      name: dtoClassName,
-      isExported: true,
-    });
-
-    let firstProperty = true;
-
-    interfaceDecl.getProperties().forEach((prop: PropertySignature) => {
-      if (isNestedProperty(prop.getName())) {
-        addNestedProperty(dtoClass, prop);
-      } else {
-        addSimpleProperty(dtoClass, prop, firstProperty);
-        firstProperty = false;
-      }
-    });
-
-    customTypeImportsMap = mergeImports(customTypeImportsMap, getCustomTypeImports(getCustomTypes(interfaceDecl), sourceFile, outputDir));
-  });
-
-  let finalImportsMap: Map<string, string[]> = mergeImports(decoratorImportsMap, customTypeImportsMap);
-
-  finalImportsMap = mergeImports(finalImportsMap, functionImportsMap);
-
-  finalImportsMap.forEach((imports, moduleSpecifier) => {
-    dtoFile.addImportDeclaration({
-      moduleSpecifier,
-      namedImports: imports,
-    });
-  });
-
-  dtoFile.saveSync();
-
-  const dtoText = fs.readFileSync(dtoFilePath, 'utf8');
-  const existingEnums = new Set<string>();
-  const importRegex = /import { ([^}]+) } from ['"]([^'"]*constants)['"]/g;
-  let match;
-
-  while ((match = importRegex.exec(dtoText)) !== null) {
-    match[1].split(',').forEach(enumOrArray => {
-      existingEnums.add(enumOrArray.trim());
+      return enumDecl ? enumDecl.getMember(enumProp).getValue() : enumName;
     });
   }
 
-  const missingImports = findMissingEnumArrayImports(dtoText, existingEnums);
+  const fullPropName = basePath ? `${basePath}.${propName}` : propName;
+  const finalPropName = replaceEnumNames(fullPropName);
+  const symbol = type.getSymbol();
 
-  addMissingEnumArrayImports(dtoFilePath, missingImports);
-});
+  if (symbol && enumsMap.has(symbol.getName())) {
+    console.log(`Enum property: ${finalPropName}`);
 
-console.log('DTO generation completed.');
+    return;
+  }
+
+  if (type.isObject()) {
+    console.log(`Object property: ${finalPropName}`);
+    type.getProperties().forEach((subPropSymbol) => {
+      const subProp = subPropSymbol.getValueDeclarationOrThrow().asKindOrThrow(SyntaxKind.PropertySignature);
+
+      processType(subProp.getType(), subProp.getName(), finalPropName, enumsMap, dtoClass);
+    });
+
+    return;
+  }
+
+  const typeArguments = type.getTypeArguments();
+
+  if (typeArguments.length > 0) {
+    console.log(`Generic property: ${finalPropName}`);
+    typeArguments.forEach((typeArg, index) => {
+      processType(typeArg, `${propName}<${index}>`, basePath, enumsMap, dtoClass);
+    });
+
+    return;
+  }
+
+  console.log(`Simple property: ${finalPropName}`);
+}
+
+async function fillEnumsMapFromImports(
+  sourceFile: SourceFile,
+  currentFilePath: string,
+  enumsMap: Map<string, EnumDeclaration>,
+): Promise<void> {
+  const importDeclarations: ImportDeclaration[] = sourceFile.getImportDeclarations();
+
+  for (const importDeclaration of importDeclarations) {
+    const moduleSpecifierValue = importDeclaration.getModuleSpecifierValue();
+    let importPath = path.resolve(path.dirname(currentFilePath), moduleSpecifierValue);
+
+    if (fs.existsSync(importPath + '.ts')) {
+      importPath += '.ts';
+    } else if (fs.existsSync(path.join(importPath, 'index.ts'))) {
+      importPath = path.join(importPath, 'index.ts');
+    } else {
+      continue;
+    }
+
+    const namedImports: ImportSpecifier[] = importDeclaration.getNamedImports();
+
+    for (const namedImport of namedImports) {
+      const importName = namedImport.getName();
+      const alias = namedImport.getAliasNode()?.getText();
+      const enumName = alias || importName;
+      const enumFromImport = getEnumFromImport(currentFilePath, importPath, importName);
+
+      enumsMap.set(enumName, enumFromImport);
+    }
+  }
+}
+
+(async (): Promise<void> => {
+  const enumsMap = new Map<string, EnumDeclaration>();
+
+  for (const interfacePath of interfacesPaths) {
+    const sourceFile: SourceFile = project.addSourceFileAtPath(interfacePath);
+
+    await fillEnumsMapFromImports(sourceFile, interfacePath, enumsMap);
+  }
+
+  interfacesPaths.forEach(interfacePath => {
+    const sourceFile: SourceFile = project.addSourceFileAtPath(interfacePath);
+    const interfaces: InterfaceDeclaration[] = sourceFile.getInterfaces();
+    const interfaceFileName = path.basename(interfacePath);
+    const dtoFileName = interfaceFileName.replace('.interface.ts', '.dto.ts');
+    const dtoFilePath = path.join(outputDir, dtoFileName);
+    const dtoFile: SourceFile = project.createSourceFile(dtoFilePath, '', { overwrite: true });
+    const decoratorImportsMap: Map<string, string[]> = getDecoratorImports(decoratorsConfig, outputDir);
+    const functionImportsMap: Map<string, string[]> = getFunctionImports(functionsConfig, outputDir);
+    let customTypeImportsMap = new Map<string, string[]>();
+
+    interfaces.forEach((interfaceDecl: InterfaceDeclaration, index) => {
+      const interfaceName = interfaceDecl.getName();
+      const dtoClassName = interfaceName.replace(/^I/, '') + 'Dto';
+      const dtoClass = dtoFile.addClass({
+        name: dtoClassName,
+        isExported: true,
+      });
+
+      let firstProperty = true;
+
+      interfaceDecl.getProperties().forEach((prop: PropertySignature) => {
+        if (isNestedProperty(prop.getName())) {
+          addNestedProperty(dtoClass, prop, enumsMap);
+        } else {
+          addSimpleProperty(dtoClass, prop, firstProperty);
+          firstProperty = false;
+        }
+      });
+
+      customTypeImportsMap = mergeImports(customTypeImportsMap, getCustomTypeImports(getCustomTypes(interfaceDecl), sourceFile, outputDir));
+    });
+
+    let finalImportsMap: Map<string, string[]> = mergeImports(decoratorImportsMap, customTypeImportsMap);
+
+    finalImportsMap = mergeImports(finalImportsMap, functionImportsMap);
+
+    finalImportsMap.forEach((imports, moduleSpecifier) => {
+      dtoFile.addImportDeclaration({
+        moduleSpecifier,
+        namedImports: imports,
+      });
+    });
+
+    dtoFile.saveSync();
+
+    const dtoText = fs.readFileSync(dtoFilePath, 'utf8');
+    const existingEnums = new Set<string>();
+    const importRegex = /import { ([^}]+) } from ['"]([^'"]*constants)['"]/g;
+    let match;
+
+    while ((match = importRegex.exec(dtoText)) !== null) {
+      match[1].split(',').forEach(enumOrArray => {
+        existingEnums.add(enumOrArray.trim());
+      });
+    }
+
+    const missingImports = findMissingEnumArrayImports(dtoText, existingEnums);
+
+    addMissingEnumArrayImports(dtoFilePath, missingImports);
+  });
+
+  console.log('DTO generation completed.');
+})();

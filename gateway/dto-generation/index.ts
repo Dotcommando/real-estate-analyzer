@@ -5,6 +5,8 @@ export * from './find-missing-enum-arrays';
 export * from './get-custom-types';
 export * from './get-custom-types-imports';
 export * from './get-decorator-imports';
+export * from './get-enum-from-import';
+export * from './get-enum-values-from-import';
 export * from './get-function-imports';
 export * from './merge-imports';
 export * from './parse-decorator';
