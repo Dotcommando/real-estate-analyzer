@@ -12,7 +12,7 @@ export function getFunctionImports(
     let moduleSpecifier = importFrom;
 
     if (importFrom.startsWith('./')) {
-      const scriptDirPath = path.resolve(__dirname).replace(/\/dist\/dto-generation$/, '');
+      const scriptDirPath = path.resolve(__dirname, '../').replace(/\/dist\/dto-generation$/, '');
       const absolutePath = path.resolve(scriptDirPath, importFrom);
       const relativePathFromOutputDir = path.relative(outputDir, absolutePath).split(path.sep).join('/');
 
