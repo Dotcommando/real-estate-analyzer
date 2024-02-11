@@ -1,6 +1,7 @@
 export * from './add-missing-enum-array-imports';
 export * from './decorator-generation';
 export * from './enum-import-detail.interface';
+export * from './fill-enum-map-from-imports';
 export * from './find-missing-enum-arrays';
 export * from './get-custom-types';
 export * from './get-custom-types-imports';
@@ -10,4 +11,5 @@ export * from './get-enum-values-from-import';
 export * from './get-function-imports';
 export * from './merge-imports';
 export * from './parse-decorator';
+export * from './process-type';
 export * from './to-pascal-case';

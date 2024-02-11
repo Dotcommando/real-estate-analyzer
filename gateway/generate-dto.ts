@@ -3,20 +3,19 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {
   ClassDeclaration,
+  CodeBlockWriter,
   EnumDeclaration,
-  ImportDeclaration,
-  ImportSpecifier,
   InterfaceDeclaration,
   Project,
+  PropertyDeclaration,
   PropertySignature,
   SourceFile,
-  SyntaxKind,
-  Type,
-  TypeFormatFlags,
 } from 'ts-morph';
 
 import {
   addMissingEnumArrayImports,
+  EnumImportDetail,
+  fillEnumsMapFromImports,
   findMissingEnumArrayImports,
   generateArrayMaxSize,
   generateIsArray,
@@ -29,10 +28,10 @@ import {
   getCustomTypeImports,
   getCustomTypes,
   getDecoratorImports,
-  getEnumFromImport,
   getFunctionImports,
   mergeImports,
   parseDecorator,
+  processType,
 } from './dto-generation';
 
 
@@ -136,12 +135,12 @@ function addPropertyWithDecorators(
   decorators: string[],
   firstProperty: boolean,
 ) {
-  const property = dtoClass.addProperty({
+  const property: PropertyDeclaration = dtoClass.addProperty({
     name: propName,
     type: propType === 'Date' ? 'string' : propType,
     hasQuestionToken: isOptional,
     decorators: [],
-    leadingTrivia: writer => {
+    leadingTrivia: (writer: CodeBlockWriter) => {
       if (!firstProperty) {
         writer.blankLine();
       }
@@ -170,95 +169,6 @@ function addNestedProperty(
   properties.forEach(({ name, type, isOptional }) => {
     console.log(`Property: ${name}, Type: ${type}, Optional: ${isOptional}`);
   });
-}
-
-function processType(
-  type: Type,
-  propName: string,
-  basePath: string,
-  enumsMap: Map<string, EnumDeclaration>,
-  dtoClass: ClassDeclaration,
-  isParentOptional: boolean,
-): { name: string; type: string; isOptional: boolean }[] {
-  const properties = [];
-
-  function replaceEnumNames(propName: string): string {
-    return propName.replace(/\[(.*?)\]/g, (match, enumName) => {
-      const [ cleanEnumName, enumProp ] = enumName.split('.');
-      const enumDecl: EnumDeclaration = enumsMap.get(cleanEnumName);
-
-      return enumDecl ? enumDecl.getMember(enumProp).getValue() : enumName;
-    });
-  }
-
-  function addProperty(name: string, type: string, isOptional: boolean) {
-    properties.push({ name, type, isOptional: isOptional || isParentOptional });
-  }
-
-  const fullPropName = basePath ? `${basePath}.${propName}` : propName;
-  const finalPropName = replaceEnumNames(fullPropName);
-
-  if (type.isObject()) {
-    type.getProperties().forEach((subPropSymbol) => {
-      const subProp = subPropSymbol.getValueDeclarationOrThrow().asKindOrThrow(SyntaxKind.PropertySignature);
-      const subProperties = processType(subProp.getType(), subProp.getName(), finalPropName, enumsMap, dtoClass, isParentOptional);
-
-      properties.push(...subProperties);
-    });
-
-    return properties;
-  }
-
-  const typeArguments = type.getTypeArguments();
-
-  if (typeArguments.length > 0) {
-    typeArguments.forEach((typeArg, index) => {
-      const subProperties = processType(typeArg, `${propName}<${index}>`, basePath, enumsMap, dtoClass, isParentOptional);
-
-      properties.push(...subProperties);
-    });
-
-    return properties;
-  }
-
-  const isOptional = type.isNullable() || isParentOptional;
-  const typeText = type.getText(undefined, TypeFormatFlags.NoTruncation);
-
-  addProperty(finalPropName, typeText, isOptional);
-
-  return properties;
-}
-
-async function fillEnumsMapFromImports(
-  sourceFile: SourceFile,
-  currentFilePath: string,
-  enumsMap: Map<string, EnumDeclaration>,
-): Promise<void> {
-  const importDeclarations: ImportDeclaration[] = sourceFile.getImportDeclarations();
-
-  for (const importDeclaration of importDeclarations) {
-    const moduleSpecifierValue = importDeclaration.getModuleSpecifierValue();
-    let importPath = path.resolve(path.dirname(currentFilePath), moduleSpecifierValue);
-
-    if (fs.existsSync(importPath + '.ts')) {
-      importPath += '.ts';
-    } else if (fs.existsSync(path.join(importPath, 'index.ts'))) {
-      importPath = path.join(importPath, 'index.ts');
-    } else {
-      continue;
-    }
-
-    const namedImports: ImportSpecifier[] = importDeclaration.getNamedImports();
-
-    for (const namedImport of namedImports) {
-      const importName = namedImport.getName();
-      const alias = namedImport.getAliasNode()?.getText();
-      const enumName = alias || importName;
-      const enumFromImport = getEnumFromImport(currentFilePath, importPath, importName);
-
-      enumsMap.set(enumName, enumFromImport);
-    }
-  }
 }
 
 (async (): Promise<void> => {
@@ -327,7 +237,7 @@ async function fillEnumsMapFromImports(
       });
     }
 
-    const missingImports = findMissingEnumArrayImports(dtoText, existingEnums);
+    const missingImports: EnumImportDetail[] = findMissingEnumArrayImports(dtoText, existingEnums);
 
     addMissingEnumArrayImports(dtoFilePath, missingImports);
   });
