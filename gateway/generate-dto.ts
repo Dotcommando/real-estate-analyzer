@@ -96,16 +96,13 @@ function generateDecoratorsForField(
   return decorators.filter(Boolean);
 }
 
-function addSimpleProperty(dtoClass: ClassDeclaration, prop: PropertySignature, firstProperty: boolean) {
-  const propName = prop.getName();
-  const propType = prop.getTypeNode()?.getText() || '';
-  const isOptional = prop.hasQuestionToken();
+function addSimpleProperty(dtoClass: ClassDeclaration, prop: PropertySignature | { name: string; type: string; isOptional: boolean }, firstProperty: boolean) {
+  const propName = 'getName' in prop ? prop.getName() : prop.name;
+  const isOptional = 'hasQuestionToken' in prop ? prop.hasQuestionToken() : prop.isOptional;
+  const propType = 'getTypeNode' in prop ? (prop.getTypeNode()?.getText() || '') : prop.type;
+  const formattedPropName = propName.includes('.') ? `'${propName}'` : propName;
 
-  if (!propType.startsWith('AG_MayBeRange')) {
-    const decorators = generateDecoratorsForField(propName, propType, isOptional);
-
-    addPropertyWithDecorators(dtoClass, propName, propType, isOptional, decorators, firstProperty);
-  } else {
+  if (propType.startsWith('AG_MayBeRange')) {
     const typeMatch = propType.match(/AG_MayBeRange<(.+?)>/);
     const baseType = typeMatch ? typeMatch[1] : 'unknown';
 
@@ -124,6 +121,10 @@ function addSimpleProperty(dtoClass: ClassDeclaration, prop: PropertySignature, 
       addPropertyWithDecorators(dtoClass, rangePropName, baseType, true, decorators, firstProperty);
       firstProperty = false;
     });
+  } else {
+    const decorators = generateDecoratorsForField(formattedPropName, propType, isOptional);
+
+    addPropertyWithDecorators(dtoClass, formattedPropName, propType, isOptional, decorators, firstProperty);
   }
 }
 
@@ -164,10 +165,13 @@ function addNestedProperty(
   basePath: string = '',
 ): void {
   const isParentOptional = prop.hasQuestionToken();
-  const properties = processType(prop.getType(), prop.getName(), basePath, enumsMap, dtoClass, isParentOptional);
+  const nestedProperties = processType(prop.getType(), prop.getName(), basePath, enumsMap, dtoClass, isParentOptional);
 
-  properties.forEach(({ name, type, isOptional }) => {
-    console.log(`Property: ${name}, Type: ${type}, Optional: ${isOptional}`);
+  let firstProperty = true;
+
+  nestedProperties.forEach(nestedProp => {
+    addSimpleProperty(dtoClass, nestedProp, firstProperty);
+    firstProperty = false;
   });
 }
 

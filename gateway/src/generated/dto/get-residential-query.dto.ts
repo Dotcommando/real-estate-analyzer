@@ -512,6 +512,569 @@ export class GetRentResidentialQueryDto {
     @IsOptional()
     @IsNumber({}, { message: "'price-sqm[$gte]' must be a valid number" })
     'price-sqm[$gte]'?: number;
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.medianDelta[$lte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.medianDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.medianDelta[$lt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.medianDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.medianDelta[$eq]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.medianDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.medianDelta[$gt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.medianDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.medianDelta[$gte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.medianDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.meanDelta[$lte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.meanDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.meanDelta[$lt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.meanDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.meanDelta[$eq]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.meanDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.meanDelta[$gt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.meanDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.meanDelta[$gte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.meanDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm[$lte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm[$lt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm[$eq]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm[$gt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm[$gte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm[$lte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm[$lt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm[$eq]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm[$gt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm[$gte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field priceDeviations.city_avg_mean.monthly_total.noDataAbsReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICEDEVIATIONS.CITY_AVG_MEAN.MONTHLY_TOTAL.NODATAABSREASON_ARRAY_MAX_SIZE', 5))
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each priceDeviations.city_avg_mean.monthly_total.noDataAbsReason must be a valid value' })
+    'priceDeviations.city_avg_mean.monthly_total.noDataAbsReason'?: AG_MayBeArray<NoStatisticsDataReason>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field priceDeviations.city_avg_mean.monthly_total.noDataSqmReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICEDEVIATIONS.CITY_AVG_MEAN.MONTHLY_TOTAL.NODATASQMREASON_ARRAY_MAX_SIZE', 5))
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each priceDeviations.city_avg_mean.monthly_total.noDataSqmReason must be a valid value' })
+    'priceDeviations.city_avg_mean.monthly_total.noDataSqmReason'?: AG_MayBeArray<NoStatisticsDataReason>;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta[$lte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta[$lt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta[$eq]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta[$gt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta[$gte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta[$lte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta[$lt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta[$eq]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta[$gt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta[$gte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm[$lte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm[$lt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm[$eq]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm[$gt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm[$gte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm[$lte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm[$lt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm[$eq]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm[$gt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm[$gte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field priceDeviations.city_avg_mean.monthly_intermediary.noDataAbsReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICEDEVIATIONS.CITY_AVG_MEAN.MONTHLY_INTERMEDIARY.NODATAABSREASON_ARRAY_MAX_SIZE', 5))
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each priceDeviations.city_avg_mean.monthly_intermediary.noDataAbsReason must be a valid value' })
+    'priceDeviations.city_avg_mean.monthly_intermediary.noDataAbsReason'?: AG_MayBeArray<NoStatisticsDataReason>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field priceDeviations.city_avg_mean.monthly_intermediary.noDataSqmReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICEDEVIATIONS.CITY_AVG_MEAN.MONTHLY_INTERMEDIARY.NODATASQMREASON_ARRAY_MAX_SIZE', 5))
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each priceDeviations.city_avg_mean.monthly_intermediary.noDataSqmReason must be a valid value' })
+    'priceDeviations.city_avg_mean.monthly_intermediary.noDataSqmReason'?: AG_MayBeArray<NoStatisticsDataReason>;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.medianDelta[$lte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.medianDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.medianDelta[$lt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.medianDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.medianDelta[$eq]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.medianDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.medianDelta[$gt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.medianDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.medianDelta[$gte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.medianDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.meanDelta[$lte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.meanDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.meanDelta[$lt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.meanDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.meanDelta[$eq]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.meanDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.meanDelta[$gt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.meanDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.meanDelta[$gte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.meanDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm[$lte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm[$lt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm[$eq]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm[$gt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm[$gte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm[$lte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm[$lt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm[$eq]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm[$gt]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm[$gte]' must be a valid number" })
+    'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field priceDeviations.city_avg_mean.daily_total.noDataAbsReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICEDEVIATIONS.CITY_AVG_MEAN.DAILY_TOTAL.NODATAABSREASON_ARRAY_MAX_SIZE', 5))
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each priceDeviations.city_avg_mean.daily_total.noDataAbsReason must be a valid value' })
+    'priceDeviations.city_avg_mean.daily_total.noDataAbsReason'?: AG_MayBeArray<NoStatisticsDataReason>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field priceDeviations.city_avg_mean.daily_total.noDataSqmReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICEDEVIATIONS.CITY_AVG_MEAN.DAILY_TOTAL.NODATASQMREASON_ARRAY_MAX_SIZE', 5))
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each priceDeviations.city_avg_mean.daily_total.noDataSqmReason must be a valid value' })
+    'priceDeviations.city_avg_mean.daily_total.noDataSqmReason'?: AG_MayBeArray<NoStatisticsDataReason>;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.medianDelta[$lte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.medianDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.medianDelta[$lt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.medianDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.medianDelta[$eq]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.medianDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.medianDelta[$gt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.medianDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.medianDelta[$gte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.medianDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.meanDelta[$lte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.meanDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.meanDelta[$lt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.meanDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.meanDelta[$eq]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.meanDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.meanDelta[$gt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.meanDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.meanDelta[$gte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.meanDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm[$lte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm[$lt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm[$eq]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm[$gt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm[$gte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm[$lte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm[$lt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm[$eq]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm[$gt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm[$gte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field priceDeviations.district_avg_mean.monthly_total.noDataAbsReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICEDEVIATIONS.DISTRICT_AVG_MEAN.MONTHLY_TOTAL.NODATAABSREASON_ARRAY_MAX_SIZE', 5))
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each priceDeviations.district_avg_mean.monthly_total.noDataAbsReason must be a valid value' })
+    'priceDeviations.district_avg_mean.monthly_total.noDataAbsReason'?: AG_MayBeArray<NoStatisticsDataReason>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field priceDeviations.district_avg_mean.monthly_total.noDataSqmReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICEDEVIATIONS.DISTRICT_AVG_MEAN.MONTHLY_TOTAL.NODATASQMREASON_ARRAY_MAX_SIZE', 5))
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each priceDeviations.district_avg_mean.monthly_total.noDataSqmReason must be a valid value' })
+    'priceDeviations.district_avg_mean.monthly_total.noDataSqmReason'?: AG_MayBeArray<NoStatisticsDataReason>;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta[$lte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta[$lt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta[$eq]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta[$gt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta[$gte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta[$lte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta[$lt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta[$eq]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta[$gt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta[$gte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm[$lte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm[$lt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm[$eq]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm[$gt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm[$gte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm[$lte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm[$lt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm[$eq]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm[$gt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm[$gte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field priceDeviations.district_avg_mean.monthly_intermediary.noDataAbsReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICEDEVIATIONS.DISTRICT_AVG_MEAN.MONTHLY_INTERMEDIARY.NODATAABSREASON_ARRAY_MAX_SIZE', 5))
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each priceDeviations.district_avg_mean.monthly_intermediary.noDataAbsReason must be a valid value' })
+    'priceDeviations.district_avg_mean.monthly_intermediary.noDataAbsReason'?: AG_MayBeArray<NoStatisticsDataReason>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field priceDeviations.district_avg_mean.monthly_intermediary.noDataSqmReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICEDEVIATIONS.DISTRICT_AVG_MEAN.MONTHLY_INTERMEDIARY.NODATASQMREASON_ARRAY_MAX_SIZE', 5))
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each priceDeviations.district_avg_mean.monthly_intermediary.noDataSqmReason must be a valid value' })
+    'priceDeviations.district_avg_mean.monthly_intermediary.noDataSqmReason'?: AG_MayBeArray<NoStatisticsDataReason>;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.medianDelta[$lte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.medianDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.medianDelta[$lt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.medianDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.medianDelta[$eq]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.medianDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.medianDelta[$gt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.medianDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.medianDelta[$gte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.medianDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.meanDelta[$lte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.meanDelta[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.meanDelta[$lt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.meanDelta[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.meanDelta[$eq]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.meanDelta[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.meanDelta[$gt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.meanDelta[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.meanDelta[$gte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.meanDelta[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm[$lte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm[$lt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm[$eq]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm[$gt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm[$gte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm[$lte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm[$lte]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm[$lt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm[$lt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm[$eq]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm[$eq]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm[$gt]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm[$gt]'?: number;
+
+    @IsOptional()
+    @IsNumber({}, { message: "'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm[$gte]' must be a valid number" })
+    'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm[$gte]'?: number;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field priceDeviations.district_avg_mean.daily_total.noDataAbsReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICEDEVIATIONS.DISTRICT_AVG_MEAN.DAILY_TOTAL.NODATAABSREASON_ARRAY_MAX_SIZE', 5))
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each priceDeviations.district_avg_mean.daily_total.noDataAbsReason must be a valid value' })
+    'priceDeviations.district_avg_mean.daily_total.noDataAbsReason'?: AG_MayBeArray<NoStatisticsDataReason>;
+
+    @IsOptional()
+    @MaybeArray()
+    @IsArray({ message: 'Field priceDeviations.district_avg_mean.daily_total.noDataSqmReason must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('PRICEDEVIATIONS.DISTRICT_AVG_MEAN.DAILY_TOTAL.NODATASQMREASON_ARRAY_MAX_SIZE', 5))
+    @IsIn(NoStatisticsDataReasonArray, { each: true, message: 'Each priceDeviations.district_avg_mean.daily_total.noDataSqmReason must be a valid value' })
+    'priceDeviations.district_avg_mean.daily_total.noDataSqmReason'?: AG_MayBeArray<NoStatisticsDataReason>;
 }
 
 export class GetSaleResidentialQueryDto {
