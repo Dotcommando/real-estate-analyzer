@@ -3,34 +3,25 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {
   ClassDeclaration,
-  CodeBlockWriter,
   EnumDeclaration,
   InterfaceDeclaration,
   Project,
-  PropertyDeclaration,
   PropertySignature,
   SourceFile,
 } from 'ts-morph';
 
 import {
   addMissingEnumArrayImports,
+  addPropertyWithDecorators,
   EnumImportDetail,
   fillEnumsMapFromImports,
   findMissingEnumArrayImports,
-  generateArrayMaxSize,
-  generateIsArray,
-  generateIsInDecorator,
-  generateIsOptional,
-  generateIsString,
-  generateIsUrl,
-  generateMaxLength,
-  generateMaybeArray,
+  generateDecoratorsForField,
   getCustomTypeImports,
   getCustomTypes,
   getDecoratorImports,
   getFunctionImports,
   mergeImports,
-  parseDecorator,
   processType,
 } from './dto-generation';
 
@@ -56,71 +47,19 @@ function isNestedProperty(propertyName: string): boolean {
   return nestedProperties.includes(propertyName);
 }
 
-function generateDecoratorsForField(
-  fieldName: string,
-  fieldType: string,
-  isOptional: boolean,
-  isUrlField: boolean = false,
-): string[] {
-  const isArray = fieldType.startsWith('AG_MayBeArray');
-  const isRange = fieldType.startsWith('AG_MayBeRange');
-  const enumMatch = fieldType.match(/AG_MayBeArray<(.+?)>/);
-  const enumName = (enumMatch && enumMatch[1] !== 'string') ? enumMatch[1] : null;
-  const decorators = [
-    generateIsOptional(isOptional),
-    generateMaybeArray(),
-  ];
-
-  if (isArray) {
-    decorators.push(
-      generateIsArray(fieldName),
-      generateArrayMaxSize(fieldName),
-    );
-  }
-
-  if (isArray && fieldType.includes('string')) {
-    decorators.push(
-      generateIsString(fieldName, isArray),
-      generateMaxLength(fieldName, isArray),
-    );
-  }
-
-  if (isUrlField) {
-    decorators.push(generateIsUrl(fieldName, true, isArray));
-  }
-
-  if (enumName) {
-    decorators.push(generateIsInDecorator(fieldName, enumName));
-  }
-
-  return decorators.filter(Boolean);
-}
-
 function addSimpleProperty(dtoClass: ClassDeclaration, prop: PropertySignature | { name: string; type: string; isOptional: boolean }, firstProperty: boolean) {
   const propName = 'getName' in prop ? prop.getName() : prop.name;
   const isOptional = 'hasQuestionToken' in prop ? prop.hasQuestionToken() : prop.isOptional;
   const propType = 'getTypeNode' in prop ? (prop.getTypeNode()?.getText() || '') : prop.type;
-  const formattedPropName = propName.includes('.') ? `'${propName}'` : propName;
+  const formattedPropName = propName.includes('.') || propName.includes('[') ? `'${propName.replace(/'/g, '')}'` : propName;
 
   if (propType.startsWith('AG_MayBeRange')) {
     const typeMatch = propType.match(/AG_MayBeRange<(.+?)>/);
     const baseType = typeMatch ? typeMatch[1] : 'unknown';
 
-    if (baseType !== 'number' && baseType !== 'Date') {
-      throw new Error(`Unsupported AG_MayBeRange base type: ${baseType}`);
-    }
-
-    const rangeFields = [ '[$lte]', '[$lt]', '[$eq]', '[$gt]', '[$gte]' ];
-
-    rangeFields.forEach(suffix => {
-      const rangePropName = `'${propName.replace(/'/g, '')}${suffix}'`;
-      const decorators = baseType === 'Date'
-        ? [ '@IsOptional()', `@IsDateString({}, { message: "${rangePropName} must be a valid date string" })` ]
-        : [ '@IsOptional()', baseType === 'number' ? `@IsNumber({}, { message: "${rangePropName} must be a valid number" })` : '' ];
-
-      addPropertyWithDecorators(dtoClass, rangePropName, baseType, true, decorators, firstProperty);
-      firstProperty = false;
-    });
+    processMayBeRange(dtoClass, formattedPropName, baseType, isOptional, firstProperty);
+  } else if (propType.startsWith('AG_MayBeArray')) {
+    processMayBeArray(dtoClass, formattedPropName, propType, isOptional, firstProperty);
   } else {
     const decorators = generateDecoratorsForField(formattedPropName, propType, isOptional);
 
@@ -128,34 +67,24 @@ function addSimpleProperty(dtoClass: ClassDeclaration, prop: PropertySignature |
   }
 }
 
-function addPropertyWithDecorators(
-  dtoClass: ClassDeclaration,
-  propName: string,
-  propType: string,
-  isOptional: boolean,
-  decorators: string[],
-  firstProperty: boolean,
-) {
-  const property: PropertyDeclaration = dtoClass.addProperty({
-    name: propName,
-    type: propType === 'Date' ? 'string' : propType,
-    hasQuestionToken: isOptional,
-    decorators: [],
-    leadingTrivia: (writer: CodeBlockWriter) => {
-      if (!firstProperty) {
-        writer.blankLine();
-      }
-    },
-  });
+function processMayBeRange(dtoClass: ClassDeclaration, propName: string, baseType: string, isOptional: boolean, firstProperty: boolean) {
+  const rangeFields = [ '[$lte]', '[$lt]', '[$eq]', '[$gt]', '[$gte]' ];
 
-  decorators.forEach(decoratorCode => {
-    const [ decoratorName, decoratorArgs ] = parseDecorator(decoratorCode);
+  rangeFields.forEach(suffix => {
+    const rangePropName = `'${propName.replace(/'/g, '')}${suffix}'`;
+    const decorators = baseType === 'Date'
+      ? [ '@IsOptional()', `@IsDateString({}, { message: "${rangePropName} must be a valid date string" })` ]
+      : [ '@IsOptional()', `@IsNumber({}, { message: "${rangePropName} must be a valid number" })` ];
 
-    property.addDecorator({
-      name: decoratorName,
-      arguments: decoratorArgs,
-    });
+    addPropertyWithDecorators(dtoClass, rangePropName, baseType, isOptional, decorators, firstProperty);
+    firstProperty = false;
   });
+}
+
+function processMayBeArray(dtoClass: ClassDeclaration, propName: string, propType: string, isOptional: boolean, firstProperty: boolean) {
+  const decorators = generateDecoratorsForField(propName, propType, isOptional, false);
+
+  addPropertyWithDecorators(dtoClass, propName, propType, isOptional, decorators, firstProperty);
 }
 
 function addNestedProperty(
