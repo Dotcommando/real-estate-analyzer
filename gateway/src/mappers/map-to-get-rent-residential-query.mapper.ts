@@ -110,13 +110,15 @@ function processNestedPriceDeviations(field: string, value: any, result: any) {
   if (!current[baseField]) {
     current[baseField] = {};
   }
+
   current[baseField][rangeKey] = value;
 }
 
 export function mapToGetRentResidentialQueryMapper(dto: GetRentResidentialQueryDto): IGetRentResidentialQuery {
   const result: Partial<IGetRentResidentialQuery> = {};
+  const dtoKeys = Object.keys(dto).filter((key) => key !== 'type');
 
-  for (const field of Object.keys(dto)) {
+  for (const field of dtoKeys) {
     if (rangeFields.some(rf => field.startsWith(`${rf}[$`))) {
       const baseField = field.split('[$')[0];
 

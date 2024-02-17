@@ -5,7 +5,8 @@ import { cache, CacheType } from 'cache-decorator';
 import { DbAccessService } from './db-access.service';
 
 import { LOGGER } from '../constants';
-import { roundNumbersInReport } from '../mappers';
+import { SearchQueryDto } from '../dto';
+import { mapToGetRentResidentialQueryMapper, roundNumbersInReport } from '../mappers';
 import {
   IAdsParams,
   IAdsResult,
@@ -15,7 +16,10 @@ import {
   IDistrictStats,
   IGetDistrictsParams,
   IGetDistrictsResult,
+  IGetRentResidentialQuery,
+  IRentResidentialId,
   IResponse,
+  ISaleResidentialId,
 } from '../types';
 
 
@@ -149,5 +153,23 @@ export class AppService {
         ],
       };
     }
+  }
+
+  public async getSearchResults(query: SearchQueryDto): Promise<IResponse<{
+    result: IRentResidentialId[] | ISaleResidentialId[];
+    total: number;
+  }>> {
+    const mappedData: IGetRentResidentialQuery = mapToGetRentResidentialQueryMapper(query);
+    const result = query.type === 'rent'
+      ? await this.dbAccessService.getRentResidential(mappedData, { price: 1 })
+      : await this.dbAccessService.getSaleResidential(mappedData, { price: 1 });
+
+    return {
+      status: HttpStatus.OK,
+      data: {
+        result: result.data ?? [],
+        total: result.total ?? 0,
+      },
+    };
   }
 }

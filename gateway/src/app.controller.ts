@@ -1,9 +1,17 @@
-import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 
 import { AdsDto, DistrictsDto, SearchQueryDto, StatsDto } from './dto';
 import { queryAdsToAds, queryGetDistricts, queryStatsToStats } from './mappers';
 import { AppService } from './services';
-import { IAnalysisResult, ICityStats, IDistrictStats, IGetDistrictsResult, IResponse } from './types';
+import {
+  IAnalysisResult,
+  ICityStats,
+  IDistrictStats,
+  IGetDistrictsResult,
+  IRentResidentialId,
+  IResponse,
+  ISaleResidentialId,
+} from './types';
 import { IAdsResult } from './types';
 
 
@@ -43,8 +51,10 @@ export class AppController {
   @Get('/search')
   public async getSearchResults(
     @Query() query: SearchQueryDto,
-  ) {
-    // return this.appService.getSearchResults();
-    return { status: HttpStatus.OK, data: { query }};
+  ): Promise<IResponse<{
+    result: IRentResidentialId[] | ISaleResidentialId[];
+    total: number;
+  }>> {
+    return this.appService.getSearchResults(query);
   }
 }

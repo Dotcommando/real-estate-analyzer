@@ -11,6 +11,7 @@ import {
   AdsEnumArray,
   AnalysisType,
   AnalysisTypeArray,
+  EMPTY_SEARCH_RESULT,
   NoStatisticsDataReason,
 } from '../constants';
 import {
@@ -326,12 +327,10 @@ export class DbAccessService {
       }
     }
 
+    const matchStage = $match.$and.length > 0 ? $match : {};
+
     return [
-      {
-        $match: $match.$and.length === 1
-          ? $match.$and[0]
-          : $match,
-      },
+      { $match: matchStage },
       { $sort },
       {
         $facet: {
@@ -358,7 +357,7 @@ export class DbAccessService {
     const result = (await this.rentResidentialsModel
       .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))
       .exec()
-    )[0];
+    )?.[0] ?? EMPTY_SEARCH_RESULT;
 
     return {
       total: result.total,
@@ -375,7 +374,7 @@ export class DbAccessService {
     const result = (await this.saleResidentialsModel
       .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))
       .exec()
-    )[0];
+    )?.[0] ?? EMPTY_SEARCH_RESULT;
 
     return {
       total: result.total,
