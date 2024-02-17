@@ -108,7 +108,7 @@ export class GetRentResidentialQueryDto {
     @IsArray({ message: 'Field url must contain an array' })
     @ArrayMaxSize(getIntFromEnv('URL_ARRAY_MAX_SIZE', 5))
     @IsString({ each: true, message: 'Each url must be a string' })
-    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each url is ${process.env.STRING_MAX_LENGTH} characters` })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 128), { each: true, message: `Maximum length of each url is ${getIntFromEnv('STRING_MAX_LENGTH', 128)} characters` })
     url?: string[];
 
     @IsOptional()
@@ -143,7 +143,7 @@ export class GetRentResidentialQueryDto {
     @IsArray({ message: 'Field city must contain an array' })
     @ArrayMaxSize(getIntFromEnv('CITY_ARRAY_MAX_SIZE', 5))
     @IsString({ each: true, message: 'Each city must be a string' })
-    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each city is ${process.env.STRING_MAX_LENGTH} characters` })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 128), { each: true, message: `Maximum length of each city is ${getIntFromEnv('STRING_MAX_LENGTH', 128)} characters` })
     city?: string[];
 
     @IsOptional()
@@ -151,7 +151,7 @@ export class GetRentResidentialQueryDto {
     @IsArray({ message: 'Field district must contain an array' })
     @ArrayMaxSize(getIntFromEnv('DISTRICT_ARRAY_MAX_SIZE', 5))
     @IsString({ each: true, message: 'Each district must be a string' })
-    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each district is ${process.env.STRING_MAX_LENGTH} characters` })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 128), { each: true, message: `Maximum length of each district is ${getIntFromEnv('STRING_MAX_LENGTH', 128)} characters` })
     district?: string[];
 
     @IsOptional()
@@ -179,7 +179,7 @@ export class GetRentResidentialQueryDto {
     @IsArray({ message: 'Field ad_id must contain an array' })
     @ArrayMaxSize(getIntFromEnv('AD_ID_ARRAY_MAX_SIZE', 5))
     @IsString({ each: true, message: 'Each ad_id must be a string' })
-    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each ad_id is ${process.env.STRING_MAX_LENGTH} characters` })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 128), { each: true, message: `Maximum length of each ad_id is ${getIntFromEnv('STRING_MAX_LENGTH', 128)} characters` })
     ad_id?: string[];
 
     @IsOptional()
@@ -194,7 +194,7 @@ export class GetRentResidentialQueryDto {
     @IsArray({ message: 'Field postal-code must contain an array' })
     @ArrayMaxSize(getIntFromEnv('POSTAL_CODE_ARRAY_MAX_SIZE', 5))
     @IsString({ each: true, message: 'Each postal-code must be a string' })
-    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each postal-code is ${process.env.STRING_MAX_LENGTH} characters` })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 128), { each: true, message: `Maximum length of each postal-code is ${getIntFromEnv('STRING_MAX_LENGTH', 128)} characters` })
     'postal-code'?: string[];
 
     @IsOptional()
@@ -216,7 +216,7 @@ export class GetRentResidentialQueryDto {
     @IsArray({ message: 'Field construction-year must contain an array' })
     @ArrayMaxSize(getIntFromEnv('CONSTRUCTION_YEAR_ARRAY_MAX_SIZE', 5))
     @IsString({ each: true, message: 'Each construction-year must be a string' })
-    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each construction-year is ${process.env.STRING_MAX_LENGTH} characters` })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 128), { each: true, message: `Maximum length of each construction-year is ${getIntFromEnv('STRING_MAX_LENGTH', 128)} characters` })
     'construction-year'?: string[];
 
     @IsOptional()
@@ -224,7 +224,7 @@ export class GetRentResidentialQueryDto {
     @IsArray({ message: 'Field floor must contain an array' })
     @ArrayMaxSize(getIntFromEnv('FLOOR_ARRAY_MAX_SIZE', 5))
     @IsString({ each: true, message: 'Each floor must be a string' })
-    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each floor is ${process.env.STRING_MAX_LENGTH} characters` })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 128), { each: true, message: `Maximum length of each floor is ${getIntFromEnv('STRING_MAX_LENGTH', 128)} characters` })
     floor?: string[];
 
     @IsOptional()
@@ -470,7 +470,7 @@ export class GetRentResidentialQueryDto {
     @IsArray({ message: 'Field subcategory must contain an array' })
     @ArrayMaxSize(getIntFromEnv('SUBCATEGORY_ARRAY_MAX_SIZE', 5))
     @IsString({ each: true, message: 'Each subcategory must be a string' })
-    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 64), { each: true, message: `Maximum length of each subcategory is ${process.env.STRING_MAX_LENGTH} characters` })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 128), { each: true, message: `Maximum length of each subcategory is ${getIntFromEnv('STRING_MAX_LENGTH', 128)} characters` })
     subcategory?: string[];
 
     @IsOptional()

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Model, PipelineStage } from 'mongoose';
+import { writeFileSync } from 'node:fs';
 import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc, ISaleHousesDoc } from 'src/schemas';
 import { IGetDistrictsResult } from 'src/types/get-districts.interface';
 import { getLastDate } from 'src/utils';
@@ -297,25 +298,27 @@ export class DbAccessService {
     offset: number = 0,
     limit: number = 25,
   ): PipelineStage[] {
-    const $match = { $and: []};
+    const $matchConditions = [];
 
-    let sortKey: keyof (IGetRentResidentialQuery | IGetSaleResidentialQuery);
-
-    for (sortKey in filter) {
-      if (sortKey !== 'priceDeviations') {
-        $match.$and.push({ [sortKey]: filter[sortKey] });
+    for (const key in filter) {
+      if (key !== 'priceDeviations') {
+        if (Array.isArray(filter[key])) {
+          $matchConditions.push({ [key]: { $in: filter[key] }});
+        } else {
+          $matchConditions.push({ [key]: filter[key] });
+        }
       } else {
-        const processedDeviations = this.processPriceDeviationsFilter(filter[sortKey]);
+        const processedDeviations = this.processPriceDeviationsFilter(filter[key]);
 
-        for (const key in processedDeviations) {
-          $match.$and.push({ [key]: processedDeviations[key] });
+        for (const deviationKey in processedDeviations) {
+          $matchConditions.push({ [deviationKey]: processedDeviations[deviationKey] });
         }
       }
     }
 
     const $sort = {};
 
-    for (sortKey in sort) {
+    for (const sortKey in sort) {
       if (sortKey !== 'priceDeviations') {
         $sort[sortKey] = sort[sortKey];
       } else {
@@ -327,10 +330,13 @@ export class DbAccessService {
       }
     }
 
-    const matchStage = $match.$and.length > 0 ? $match : {};
+    const pipeline: PipelineStage[] = [];
 
-    return [
-      { $match: matchStage },
+    if ($matchConditions.length > 0) {
+      pipeline.push({ $match: { $and: $matchConditions }});
+    }
+
+    pipeline.push(
       { $sort },
       {
         $facet: {
@@ -345,7 +351,9 @@ export class DbAccessService {
           data: '$stage2',
         },
       },
-    ] as PipelineStage[];
+    );
+
+    return pipeline;
   }
 
   public async getRentResidential(
@@ -371,6 +379,12 @@ export class DbAccessService {
     offset: number = 0,
     limit: number = 25,
   ): Promise<{ data: ISaleResidentialId[]; total: number }> {
+    // const pipeline = this.getResidentialPipelineBuilder(filter, sort, offset, limit);
+    // const pipelineString = JSON.stringify(pipeline, null, 2);
+    // const filePath = './pipelineResult.json';
+    //
+    // writeFileSync(filePath, pipelineString);
+
     const result = (await this.saleResidentialsModel
       .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))
       .exec()

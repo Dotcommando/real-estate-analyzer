@@ -8,5 +8,6 @@ export * from './query-get-districts.mapper';
 export * from './query-stats-to-stats.mapper';
 export * from './round.mapper';
 export * from './round-numbers-in-report.mapper';
+export * from './strip-ids.mapper';
 export * from './to-rent-residential-id.mapper';
 export * from './to-sale-residential-id.mapper';

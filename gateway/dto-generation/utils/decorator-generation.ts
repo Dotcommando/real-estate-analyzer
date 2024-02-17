@@ -25,7 +25,7 @@ export function generateIsString(fieldName: string, isArray: boolean = false): s
 }
 
 export function generateMaxLength(fieldName: string, isArray: boolean = false): string {
-  return `@MaxLength(getIntFromEnv(\'STRING_MAX_LENGTH\', 64), { ${isArray ? 'each: true, ' : ''}message: \`Maximum length of each ${fieldName.replace(/'/g, '')} is \${process.env.STRING_MAX_LENGTH} characters\` })`;
+  return `@MaxLength(getIntFromEnv(\'STRING_MAX_LENGTH\', 128), { ${isArray ? 'each: true, ' : ''}message: \`Maximum length of each ${fieldName.replace(/'/g, '')} is \${getIntFromEnv(\'STRING_MAX_LENGTH\', 128)} characters\` })`;
 }
 
 export function generateIsUrl(fieldName: string, isUrl: boolean, isArray: boolean = false): string {
