@@ -298,20 +298,26 @@ export class DbAccessService {
     offset: number = 0,
     limit: number = 25,
   ): PipelineStage[] {
-    const $matchConditions = [];
+    const $match = { $and: []};
+    const dateFields = [ 'publish_date', 'ad_last_updated', 'updated_at' ];
 
     for (const key in filter) {
       if (key !== 'priceDeviations') {
-        if (Array.isArray(filter[key])) {
-          $matchConditions.push({ [key]: { $in: filter[key] }});
-        } else {
-          $matchConditions.push({ [key]: filter[key] });
-        }
-      } else {
-        const processedDeviations = this.processPriceDeviationsFilter(filter[key]);
+        if (dateFields.includes(key) && filter[key]) {
+          for (const rangeKey in filter[key]) {
+            const dateRange = filter[key][rangeKey];
 
-        for (const deviationKey in processedDeviations) {
-          $matchConditions.push({ [deviationKey]: processedDeviations[deviationKey] });
+            if (!dateRange) continue;
+
+            const mongoDateRangeKey = `$${rangeKey.replace(/\$/g, '')}`;
+            const condition = { [key]: { [mongoDateRangeKey]: new Date(dateRange) }};
+
+            $match.$and.push(condition);
+          }
+        } else if (Array.isArray(filter[key])) {
+          $match.$and.push({ [key]: { $in: filter[key] }});
+        } else {
+          $match.$and.push({ [key]: filter[key] });
         }
       }
     }
@@ -321,22 +327,13 @@ export class DbAccessService {
     for (const sortKey in sort) {
       if (sortKey !== 'priceDeviations') {
         $sort[sortKey] = sort[sortKey];
-      } else {
-        const processedDeviations = this.processPriceDeviationsSort(sort[sortKey]);
-
-        for (const key in processedDeviations) {
-          $sort[key] = processedDeviations[key];
-        }
       }
     }
 
-    const pipeline: PipelineStage[] = [];
+    const matchStage = $match.$and.length > 0 ? $match : {};
 
-    if ($matchConditions.length > 0) {
-      pipeline.push({ $match: { $and: $matchConditions }});
-    }
-
-    pipeline.push(
+    return [
+      { $match: matchStage },
       { $sort },
       {
         $facet: {
@@ -351,9 +348,7 @@ export class DbAccessService {
           data: '$stage2',
         },
       },
-    );
-
-    return pipeline;
+    ];
   }
 
   public async getRentResidential(

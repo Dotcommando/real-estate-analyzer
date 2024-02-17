@@ -74,3 +74,6 @@ mock-server/assets/**/*.html
 
 # Cache persistence file
 **/cache
+
+# Output of a pipeline builder
+**/pipelineResult.json
