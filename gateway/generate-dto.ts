@@ -82,9 +82,11 @@ function processMayBeRange(dtoClass: ClassDeclaration, propName: string, baseTyp
 }
 
 function processMayBeArray(dtoClass: ClassDeclaration, propName: string, propType: string, isOptional: boolean, firstProperty: boolean) {
-  const decorators = generateDecoratorsForField(propName, propType, isOptional, false);
+  const typeMatch = propType.match(/AG_MayBeArray<(.+?)>/);
+  const baseType = typeMatch ? `${typeMatch[1]}[]` : 'any[]';
+  const decorators = generateDecoratorsForField(propName, baseType, isOptional, false);
 
-  addPropertyWithDecorators(dtoClass, propName, propType, isOptional, decorators, firstProperty);
+  addPropertyWithDecorators(dtoClass, propName, baseType, isOptional, decorators, firstProperty);
 }
 
 function addNestedProperty(

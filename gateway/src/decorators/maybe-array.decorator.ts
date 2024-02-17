@@ -7,6 +7,6 @@ export function MaybeArray() {
       return [];
     }
 
-    return Array.isArray(value) ? value : [value];
+    return Array.isArray(value) ? value : [ value ];
   });
 }

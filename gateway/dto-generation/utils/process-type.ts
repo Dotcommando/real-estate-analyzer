@@ -21,6 +21,13 @@ export function processType(
   }
 
   function addProperty(name: string, type: string, isOptional: boolean) {
+    if (type.startsWith('AG_MayBeArray')) {
+      const innerType = type.match(/AG_MayBeArray<(.*)>/)?.[1];
+
+      if (innerType) {
+        type = `${innerType}[]`;
+      }
+    }
     properties.push({ name, type, isOptional: isOptional || isParentOptional });
   }
 
