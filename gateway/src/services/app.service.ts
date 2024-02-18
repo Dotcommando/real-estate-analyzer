@@ -6,7 +6,11 @@ import { DbAccessService } from './db-access.service';
 
 import { LOGGER } from '../constants';
 import { SearchQueryDto } from '../dto';
-import { mapToGetRentResidentialQueryMapper, roundNumbersInReport } from '../mappers';
+import {
+  mapToGetRentResidentialQueryMapper,
+  mapToGetRentResidentialSortMapper,
+  roundNumbersInReport,
+} from '../mappers';
 import {
   IAdsParams,
   IAdsResult,
@@ -17,6 +21,7 @@ import {
   IGetDistrictsParams,
   IGetDistrictsResult,
   IGetRentResidentialQuery,
+  IGetRentResidentialSort,
   IRentResidentialId,
   IResponse,
   ISaleResidentialId,
@@ -159,10 +164,11 @@ export class AppService {
     result: IRentResidentialId[] | ISaleResidentialId[];
     total: number;
   }>> {
-    const mappedData: IGetRentResidentialQuery = mapToGetRentResidentialQueryMapper(query);
+    const mappedQuery: IGetRentResidentialQuery = mapToGetRentResidentialQueryMapper(query);
+    const mapperSort: IGetRentResidentialSort = mapToGetRentResidentialSortMapper(query, { price: 1 });
     const result = query.type === 'rent'
-      ? await this.dbAccessService.getRentResidential(mappedData, { price: 1 })
-      : await this.dbAccessService.getSaleResidential(mappedData, { price: 1 });
+      ? await this.dbAccessService.getRentResidential(mappedQuery, mapperSort)
+      : await this.dbAccessService.getSaleResidential(mappedQuery, mapperSort);
 
     return {
       status: HttpStatus.OK,

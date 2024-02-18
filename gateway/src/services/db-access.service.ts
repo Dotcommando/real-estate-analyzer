@@ -225,7 +225,7 @@ export class DbAccessService {
       analysis_period: 'monthly_total',
     };
 
-    return await this.districtStatsRentFlatsModel.aggregate([
+    return this.districtStatsRentFlatsModel.aggregate([
       { $match: filters },
       { $sort: { end_date: -1 }},
       { $limit: 1 },
@@ -273,24 +273,6 @@ export class DbAccessService {
     }
 
     return processedDeviations;
-  }
-
-  private processPriceDeviationsSort(
-    priceDeviationsSort: IGetRentResidentialSort['priceDeviations'] | IGetSaleResidentialSort['priceDeviations'],
-  ): { [key: string]: 1 | -1 } {
-    const processedSort: { [key: string]: 1 | -1 } = {};
-
-    for (const analysisType in priceDeviationsSort) {
-      for (const analysisPeriod in priceDeviationsSort[analysisType]) {
-        for (const statKey in priceDeviationsSort[analysisType][analysisPeriod]) {
-          const path = `priceDeviations.${analysisType}.${analysisPeriod}.${statKey}`;
-
-          processedSort[path] = priceDeviationsSort[analysisType][analysisPeriod][statKey];
-        }
-      }
-    }
-
-    return processedSort;
   }
 
   private processNestedFields(
@@ -371,7 +353,7 @@ export class DbAccessService {
     const rangeFields = [ ...RANGE_FIELDS, ...NESTED_RANGE_FIELDS ];
     const nestedConditions = this.processNestedFields(filter, 'priceDeviations', [ '$lte', '$lt', '$eq', '$gt', '$gte' ]);
 
-    persistPipeline(nestedConditions);
+    // persistPipeline(nestedConditions);
 
     Object.entries(nestedConditions).forEach(([ key, value ]) => {
       $match.$and.push({ [key]: value });
@@ -405,9 +387,7 @@ export class DbAccessService {
     const $sort = {};
 
     for (const sortKey in sort) {
-      if (sortKey !== 'priceDeviations') {
-        $sort[sortKey] = sort[sortKey];
-      }
+      $sort[sortKey] = sort[sortKey];
     }
 
     const matchStage = $match.$and.length > 0 ? $match : {};

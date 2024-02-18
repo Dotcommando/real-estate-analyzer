@@ -1,15 +1,3 @@
-import { AnalysisPeriod, AnalysisType } from '../constants';
-
-
-export interface IStatSort {
-  medianDelta?: -1 | 1;
-  meanDelta?: -1 | 1;
-  medianDeltaSqm?: -1 | 1;
-  meanDeltaSqm?: -1 | 1;
-  noDataAbsReason?: -1 | 1;
-  noDataSqmReason?: -1 | 1;
-}
-
 export interface IGetRentResidentialSort {
   url?: -1 | 1;
   publish_date?: -1 | 1;
@@ -17,7 +5,6 @@ export interface IGetRentResidentialSort {
   city?: -1 | 1;
   district?: -1 | 1;
   price?: -1 | 1;
-  ad_id?: -1 | 1;
   'online-viewing'?: -1 | 1;
   'postal-code'?: -1 | 1;
   condition?: -1 | 1;
@@ -48,18 +35,30 @@ export interface IGetRentResidentialSort {
   subcategory?: -1 | 1;
   activeDays?: -1 | 1;
   'price-sqm'?: -1 | 1;
-  priceDeviations?: {
-    [AnalysisType.CITY_AVG_MEAN]?: {
-      [AnalysisPeriod.MONTHLY_TOTAL]?: IStatSort;
-      [AnalysisPeriod.MONTHLY_INTERMEDIARY]?: IStatSort;
-      [AnalysisPeriod.DAILY_TOTAL]?: IStatSort;
-    };
-    [AnalysisType.DISTRICT_AVG_MEAN]?: {
-      [AnalysisPeriod.MONTHLY_TOTAL]?: IStatSort;
-      [AnalysisPeriod.MONTHLY_INTERMEDIARY]?: IStatSort;
-      [AnalysisPeriod.DAILY_TOTAL]?: IStatSort;
-    };
-  };
+  'priceDeviations.city_avg_mean.monthly_total.medianDelta'?: number;
+  'priceDeviations.city_avg_mean.monthly_total.meanDelta'?: number;
+  'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm'?: number;
+  'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm'?: number;
+  'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta'?: number;
+  'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta'?: number;
+  'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm'?: number;
+  'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm'?: number;
+  'priceDeviations.city_avg_mean.daily_total.medianDelta'?: number;
+  'priceDeviations.city_avg_mean.daily_total.meanDelta'?: number;
+  'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm'?: number;
+  'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm'?: number;
+  'priceDeviations.district_avg_mean.monthly_total.medianDelta'?: number;
+  'priceDeviations.district_avg_mean.monthly_total.meanDelta'?: number;
+  'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm'?: number;
+  'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm'?: number;
+  'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta'?: number;
+  'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta'?: number;
+  'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm'?: number;
+  'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm'?: number;
+  'priceDeviations.district_avg_mean.daily_total.medianDelta'?: number;
+  'priceDeviations.district_avg_mean.daily_total.meanDelta'?: number;
+  'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm'?: number;
+  'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm'?: number;
 }
 
 export interface IGetSaleResidentialSort extends Omit<IGetRentResidentialSort, 'pets' | 'plot-area'> {

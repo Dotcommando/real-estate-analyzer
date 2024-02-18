@@ -8,7 +8,7 @@ export function toRentResidentialIdMapper(doc: any): IRentResidentialId {
 
   keysOfIRentResidentialId.forEach((key: keyof IRentResidentialId) => {
     if (key in doc) {
-      if (key === 'priceDeviations' && doc[key] !== null) {
+      if ((key === 'priceDeviations' || key === 'coords') && doc[key] !== null) {
         mapped[key] = stripIds(doc[key]);
       } else {
         mapped[key] = doc[key];
