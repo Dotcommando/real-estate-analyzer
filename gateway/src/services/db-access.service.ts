@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Model, PipelineStage } from 'mongoose';
-import { writeFileSync } from 'node:fs';
 import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc, ISaleHousesDoc } from 'src/schemas';
 import { IGetDistrictsResult } from 'src/types/get-districts.interface';
-import { getLastDate } from 'src/utils';
+import { getLastDate, persistPipeline } from 'src/utils';
 
 import {
   AdsEnum,
@@ -14,6 +13,7 @@ import {
   AnalysisTypeArray,
   EMPTY_SEARCH_RESULT,
   NoStatisticsDataReason,
+  RANGE_FIELDS,
 } from '../constants';
 import {
   activeDatesMapper,
@@ -300,19 +300,24 @@ export class DbAccessService {
   ): PipelineStage[] {
     const $match = { $and: []};
     const dateFields = [ 'publish_date', 'ad_last_updated', 'updated_at' ];
+    const rangeFields = [ ...RANGE_FIELDS ];
 
     for (const key in filter) {
       if (key !== 'priceDeviations') {
-        if (dateFields.includes(key) && filter[key]) {
+        if (rangeFields.includes(key) && filter[key]) {
+          const rangeConditions = {};
+
           for (const rangeKey in filter[key]) {
-            const dateRange = filter[key][rangeKey];
+            const value = filter[key][rangeKey];
 
-            if (!dateRange) continue;
+            if (!value) continue;
 
-            const mongoDateRangeKey = `$${rangeKey.replace(/\$/g, '')}`;
-            const condition = { [key]: { [mongoDateRangeKey]: new Date(dateRange) }};
+            const mongoRangeKey = `$${rangeKey.replace(/\$/g, '')}`;
 
-            $match.$and.push(condition);
+            rangeConditions[mongoRangeKey] = dateFields.includes(key) ? new Date(value) : value;
+          }
+          if (Object.keys(rangeConditions).length > 0) {
+            $match.$and.push({ [key]: rangeConditions });
           }
         } else if (Array.isArray(filter[key])) {
           $match.$and.push({ [key]: { $in: filter[key] }});
@@ -357,6 +362,8 @@ export class DbAccessService {
     offset: number = 0,
     limit: number = 25,
   ): Promise<{ data: IRentResidentialId[]; total: number }> {
+    persistPipeline(this.getResidentialPipelineBuilder(filter, sort, offset, limit));
+
     const result = (await this.rentResidentialsModel
       .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))
       .exec()
@@ -374,11 +381,7 @@ export class DbAccessService {
     offset: number = 0,
     limit: number = 25,
   ): Promise<{ data: ISaleResidentialId[]; total: number }> {
-    // const pipeline = this.getResidentialPipelineBuilder(filter, sort, offset, limit);
-    // const pipelineString = JSON.stringify(pipeline, null, 2);
-    // const filePath = './pipelineResult.json';
-    //
-    // writeFileSync(filePath, pipelineString);
+    persistPipeline(this.getResidentialPipelineBuilder(filter, sort, offset, limit));
 
     const result = (await this.saleResidentialsModel
       .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))

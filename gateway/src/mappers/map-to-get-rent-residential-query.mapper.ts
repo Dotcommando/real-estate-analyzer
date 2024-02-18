@@ -1,5 +1,6 @@
 import {
   AirConditioning,
+  ARRAY_FIELDS,
   Categories,
   Condition,
   EnergyEfficiency,
@@ -8,55 +9,13 @@ import {
   Parking,
   Pets,
   PoolType,
+  RANGE_FIELDS,
   Source,
   StandardSet,
 } from '../constants';
 import { GetRentResidentialQueryDto } from '../generated/dto/get-residential-query.dto';
 import { AG_MayBeArray, IGetRentResidentialQuery } from '../types';
 
-
-const rangeFields = [
-  'publish_date',
-  'price',
-  'parking-places',
-  'property-area',
-  'bedrooms',
-  'bathrooms',
-  'ad_last_updated',
-  'updated_at',
-  'plot-area',
-  'activeDays',
-  'price-sqm',
-];
-
-const arrayFields = [
-  'url',
-  'ad_id',
-  'online-viewing',
-  'source',
-  'city',
-  'district',
-  'postal-code',
-  'condition',
-  'energy-efficiency',
-  'construction-year',
-  'floor',
-  'parking',
-  'furnishing',
-  'air-conditioning',
-  'pets',
-  'alarm',
-  'attic',
-  'balcony',
-  'elevator',
-  'fireplace',
-  'garden',
-  'playroom',
-  'pool',
-  'storage',
-  'category',
-  'subcategory',
-];
 
 const arrayFieldTypes: Record<string, any> = {
   'url': String,
@@ -119,7 +78,7 @@ export function mapToGetRentResidentialQueryMapper(dto: GetRentResidentialQueryD
   const dtoKeys = Object.keys(dto).filter((key) => key !== 'type');
 
   for (const field of dtoKeys) {
-    if (rangeFields.some(rf => field.startsWith(`${rf}[$`))) {
+    if (RANGE_FIELDS.some(rf => field.startsWith(`${rf}[$`))) {
       const baseField = field.split('[$')[0];
 
       if (!result[baseField]) {
@@ -128,7 +87,7 @@ export function mapToGetRentResidentialQueryMapper(dto: GetRentResidentialQueryD
       const rangeKey = field.split('[$')[1].slice(0, -1);
 
       result[baseField][rangeKey] = dto[field];
-    } else if (arrayFields.includes(field)) {
+    } else if (ARRAY_FIELDS.includes(field)) {
       const fieldType = arrayFieldTypes[field];
 
       result[field] = dto[field] as AG_MayBeArray<typeof fieldType>;
