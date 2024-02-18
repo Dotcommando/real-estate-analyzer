@@ -57,20 +57,21 @@ function processNestedPriceDeviations(field: string, value: any, result: any) {
     current = current[parts[i]];
   }
 
-  const finalKey = parts[parts.length - 1];
+  const finalPart = parts[parts.length - 1];
+  const rangeMatch = finalPart.match(/(.+)\[\$(lt|lte|gt|gte|eq)\]$/);
 
-  if (!current[finalKey]) {
-    current[finalKey] = {};
+  if (rangeMatch) {
+    const baseField = rangeMatch[1];
+    const rangeKey = rangeMatch[2];
+
+    if (!current[baseField]) {
+      current[baseField] = {};
+    }
+
+    current[baseField][`$${rangeKey}`] = value;
+  } else {
+    current[finalPart] = value;
   }
-
-  const [ baseField, rangeModifier ] = finalKey.split('[$');
-  const rangeKey = rangeModifier.slice(0, -1);
-
-  if (!current[baseField]) {
-    current[baseField] = {};
-  }
-
-  current[baseField][rangeKey] = value;
 }
 
 export function mapToGetRentResidentialQueryMapper(dto: GetRentResidentialQueryDto): IGetRentResidentialQuery {

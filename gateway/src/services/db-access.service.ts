@@ -12,6 +12,7 @@ import {
   AnalysisType,
   AnalysisTypeArray,
   EMPTY_SEARCH_RESULT,
+  NESTED_RANGE_FIELDS,
   NoStatisticsDataReason,
   RANGE_FIELDS,
 } from '../constants';
@@ -292,6 +293,73 @@ export class DbAccessService {
     return processedSort;
   }
 
+  private processNestedFields(
+    filter: IGetRentResidentialQuery | IGetSaleResidentialQuery,
+    field: string,
+    exceptions: string[],
+  ): { [key: string]: unknown } {
+    if (!(field in filter)) {
+      return filter as { [key: string]: unknown };
+    }
+
+    const result = {};
+    const nestedObject = filter[field];
+
+    const processNestedObject = (nestedObj: any, basePath: string): void => {
+      Object.entries(nestedObj).forEach(([ key, value ]) => {
+        const isException = exceptions.some(exception => key.includes(`[${exception}]`));
+        const currentPath = isException ? basePath : `${basePath}.${key}`.trim();
+
+        if (!isException && typeof value === 'object' && !Array.isArray(value) && value !== null) {
+          processNestedObject(value, currentPath);
+        } else {
+          if (isException && typeof result[basePath] !== 'object') {
+            result[basePath] = {};
+          }
+
+          const rangeKey = isException ? `$${key.split('[$')[1].slice(0, -1)}` : null;
+
+          if (rangeKey) {
+            result[basePath][rangeKey] = value;
+          } else if (Array.isArray(value)) {
+            result[currentPath] = { $in: value };
+          } else {
+            result[currentPath] = value;
+          }
+        }
+      });
+    };
+
+    processNestedObject(nestedObject, field);
+
+    Object.entries(result).forEach(([ key, value ]) => {
+      const hasOperator = exceptions.some((exception) => key.includes(exception));
+
+      if (hasOperator) {
+        const operatorIndex = exceptions.reduce((acc, exception) => {
+          const index = key.indexOf(exception);
+
+          return index !== -1 && (acc === -1 || index < acc) ? index : acc;
+        }, -1);
+
+        if (operatorIndex !== -1) {
+          const basePath = key.substring(0, operatorIndex - 1);
+          const operator = key.substring(operatorIndex);
+
+          if (typeof result[basePath] !== 'object' || result[basePath] === null) {
+            result[basePath] = {};
+          }
+
+          result[basePath][operator] = value;
+
+          delete result[key];
+        }
+      }
+    });
+
+    return result;
+  }
+
   private getResidentialPipelineBuilder(
     filter: IGetRentResidentialQuery | IGetSaleResidentialQuery,
     sort: IGetRentResidentialSort | IGetSaleResidentialSort,
@@ -300,7 +368,14 @@ export class DbAccessService {
   ): PipelineStage[] {
     const $match = { $and: []};
     const dateFields = [ 'publish_date', 'ad_last_updated', 'updated_at' ];
-    const rangeFields = [ ...RANGE_FIELDS ];
+    const rangeFields = [ ...RANGE_FIELDS, ...NESTED_RANGE_FIELDS ];
+    const nestedConditions = this.processNestedFields(filter, 'priceDeviations', [ '$lte', '$lt', '$eq', '$gt', '$gte' ]);
+
+    persistPipeline(nestedConditions);
+
+    Object.entries(nestedConditions).forEach(([ key, value ]) => {
+      $match.$and.push({ [key]: value });
+    });
 
     for (const key in filter) {
       if (key !== 'priceDeviations') {
@@ -362,7 +437,7 @@ export class DbAccessService {
     offset: number = 0,
     limit: number = 25,
   ): Promise<{ data: IRentResidentialId[]; total: number }> {
-    persistPipeline(this.getResidentialPipelineBuilder(filter, sort, offset, limit));
+    // persistPipeline(this.getResidentialPipelineBuilder(filter, sort, offset, limit));
 
     const result = (await this.rentResidentialsModel
       .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))
@@ -381,7 +456,7 @@ export class DbAccessService {
     offset: number = 0,
     limit: number = 25,
   ): Promise<{ data: ISaleResidentialId[]; total: number }> {
-    persistPipeline(this.getResidentialPipelineBuilder(filter, sort, offset, limit));
+    // persistPipeline(this.getResidentialPipelineBuilder(filter, sort, offset, limit));
 
     const result = (await this.saleResidentialsModel
       .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))
