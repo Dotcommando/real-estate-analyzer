@@ -24,6 +24,7 @@ import {
   toRentResidentialIdMapper,
   toSaleResidentialIdMapper,
 } from '../mappers';
+import { rentLimitsPipeline, saleLimitsPipeline } from '../pipelines';
 import {
   AG_MayBeArray,
   AG_MayBeRange,
@@ -40,8 +41,10 @@ import {
   IGetRentResidentialSort,
   IGetSaleResidentialQuery,
   IGetSaleResidentialSort,
+  IRentLimits,
   IRentResidential,
   IRentResidentialId,
+  ISaleLimits,
   ISaleResidential,
   ISaleResidentialId,
 } from '../types';
@@ -447,5 +450,39 @@ export class DbAccessService {
       total: result.total,
       data: result.data.map(toSaleResidentialIdMapper),
     };
+  }
+
+  public async getRentLimits(): Promise<IRentLimits> {
+    const result = await this.rentResidentialsModel
+      .aggregate(rentLimitsPipeline)
+      .exec();
+    const data = result?.[0] ?? {};
+
+    if (data.cities && Array.isArray(data.cities) && data.cities.length > 0) {
+      data.cities = data.cities[0];
+    }
+
+    if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) {
+      data.categories = data.categories[0];
+    }
+
+    return data;
+  }
+
+  public async getSaleLimits(): Promise<ISaleLimits> {
+    const result = await this.saleResidentialsModel
+      .aggregate(saleLimitsPipeline)
+      .exec();
+    const data = result?.[0] ?? {};
+
+    if (data.cities && Array.isArray(data.cities) && data.cities.length > 0) {
+      data.cities = data.cities[0];
+    }
+
+    if (data.categories && Array.isArray(data.categories) && data.categories.length > 0) {
+      data.categories = data.categories[0];
+    }
+
+    return data;
   }
 }

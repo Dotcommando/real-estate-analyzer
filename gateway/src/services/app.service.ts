@@ -22,8 +22,10 @@ import {
   IGetDistrictsResult,
   IGetRentResidentialQuery,
   IGetRentResidentialSort,
+  IRentLimits,
   IRentResidentialId,
   IResponse,
+  ISaleLimits,
   ISaleResidentialId,
 } from '../types';
 
@@ -136,7 +138,7 @@ export class AppService {
       return {
         status: HttpStatus.OK,
         data: district,
-      } ;
+      };
     } catch (e) {
       this.logger.error('Error occurred in AppService.getDistricts with parameters:');
 
@@ -156,6 +158,48 @@ export class AppService {
         errors: [
           'Cannot get districts',
         ],
+      };
+    }
+  }
+
+  @cache({
+    ttl: 4 * 60 * 1000,
+    type: CacheType.MEMO,
+  })
+  public async getRentLimits(): Promise<IResponse<IRentLimits>> {
+    try {
+      const limits: IRentLimits = await this.dbAccessService.getRentLimits();
+
+      return {
+        status: HttpStatus.OK,
+        data: limits,
+      };
+    } catch (e) {
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        data: null,
+        errors: [ 'Cannot get rent limits' ],
+      };
+    }
+  }
+
+  @cache({
+    ttl: 4 * 60 * 1000,
+    type: CacheType.MEMO,
+  })
+  public async getSaleLimits(): Promise<IResponse<ISaleLimits>> {
+    try {
+      const limits: ISaleLimits = await this.dbAccessService.getSaleLimits();
+
+      return {
+        status: HttpStatus.OK,
+        data: limits,
+      };
+    } catch (e) {
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        data: null,
+        errors: [ 'Cannot get sale limits' ],
       };
     }
   }
