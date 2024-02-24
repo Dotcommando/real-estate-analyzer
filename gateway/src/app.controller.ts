@@ -8,8 +8,10 @@ import {
   ICityStats,
   IDistrictStats,
   IGetDistrictsResult,
+  IRentLimits,
   IRentResidentialId,
   IResponse,
+  ISaleLimits,
   ISaleResidentialId,
 } from './types';
 import { IAdsResult } from './types';
@@ -46,6 +48,16 @@ export class AppController {
     @Query() query: DistrictsDto,
   ): Promise<IResponse<IGetDistrictsResult[]>> {
     return this.appService.getDistricts(queryGetDistricts(query));
+  }
+
+  @Get('/rent-limits')
+  public async getRentLimits(): Promise<IResponse<IRentLimits>> {
+    return this.appService.getRentLimits();
+  }
+
+  @Get('/sale-limits')
+  public async getSaleLimits(): Promise<IResponse<ISaleLimits>> {
+    return this.appService.getSaleLimits();
   }
 
   @Get('/search')
