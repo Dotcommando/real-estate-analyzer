@@ -1,11 +1,18 @@
 import { Controller, Get, Query } from '@nestjs/common';
 
-import { AdsDto, DistrictsDto, StatsDto } from './dto';
+import { AdsDto, DistrictsDto, SearchQueryDto, StatsDto } from './dto';
 import { queryAdsToAds, queryGetDistricts, queryStatsToStats } from './mappers';
 import { AppService } from './services';
-import { IAnalysisResult, ICityStats, IDistrictStats, IResponse } from './types';
+import {
+  IAnalysisResult,
+  ICityStats,
+  IDistrictStats,
+  IGetDistrictsResult,
+  IRentResidentialId,
+  IResponse,
+  ISaleResidentialId,
+} from './types';
 import { IAdsResult } from './types';
-import { IGetDistrictsResult } from './types/get-districts.interface';
 
 
 @Controller()
@@ -15,9 +22,9 @@ export class AppController {
   ) {
   }
 
-  @Get('/check-alive')
-  getHello(): IResponse<string> {
-    return this.appService.getHello();
+  @Get('/healthz')
+  checkHealth(): IResponse<{ alive: boolean }> {
+    return this.appService.checkHealth();
   }
 
   @Get('/stats')
@@ -39,5 +46,15 @@ export class AppController {
     @Query() query: DistrictsDto,
   ): Promise<IResponse<IGetDistrictsResult[]>> {
     return this.appService.getDistricts(queryGetDistricts(query));
+  }
+
+  @Get('/search')
+  public async getSearchResults(
+    @Query() query: SearchQueryDto,
+  ): Promise<IResponse<{
+    result: IRentResidentialId[] | ISaleResidentialId[];
+    total: number;
+  }>> {
+    return this.appService.getSearchResults(query);
   }
 }

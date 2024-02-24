@@ -12,19 +12,21 @@ import {
   EnergyEfficiencyArray,
   Furnishing,
   FurnishingArray,
-  Mode,
-  ModeArray,
   OnlineViewing,
   OnlineViewingArray,
   ParkingArray,
+  PoolType,
+  PoolTypeArray,
+  SourceArray,
+  StandardSet,
+  StandardSetArray,
 } from '../constants';
-import { ISaleApartmentsFlats } from '../types';
+import { ISaleApartmentsFlats } from '../types/real-estate-for-sale';
 import { roundDate } from '../utils';
 
 
 export interface ISaleApartmentsFlatsDoc extends ISaleApartmentsFlats, Document {
   active_dates: Date[];
-  mode?: Mode;
 }
 
 export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Model<ISaleApartmentsFlatsDoc>>(
@@ -41,6 +43,11 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     publish_date: {
       type: Schema.Types.Date,
       required: [ true, 'Publish date is required' ],
+    },
+    source: {
+      type: String,
+      enum: SourceArray,
+      required: [ true, 'Source is required' ],
     },
     city: {
       type: String,
@@ -71,10 +78,6 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     'reference-number': String,
     'registration-number': String,
     'registration-block': String,
-    'square-meter-price': {
-      type: Number,
-      required: [ true, 'Square meter price is required' ],
-    },
     condition: {
       type: String,
       enum: ConditionArray,
@@ -85,7 +88,6 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       enum: EnergyEfficiencyArray,
       default: EnergyEfficiency.NA,
     },
-    included: [ String ],
     'construction-year': String,
     type: {
       type: String,
@@ -96,6 +98,7 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       type: String,
       enum: ParkingArray,
     },
+    'parking-places': Number,
     'property-area': {
       type: Number,
       default: 0,
@@ -123,6 +126,51 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
       enum: AirConditioningArray,
       default: AirConditioning.No,
     },
+    alarm: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    attic: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    balcony: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    elevator: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    fireplace: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    garden: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    playroom: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
+    pool: {
+      type: String,
+      enum: PoolTypeArray,
+      default: PoolType.No,
+    },
+    storage: {
+      type: String,
+      enum: StandardSetArray,
+      default: StandardSet.NO,
+    },
     active_dates: {
       type: [ Schema.Types.Date ] as unknown as Date[],
       required: [ true, 'Active dates are required' ],
@@ -130,10 +178,17 @@ export const SaleApartmentsFlatsSchema = new Schema<ISaleApartmentsFlatsDoc, Mod
     coords: {
       type: CoordsSchema,
     },
-    mode: {
+    version: {
       type: String,
-      enum: ModeArray,
-      default: Mode.Prod,
+      required: [ true, 'Document version is required' ],
+    },
+    'ad_last_updated': {
+      type: Schema.Types.Date,
+      required: [ true, 'Last updated date is required' ],
+    },
+    'updated_at': {
+      type: Schema.Types.Date,
+      required: [ true, 'Date of update is required' ],
     },
   },
   { collection: 'saleapartmentsflats' },
@@ -145,6 +200,8 @@ SaleApartmentsFlatsSchema.pre<ISaleApartmentsFlatsDoc>('save', async function(ne
   if (!this.active_dates.find(date => date.getTime() === currentDate.getTime())) {
     this.active_dates.push(currentDate);
   }
+
+  this.updated_at = new Date();
 
   next();
 });

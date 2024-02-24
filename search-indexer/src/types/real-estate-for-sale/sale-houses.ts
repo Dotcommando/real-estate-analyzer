@@ -1,5 +1,5 @@
 import { AirConditioning, Furnishing } from '../../constants';
-import { ISaleProperty } from '../sale-property';
+import { ISaleProperty } from '../sale-property.interface';
 
 
 export interface ISaleHouses extends ISaleProperty {

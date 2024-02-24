@@ -20,5 +20,6 @@
     "paths": {
       "cache-decorator": ["node_modules/cache-decorator/lib/index.d.ts"],
     }
-  }
+  },
+  "exclude": ["generate-dto.ts"]
 }

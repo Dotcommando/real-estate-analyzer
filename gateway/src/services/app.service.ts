@@ -5,7 +5,12 @@ import { cache, CacheType } from 'cache-decorator';
 import { DbAccessService } from './db-access.service';
 
 import { LOGGER } from '../constants';
-import { roundNumbersInReport } from '../mappers';
+import { SearchQueryDto } from '../dto';
+import {
+  mapToGetRentResidentialQueryMapper,
+  mapToGetRentResidentialSortMapper,
+  roundNumbersInReport,
+} from '../mappers';
 import {
   IAdsParams,
   IAdsResult,
@@ -14,9 +19,13 @@ import {
   ICityStats,
   IDistrictStats,
   IGetDistrictsParams,
+  IGetDistrictsResult,
+  IGetRentResidentialQuery,
+  IGetRentResidentialSort,
+  IRentResidentialId,
   IResponse,
+  ISaleResidentialId,
 } from '../types';
-import { IGetDistrictsResult } from '../types/get-districts.interface';
 
 
 @Injectable()
@@ -27,10 +36,12 @@ export class AppService {
   ) {
   }
 
-  getHello(): IResponse<string> {
+  public checkHealth(): IResponse<{ alive: boolean }> {
     return {
       status: HttpStatus.OK,
-      data: 'Hello World!',
+      data: {
+        alive: true,
+      },
     };
   }
 
@@ -147,5 +158,24 @@ export class AppService {
         ],
       };
     }
+  }
+
+  public async getSearchResults(query: SearchQueryDto): Promise<IResponse<{
+    result: IRentResidentialId[] | ISaleResidentialId[];
+    total: number;
+  }>> {
+    const mappedQuery: IGetRentResidentialQuery = mapToGetRentResidentialQueryMapper(query);
+    const mapperSort: IGetRentResidentialSort = mapToGetRentResidentialSortMapper(query, { price: 1 });
+    const result = query.type === 'rent'
+      ? await this.dbAccessService.getRentResidential(mappedQuery, mapperSort)
+      : await this.dbAccessService.getSaleResidential(mappedQuery, mapperSort);
+
+    return {
+      status: HttpStatus.OK,
+      data: {
+        result: result.data ?? [],
+        total: result.total ?? 0,
+      },
+    };
   }
 }

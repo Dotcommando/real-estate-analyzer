@@ -1,5 +1,5 @@
 import { AirConditioning, Furnishing, Pets } from '../../constants';
-import { IRentProperty } from '../rent-property';
+import { IRentProperty } from '../rent-property.interface';
 
 
 export interface IRentHouses extends IRentProperty {

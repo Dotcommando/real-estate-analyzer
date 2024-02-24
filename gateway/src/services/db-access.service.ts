@@ -1,15 +1,32 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { Model } from 'mongoose';
-import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc } from 'src/schemas';
+import { Model, PipelineStage } from 'mongoose';
+import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc, ISaleHousesDoc } from 'src/schemas';
 import { IGetDistrictsResult } from 'src/types/get-districts.interface';
-import { getLastDate } from 'src/utils';
+import { getLastDate, persistPipeline } from 'src/utils';
 
-import { AdsEnum, AdsEnumArray, AnalysisType, AnalysisTypeArray, LOGGER } from '../constants';
-import { activeDatesMapper, analysisMapper, cityReportMapper, districtReportMapper } from '../mappers';
 import {
+  AdsEnum,
+  AdsEnumArray,
+  AnalysisType,
+  AnalysisTypeArray,
+  EMPTY_SEARCH_RESULT,
+  NESTED_RANGE_FIELDS,
+  NoStatisticsDataReason,
+  RANGE_FIELDS,
+} from '../constants';
+import {
+  activeDatesMapper,
+  analysisMapper,
+  cityReportMapper,
+  districtReportMapper,
+  toRentResidentialIdMapper,
+  toSaleResidentialIdMapper,
+} from '../mappers';
+import {
+  AG_MayBeArray,
+  AG_MayBeRange,
   IAdsParams,
   IAdsResult,
   IAnalysisParams,
@@ -19,14 +36,20 @@ import {
   IDistrictStats,
   IDistrictStatsDoc,
   IGetDistrictsParams,
-  ISaleHousesDoc,
+  IGetRentResidentialQuery,
+  IGetRentResidentialSort,
+  IGetSaleResidentialQuery,
+  IGetSaleResidentialSort,
+  IRentResidential,
+  IRentResidentialId,
+  ISaleResidential,
+  ISaleResidentialId,
 } from '../types';
 
 
 @Injectable()
 export class DbAccessService {
   constructor(
-    @Inject(LOGGER) private readonly logger: LoggerService,
     @InjectModel('CityStatsRentFlats') private readonly cityStatsRentFlatsModel: Model<ICityStatsDoc>,
     @InjectModel('CityStatsRentHouses') private readonly cityStatsRentHousesModel: Model<ICityStatsDoc>,
     @InjectModel('CityStatsSaleFlats') private readonly cityStatsSaleFlatsModel: Model<ICityStatsDoc>,
@@ -39,7 +62,8 @@ export class DbAccessService {
     @InjectModel('SaleFlats') private readonly saleFlatsModel: Model<ISaleApartmentsFlatsDoc>,
     @InjectModel('RentFlats') private readonly rentFlatsModel: Model<IRentApartmentsFlatsDoc>,
     @InjectModel('RentHouses') private readonly rentHousesModel: Model<IRentHousesDoc>,
-    private readonly configService: ConfigService,
+    @InjectModel('RentResidentials') private readonly rentResidentialsModel: Model<IRentResidential>,
+    @InjectModel('SaleResidentials') private readonly saleResidentialsModel: Model<ISaleResidential>,
   ) {
   }
 
@@ -201,7 +225,7 @@ export class DbAccessService {
       analysis_period: 'monthly_total',
     };
 
-    return await this.districtStatsRentFlatsModel.aggregate([
+    return this.districtStatsRentFlatsModel.aggregate([
       { $match: filters },
       { $sort: { end_date: -1 }},
       { $limit: 1 },
@@ -231,5 +255,197 @@ export class DbAccessService {
       },
       { $project: { _id: 0 }},
     ]);
+  }
+
+  private processPriceDeviationsFilter(
+    priceDeviations: IGetRentResidentialQuery['priceDeviations'] | IGetSaleResidentialQuery['priceDeviations'],
+  ): { [key: string]: AG_MayBeRange<number> | AG_MayBeArray<NoStatisticsDataReason> } {
+    const processedDeviations: any = {};
+
+    for (const analysisType in priceDeviations) {
+      for (const analysisPeriod in priceDeviations[analysisType]) {
+        for (const statKey in priceDeviations[analysisType][analysisPeriod]) {
+          const path = `priceDeviations.${analysisType}.${analysisPeriod}.${statKey}`;
+
+          processedDeviations[path] = priceDeviations[analysisType][analysisPeriod][statKey];
+        }
+      }
+    }
+
+    return processedDeviations;
+  }
+
+  private processNestedFields(
+    filter: IGetRentResidentialQuery | IGetSaleResidentialQuery,
+    field: string,
+    exceptions: string[],
+  ): { [key: string]: unknown } {
+    if (!(field in filter)) {
+      return filter as { [key: string]: unknown };
+    }
+
+    const result = {};
+    const nestedObject = filter[field];
+
+    const processNestedObject = (nestedObj: any, basePath: string): void => {
+      Object.entries(nestedObj).forEach(([ key, value ]) => {
+        const isException = exceptions.some(exception => key.includes(`[${exception}]`));
+        const currentPath = isException ? basePath : `${basePath}.${key}`.trim();
+
+        if (!isException && typeof value === 'object' && !Array.isArray(value) && value !== null) {
+          processNestedObject(value, currentPath);
+        } else {
+          if (isException && typeof result[basePath] !== 'object') {
+            result[basePath] = {};
+          }
+
+          const rangeKey = isException ? `$${key.split('[$')[1].slice(0, -1)}` : null;
+
+          if (rangeKey) {
+            result[basePath][rangeKey] = value;
+          } else if (Array.isArray(value)) {
+            result[currentPath] = { $in: value };
+          } else {
+            result[currentPath] = value;
+          }
+        }
+      });
+    };
+
+    processNestedObject(nestedObject, field);
+
+    Object.entries(result).forEach(([ key, value ]) => {
+      const hasOperator = exceptions.some((exception) => key.includes(exception));
+
+      if (hasOperator) {
+        const operatorIndex = exceptions.reduce((acc, exception) => {
+          const index = key.indexOf(exception);
+
+          return index !== -1 && (acc === -1 || index < acc) ? index : acc;
+        }, -1);
+
+        if (operatorIndex !== -1) {
+          const basePath = key.substring(0, operatorIndex - 1);
+          const operator = key.substring(operatorIndex);
+
+          if (typeof result[basePath] !== 'object' || result[basePath] === null) {
+            result[basePath] = {};
+          }
+
+          result[basePath][operator] = value;
+
+          delete result[key];
+        }
+      }
+    });
+
+    return result;
+  }
+
+  private getResidentialPipelineBuilder(
+    filter: IGetRentResidentialQuery | IGetSaleResidentialQuery,
+    sort: IGetRentResidentialSort | IGetSaleResidentialSort,
+    offset: number = 0,
+    limit: number = 25,
+  ): PipelineStage[] {
+    const $match = { $and: []};
+    const dateFields = [ 'publish_date', 'ad_last_updated', 'updated_at' ];
+    const rangeFields = [ ...RANGE_FIELDS, ...NESTED_RANGE_FIELDS ];
+    const nestedConditions = this.processNestedFields(filter, 'priceDeviations', [ '$lte', '$lt', '$eq', '$gt', '$gte' ]);
+
+    // persistPipeline(nestedConditions);
+
+    Object.entries(nestedConditions).forEach(([ key, value ]) => {
+      $match.$and.push({ [key]: value });
+    });
+
+    for (const key in filter) {
+      if (key !== 'priceDeviations') {
+        if (rangeFields.includes(key) && filter[key]) {
+          const rangeConditions = {};
+
+          for (const rangeKey in filter[key]) {
+            const value = filter[key][rangeKey];
+
+            if (!value) continue;
+
+            const mongoRangeKey = `$${rangeKey.replace(/\$/g, '')}`;
+
+            rangeConditions[mongoRangeKey] = dateFields.includes(key) ? new Date(value) : value;
+          }
+          if (Object.keys(rangeConditions).length > 0) {
+            $match.$and.push({ [key]: rangeConditions });
+          }
+        } else if (Array.isArray(filter[key])) {
+          $match.$and.push({ [key]: { $in: filter[key] }});
+        } else {
+          $match.$and.push({ [key]: filter[key] });
+        }
+      }
+    }
+
+    const $sort = {};
+
+    for (const sortKey in sort) {
+      $sort[sortKey] = sort[sortKey];
+    }
+
+    const matchStage = $match.$and.length > 0 ? $match : {};
+
+    return [
+      { $match: matchStage },
+      { $sort },
+      {
+        $facet: {
+          stage1: [ { $group: { _id: null, total: { $sum: 1 }}} ],
+          stage2: [ { $skip: offset }, { $limit: limit } ],
+        },
+      },
+      { $unwind: '$stage1' },
+      {
+        $project: {
+          total: '$stage1.total',
+          data: '$stage2',
+        },
+      },
+    ];
+  }
+
+  public async getRentResidential(
+    filter: IGetRentResidentialQuery,
+    sort: IGetRentResidentialSort,
+    offset: number = 0,
+    limit: number = 25,
+  ): Promise<{ data: IRentResidentialId[]; total: number }> {
+    // persistPipeline(this.getResidentialPipelineBuilder(filter, sort, offset, limit));
+
+    const result = (await this.rentResidentialsModel
+      .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))
+      .exec()
+    )?.[0] ?? EMPTY_SEARCH_RESULT;
+
+    return {
+      total: result.total,
+      data: result.data.map(toRentResidentialIdMapper),
+    };
+  }
+
+  public async getSaleResidential(
+    filter: IGetSaleResidentialQuery,
+    sort: IGetSaleResidentialSort,
+    offset: number = 0,
+    limit: number = 25,
+  ): Promise<{ data: ISaleResidentialId[]; total: number }> {
+    // persistPipeline(this.getResidentialPipelineBuilder(filter, sort, offset, limit));
+
+    const result = (await this.saleResidentialsModel
+      .aggregate(this.getResidentialPipelineBuilder(filter, sort, offset, limit))
+      .exec()
+    )?.[0] ?? EMPTY_SEARCH_RESULT;
+
+    return {
+      total: result.total,
+      data: result.data.map(toSaleResidentialIdMapper),
+    };
   }
 }
