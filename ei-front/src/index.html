@@ -6,8 +6,16 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
+  <script>
+    (function() {
+      const theme = (document.cookie.match(/^(.*;)?\s*user-theme\s*=\s*([^;]+)(;.*)?$/) || [])[2] || 'dark';
+      document.body.classList.add(theme + '-theme');
+    })();
+</script>
   <app-root></app-root>
 </body>
 </html>

@@ -1,1 +1,55 @@
-/* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
+
+$pink-primary: mat.define-palette(mat.$pink-palette);
+$bluegrey-accent: mat.define-palette(mat.$blue-grey-palette, A200, A100, A400);
+$deeppurple-primary: mat.define-palette(mat.$deep-purple-palette);
+$amber-accent: mat.define-palette(mat.$amber-palette, A200, A100, A400);
+
+$dark-theme: mat.define-dark-theme((
+  color: (
+    primary: $pink-primary,
+    accent: $bluegrey-accent,
+  )
+));
+
+$light-theme: mat.define-light-theme((
+  color: (
+    primary: $deeppurple-primary,
+    accent: $amber-accent,
+  )
+));
+
+@include mat.all-component-themes($dark-theme);
+
+@media (prefers-color-scheme: light) {
+  @include mat.all-component-colors($light-theme);
+}
+
+.dark-theme {
+  --background-color: #303030;
+  --text-color: #e0e0e0;
+  @include mat.all-component-themes($dark-theme);
+}
+
+.light-theme {
+  --background-color: #fafafa;
+  --text-color: #212121;
+  @include mat.all-component-themes($light-theme);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  font-family: Roboto, Calibri, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100%;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}

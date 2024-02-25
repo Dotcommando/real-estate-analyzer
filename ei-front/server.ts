@@ -1,8 +1,12 @@
 import { APP_BASE_HREF } from '@angular/common';
 import { CommonEngine } from '@angular/ssr';
+
+import cookieParser from 'cookie-parser';
 import express from 'express';
-import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { APP_THEME } from './src/app/tokens';
 import bootstrap from './src/main.server';
 
 // The Express app is exported so that it can be used by serverless Functions.
@@ -14,6 +18,8 @@ export function app(): express.Express {
 
   const commonEngine = new CommonEngine();
 
+  server.use(cookieParser());
+
   server.set('view engine', 'html');
   server.set('views', browserDistFolder);
 
@@ -21,12 +27,15 @@ export function app(): express.Express {
   // server.get('/api/**', (req, res) => { });
   // Serve static files from /browser
   server.get('*.*', express.static(browserDistFolder, {
-    maxAge: '1y'
+    maxAge: '1y',
   }));
 
   // All regular routes use the Angular engine
   server.get('*', (req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
+    const themeCookie = req.cookies['user-theme'];
+    const isDarkThemePreferred = themeCookie === 'dark'
+      || (!themeCookie && req.headers['user-agent'] && req.headers['user-agent'].includes('prefers-color-scheme: dark'));
 
     commonEngine
       .render({
@@ -34,7 +43,16 @@ export function app(): express.Express {
         documentFilePath: indexHtml,
         url: `${protocol}://${headers.host}${originalUrl}`,
         publicPath: browserDistFolder,
-        providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
+        providers: [
+          {
+            provide: APP_BASE_HREF,
+            useValue: baseUrl,
+          },
+          {
+            provide: APP_THEME,
+            useValue: isDarkThemePreferred ? 'dark-theme' : 'light-theme',
+          },
+        ],
       })
       .then((html) => res.send(html))
       .catch((err) => next(err));
@@ -48,6 +66,7 @@ function run(): void {
 
   // Start up the Node server
   const server = app();
+
   server.listen(port, () => {
     console.log(`Node Express server listening on http://localhost:${port}`);
   });
