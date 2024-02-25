@@ -52,3 +52,8 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
 }
+
+app-root {
+  display: block;
+  min-height: 100%;
+}

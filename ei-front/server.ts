@@ -34,8 +34,13 @@ export function app(): express.Express {
   server.get('*', (req, res, next) => {
     const { protocol, originalUrl, baseUrl, headers } = req;
     const themeCookie = req.cookies['user-theme'];
-    const isDarkThemePreferred = themeCookie === 'dark'
-      || (!themeCookie && req.headers['user-agent'] && req.headers['user-agent'].includes('prefers-color-scheme: dark'));
+    const themePreferred = Boolean(themeCookie)
+      ? themeCookie === 'dark'
+        ? 'dark'
+        : 'light'
+      : Boolean(req.headers['user-agent']) && req.headers['user-agent']?.includes('prefers-color-scheme: light')
+        ? 'light'
+        : 'dark';
 
     commonEngine
       .render({
@@ -50,7 +55,7 @@ export function app(): express.Express {
           },
           {
             provide: APP_THEME,
-            useValue: isDarkThemePreferred ? 'dark-theme' : 'light-theme',
+            useValue: themePreferred,
           },
         ],
       })
