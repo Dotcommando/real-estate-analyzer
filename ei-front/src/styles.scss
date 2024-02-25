@@ -19,22 +19,21 @@ $light-theme: mat.define-light-theme((
   )
 ));
 
-@include mat.all-component-themes($dark-theme);
-
-@media (prefers-color-scheme: light) {
-  @include mat.all-component-colors($light-theme);
-}
+@include mat.core();
+@include mat.all-component-typographies();
 
 .dark-theme {
   --background-color: #303030;
   --text-color: #e0e0e0;
-  @include mat.all-component-themes($dark-theme);
+  @include mat.all-component-colors($dark-theme);
+  @include mat.all-component-densities($dark-theme);
 }
 
 .light-theme {
   --background-color: #fafafa;
   --text-color: #212121;
-  @include mat.all-component-themes($light-theme);
+  @include mat.all-component-colors($light-theme);
+  @include mat.all-component-densities($light-theme);
 }
 
 * {
