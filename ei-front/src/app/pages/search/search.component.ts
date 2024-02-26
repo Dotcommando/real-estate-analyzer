@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { FormControl, FormGroup } from '@angular/forms';
 
 
 @Component({
@@ -9,5 +10,9 @@ import { Component } from '@angular/core';
   styleUrl: './search.component.scss',
 })
 export class SearchComponent {
-
+  public searchForm = new FormGroup({
+    type: new FormControl(),
+    city: new FormControl(),
+    district: new FormControl(),
+  });
 }
