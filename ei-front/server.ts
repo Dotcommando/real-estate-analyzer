@@ -24,6 +24,7 @@ const ORIGIN_PORT = getIntFromEnv('ORIGIN_PORT', 80);
 const FRONTEND_BFF_HOST = process.env['FRONTEND_BFF_HOST'];
 const FRONTEND_BFF_PORT = getIntFromEnv('FRONTEND_BFF_PORT', 4000);
 const API_PREFIX: string = process.env['API_PREFIX'] ?? '/api/v1';
+const INTERNAL_REQUEST_TIMEOUT_MS = getIntFromEnv('INTERNAL_REQUEST_TIMEOUT_MS', 600);
 
 const rentLimitsUrl = `http://${GATEWAY_HOST}:${GATEWAY_PORT}${API_PREFIX}/rent-limits`;
 const saleLimitsUrl = `http://${GATEWAY_HOST}:${GATEWAY_PORT}${API_PREFIX}/sale-limits`;
@@ -56,7 +57,7 @@ export function app(): express.Express {
   server.get('/', async (req: Req, res: Res, next: Next): Promise<void> => {
     const { protocol, originalUrl, baseUrl, headers } = req;
     const themePreferred: 'dark' | 'light' = getTheme(req);
-    const [ rentLimits, saleLimits ] = await fetchLimits(rentLimitsUrl, saleLimitsUrl);
+    const [ rentLimits, saleLimits ] = await fetchLimits(rentLimitsUrl, saleLimitsUrl, INTERNAL_REQUEST_TIMEOUT_MS);
 
     commonEngine
       .render({
