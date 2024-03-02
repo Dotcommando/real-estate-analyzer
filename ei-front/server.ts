@@ -8,7 +8,8 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { getIntFromEnv } from './bff/utils';
+import { Next, Req, Res } from './bff/types';
+import { fetchLimits, getIntFromEnv, getTheme, injectScript } from './bff/utils';
 import { APP_THEME } from './src/app/tokens';
 import bootstrap from './src/main.server';
 
@@ -23,6 +24,9 @@ const ORIGIN_PORT = getIntFromEnv('ORIGIN_PORT', 80);
 const FRONTEND_BFF_HOST = process.env['FRONTEND_BFF_HOST'];
 const FRONTEND_BFF_PORT = getIntFromEnv('FRONTEND_BFF_PORT', 4000);
 const API_PREFIX: string = process.env['API_PREFIX'] ?? '/api/v1';
+
+const rentLimitsUrl = `http://${GATEWAY_HOST}:${GATEWAY_PORT}${API_PREFIX}/rent-limits`;
+const saleLimitsUrl = `http://${GATEWAY_HOST}:${GATEWAY_PORT}${API_PREFIX}/sale-limits`;
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
@@ -49,17 +53,40 @@ export function app(): express.Express {
     maxAge: '1y',
   }));
 
-  // All regular routes use the Angular engine
-  server.get('*', (req, res, next) => {
+  server.get('/', async (req: Req, res: Res, next: Next): Promise<void> => {
     const { protocol, originalUrl, baseUrl, headers } = req;
-    const themeCookie = req.cookies['user-theme'];
-    const themePreferred = Boolean(themeCookie)
-      ? themeCookie === 'dark'
-        ? 'dark'
-        : 'light'
-      : Boolean(req.headers['user-agent']) && req.headers['user-agent']?.includes('prefers-color-scheme: light')
-        ? 'light'
-        : 'dark';
+    const themePreferred: 'dark' | 'light' = getTheme(req);
+    const [ rentLimits, saleLimits ] = await fetchLimits(rentLimitsUrl, saleLimitsUrl);
+
+    commonEngine
+      .render({
+        bootstrap,
+        documentFilePath: indexHtml,
+        url: `${protocol}://${headers.host}${originalUrl}`,
+        publicPath: browserDistFolder,
+        providers: [
+          {
+            provide: APP_BASE_HREF,
+            useValue: baseUrl,
+          },
+          {
+            provide: APP_THEME,
+            useValue: themePreferred,
+          },
+        ],
+      })
+      .then(html => {
+        let modifiedHtml = injectScript(html, 'rentLimits', rentLimits);
+
+        modifiedHtml = injectScript(modifiedHtml, 'saleLimits', saleLimits);
+        res.send(modifiedHtml);
+      })
+      .catch((err) => next(err));
+  });
+
+  server.get('*', async (req: Req, res: Res, next: Next): Promise<void> => {
+    const { protocol, originalUrl, baseUrl, headers } = req;
+    const themePreferred: 'dark' | 'light' = getTheme(req);
 
     commonEngine
       .render({
