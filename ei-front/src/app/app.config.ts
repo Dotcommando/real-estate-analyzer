@@ -9,7 +9,7 @@ import { StorageOption } from '@ngxs/storage-plugin/src/symbols';
 import { NgxsModule } from '@ngxs/store';
 
 import { routes } from './app.routes';
-import { SearchState } from './pages/search/search.store';
+import { SearchRentState, SearchSaleState, SearchTypeState } from './pages/search/search.store';
 
 import { environment } from '../environments/environment';
 
@@ -21,7 +21,7 @@ export const appConfig: ApplicationConfig = {
     provideAnimationsAsync(),
     importProvidersFrom(
       NgxsModule.forRoot(
-        [ SearchState ],
+        [ SearchTypeState, SearchRentState, SearchSaleState ],
         {
           developmentMode: !environment.production,
           selectorOptions: {
@@ -31,7 +31,7 @@ export const appConfig: ApplicationConfig = {
         },
       ),
       NgxsStoragePluginModule.forRoot({
-        key: [ 'search' ],
+        key: [ 'searchType', 'searchRent', 'searchSale' ],
         storage: StorageOption.LocalStorage,
       }),
       NgxsReduxDevtoolsPluginModule.forRoot(),
