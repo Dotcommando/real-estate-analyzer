@@ -52,6 +52,10 @@ export interface IRentLimits {
       min: number;
       max: number;
     };
+    priceSqmRange: {
+      min: number;
+      max: number;
+    };
     propertyAreaRange: {
       min: number;
       max: number;
