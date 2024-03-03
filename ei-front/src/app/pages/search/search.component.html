@@ -1,5 +1,12 @@
 <div class="search-wrapper">
   <div class="search-form">
-
+    <mat-tab-group dynamicHeight (selectedIndexChange)="onTabIndexChange($event)">
+      <mat-tab label="Rent">
+        <div class="mat-elevation-z4">Rent</div>
+      </mat-tab>
+      <mat-tab label="Sale">
+        <div class="mat-elevation-z4">Sale</div>
+      </mat-tab>
+    </mat-tab-group>
   </div>
 </div>
