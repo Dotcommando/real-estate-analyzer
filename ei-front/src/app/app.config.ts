@@ -4,6 +4,8 @@ import { provideAnimationsAsync } from '@angular/platform-browser/animations/asy
 import { provideRouter } from '@angular/router';
 
 import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
+import { NgxsStoragePluginModule } from '@ngxs/storage-plugin';
+import { StorageOption } from '@ngxs/storage-plugin/src/symbols';
 import { NgxsModule } from '@ngxs/store';
 
 import { routes } from './app.routes';
@@ -23,12 +25,15 @@ export const appConfig: ApplicationConfig = {
         {
           developmentMode: !environment.production,
           selectorOptions: {
-            suppressErrors: false,
+            suppressErrors: environment.production,
             injectContainerState: false,
           },
         },
       ),
-      // devtools always last
+      NgxsStoragePluginModule.forRoot({
+        key: [ 'search' ],
+        storage: StorageOption.LocalStorage,
+      }),
       NgxsReduxDevtoolsPluginModule.forRoot(),
     ),
   ],

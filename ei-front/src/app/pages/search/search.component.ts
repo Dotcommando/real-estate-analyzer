@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -28,6 +28,8 @@ export class SearchComponent {
     district: new FormControl(),
   });
 
+  private destroyRef: DestroyRef = inject(DestroyRef);
+
   constructor(
     private readonly store: Store,
   ) {
@@ -38,7 +40,7 @@ export class SearchComponent {
       .pipe(
         tap(((data) => console.log(data))),
         tap((value: 'rent' | 'sale') => this.searchForm.controls.type.setValue(value)),
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
   }
