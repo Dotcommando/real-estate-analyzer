@@ -7,6 +7,7 @@ import { Select, Store } from '@ngxs/store';
 
 import { distinctUntilChanged, Observable, tap } from 'rxjs';
 
+import { LimitationsService } from './limitations.service';
 import { ChangeType, SearchTypeState } from './search.store';
 
 
@@ -39,6 +40,7 @@ export class SearchComponent implements OnInit {
 
   constructor(
     private readonly store: Store,
+    private readonly limitsService: LimitationsService,
   ) {
   }
 
@@ -54,6 +56,8 @@ export class SearchComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
+
+    console.log(this.limitsService.getRentLimits());
   }
 
   public onTabIndexChange(index: number): void {
