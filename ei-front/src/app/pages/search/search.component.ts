@@ -1,17 +1,19 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
 
 import { Select, Store } from '@ngxs/store';
 
-import { distinctUntilChanged, Observable, tap } from 'rxjs';
+import { debounce, distinctUntilChanged, interval, Observable, tap } from 'rxjs';
 
 import { LimitationsService } from './limitations.service';
-import { ChangeType, SearchTypeState } from './search.store';
+import { ISearchForm } from './search.model';
+import { ChangeType, SearchTypeState, UpdateRentSearchState, UpdateSaleSearchState } from './search.store';
 
-import { InputRangeComponent } from '../../components/input-range/input-range.component';
 import { IRentLimits, ISaleLimits } from '../../../../bff/types';
+import { InputRangeComponent } from '../../components/input-range/input-range.component';
+import { mapSearchFormToState } from '../../mappers';
 
 
 enum SearchTypeTab {
@@ -75,11 +77,26 @@ export class SearchComponent implements OnInit {
     this.type$
       .pipe(
         distinctUntilChanged(),
-        tap(((data) => console.log(data))),
         tap((type) => {
           this.activeTabIndex = SearchTypeTab[type];
         }),
         takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
+
+    this.trackSearchForm$(this.searchRentForm.valueChanges)
+      .pipe(
+        tap((searchForm: Partial<ISearchForm>) => this.store.dispatch(
+          new UpdateRentSearchState(mapSearchFormToState(searchForm)),
+        )),
+      )
+      .subscribe();
+
+    this.trackSearchForm$(this.searchSaleForm.valueChanges)
+      .pipe(
+        tap((searchForm: Partial<ISearchForm>) => this.store.dispatch(
+          new UpdateSaleSearchState(mapSearchFormToState(searchForm)),
+        )),
       )
       .subscribe();
   }
@@ -88,5 +105,16 @@ export class SearchComponent implements OnInit {
     const type = index === 0 ? 'rent' : 'sale';
 
     this.store.dispatch(new ChangeType(type));
+  }
+
+  private trackSearchForm$(
+    formSource$: Observable<Partial<ISearchForm>>,
+  ) {
+    return formSource$
+      .pipe(
+        debounce(() => interval(400)),
+        tap((data) => console.log(data)),
+        takeUntilDestroyed(this.destroyRef),
+      );
   }
 }

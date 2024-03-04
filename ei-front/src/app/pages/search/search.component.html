@@ -6,26 +6,22 @@
     >
       <mat-tab label="Rent">
         <div class="mat-elevation-z4">
-          @if (rentLimits) {
-            <ei-input-range
-              ngDefaultControl
-              [label]="'Price'"
-              [range]="{ min: rentLimits.ranges.priceRange['min'], max: rentLimits.ranges.priceRange['max'] }"
-              [formControl]="searchRentForm.controls.price"
-            ></ei-input-range>
-          }
+          <ei-input-range
+            ngDefaultControl
+            [label]="'Price'"
+            [range]="{ min: rentLimits.ranges.priceRange['min'], max: rentLimits.ranges.priceRange['max'] }"
+            [formControl]="searchRentForm.controls.price"
+          ></ei-input-range>
         </div>
       </mat-tab>
       <mat-tab label="Sale">
         <div class="mat-elevation-z4">
-          @if (saleLimits) {
-            <ei-input-range
-              ngDefaultControl
-              [label]="'Price'"
-              [range]="{ min: saleLimits.ranges.priceRange.min, max: saleLimits.ranges.priceRange.max }"
-              [formControl]="searchSaleForm.controls.price"
-            ></ei-input-range>
-          }
+          <ei-input-range
+            ngDefaultControl
+            [label]="'Price'"
+            [range]="{ min: saleLimits.ranges.priceRange.min, max: saleLimits.ranges.priceRange.max }"
+            [formControl]="searchSaleForm.controls.price"
+          ></ei-input-range>
         </div>
       </mat-tab>
     </mat-tab-group>

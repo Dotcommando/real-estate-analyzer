@@ -33,7 +33,14 @@ export class SearchRentState {
 
     ctx.patchState({
       ...state,
-      ...action.searchRentUpdate,
+      filters: {
+        ...state.filters,
+        ...action.searchRentUpdate.filters,
+      },
+      sorts: {
+        ...state.sorts,
+        ...action.searchRentUpdate.sorts,
+      },
     });
   }
 }
@@ -50,7 +57,14 @@ export class SearchSaleState {
 
     ctx.patchState({
       ...state,
-      ...action.searchSaleUpdate,
+      filters: {
+        ...state.filters,
+        ...action.searchSaleUpdate.filters,
+      },
+      sorts: {
+        ...state.sorts,
+        ...action.searchSaleUpdate.sorts,
+      },
     });
   }
 }

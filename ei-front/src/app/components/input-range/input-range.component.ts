@@ -2,22 +2,22 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  EventEmitter,
+  forwardRef,
   inject,
   Input,
   OnInit,
-  Output,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormControl,
   FormGroup,
+  NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 
-import { distinctUntilChanged, startWith, tap } from 'rxjs';
+import { distinctUntilChanged, map, startWith, tap } from 'rxjs';
 
 import { FormControlPipe } from '../../pipes';
 import { Range } from '../../types';
@@ -31,6 +31,13 @@ import { Range } from '../../types';
     MatInputModule,
     FormControlPipe,
   ],
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => InputRangeComponent),
+      multi: true,
+    },
+  ],
   templateUrl: './input-range.component.html',
   styleUrl: './input-range.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -38,7 +45,6 @@ import { Range } from '../../types';
 export class InputRangeComponent implements OnInit {
   @Input() label: string = '';
   @Input() range!: Range<number>;
-  @Output() rangeChange = new EventEmitter<Range<number>>();
 
   public form: FormGroup = new FormGroup({
     min: new FormControl(),
@@ -47,15 +53,42 @@ export class InputRangeComponent implements OnInit {
 
   private destroyRef: DestroyRef = inject(DestroyRef);
 
+  onChange: any = () => {};
+  onTouched: any = () => {};
+
+  public writeValue(obj: any): void {
+    if (obj) {
+      this.form.setValue(obj, { emitEvent: false });
+    }
+  }
+
+  public registerOnChange(fn: any): void {
+    this.onChange = fn;
+
+    this.form.valueChanges.pipe(
+      map(({ min, max }) => ({
+        ...(min !== null && { min }),
+        ...(max !== null && { max }),
+      })),
+      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(fn);
+  }
+
+  public registerOnTouched(fn: any): void {
+    this.onTouched = fn;
+  }
+
+  public setDisabledState?(isDisabled: boolean): void {
+    isDisabled ? this.form.disable() : this.form.enable();
+  }
+
   public ngOnInit(): void {
     this.form.get('min')!.valueChanges
       .pipe(
         startWith(this.form.get('min')!.value),
         distinctUntilChanged(),
-        tap((min: number) => {
-          this.updateMaxValidator(min);
-          this.emitRangeChange();
-        }),
+        tap((min: number) => this.updateMaxValidator(min)),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
@@ -64,10 +97,7 @@ export class InputRangeComponent implements OnInit {
       .pipe(
         startWith(this.form.get('max')!.value),
         distinctUntilChanged(),
-        tap((max: number) => {
-          this.updateMinValidator(max);
-          this.emitRangeChange();
-        }),
+        tap((max: number) => this.updateMinValidator(max)),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
@@ -100,12 +130,5 @@ export class InputRangeComponent implements OnInit {
     this.form.get('max')!.setValidators([ Validators.min(this.range.min as number), Validators.max(this.range.max as number) ]);
     this.form.get('min')!.updateValueAndValidity({ emitEvent: false });
     this.form.get('max')!.updateValueAndValidity({ emitEvent: false });
-  }
-
-  private emitRangeChange(): void {
-    const min = this.form.get('min')!.value;
-    const max = this.form.get('max')!.value;
-
-    this.rangeChange.emit({ min, max });
   }
 }

@@ -19,10 +19,11 @@ export interface ISearchFilters {
   type: 'rent' | 'sale';
   city: string | null;
   district: string[] | null;
+  price: Range<number> | null;
+  'price-sqm': Range<number> | null;
   bedrooms: Range<number> | null;
   bathrooms: Range<number> | null;
-  'price-sqm': Range<number> | null;
-  price: Range<number> | null;
+  'property-area': Range<number> | null;
 
   // Special
   'priceDeviations.city_avg_mean.monthly_total.medianDelta': Range<number> | null;
@@ -151,4 +152,21 @@ export interface ISearchSorts {
 export interface ISearchState {
   filters: Partial<ISearchFilters>;
   sorts: Partial<ISearchSorts>;
+}
+
+export interface ISearchForm {
+  type: 'rent' | 'sale';
+  city: string;
+  district: string[];
+  price: Range<number>;
+  priceSqm: Range<number>;
+  bedrooms: Range<number>;
+  bathrooms: Range<number>;
+  propertyArea: Range<number>;
+}
+
+export interface ISearchRentForm extends ISearchForm {
+}
+
+export interface ISearchSaleForm extends ISearchForm {
 }
