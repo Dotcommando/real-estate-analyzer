@@ -17,7 +17,7 @@ import {
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 
-import { startWith, tap } from 'rxjs';
+import { distinctUntilChanged, startWith, tap } from 'rxjs';
 
 import { FormControlPipe } from '../../pipes';
 import { Range } from '../../types';
@@ -51,6 +51,7 @@ export class InputRangeComponent implements OnInit {
     this.form.get('min')!.valueChanges
       .pipe(
         startWith(this.form.get('min')!.value),
+        distinctUntilChanged(),
         tap((min: number) => {
           this.updateMaxValidator(min);
           this.emitRangeChange();
@@ -62,6 +63,7 @@ export class InputRangeComponent implements OnInit {
     this.form.get('max')!.valueChanges
       .pipe(
         startWith(this.form.get('max')!.value),
+        distinctUntilChanged(),
         tap((max: number) => {
           this.updateMinValidator(max);
           this.emitRangeChange();
@@ -77,7 +79,6 @@ export class InputRangeComponent implements OnInit {
     const maxControl = this.form.get('max')!;
 
     maxControl.setValidators([
-      Validators.required,
       Validators.max(this.range.max as number),
       Validators.min((min as number) ?? this.range.min),
     ]);
@@ -88,7 +89,6 @@ export class InputRangeComponent implements OnInit {
     const minControl = this.form.get('min')!;
 
     minControl.setValidators([
-      Validators.required,
       Validators.min(this.range.min as number),
       Validators.max((max as number) ?? this.range.max),
     ]);

@@ -2,8 +2,6 @@ import cloneDeep from 'lodash.clonedeep';
 
 import { ISearchState } from './search.model';
 
-import { getTodayEnd, getYearAgo } from '../../utils';
-
 
 export const SEARCH_STATE_DEFAULT: ISearchState = {
   filters: {
@@ -11,41 +9,41 @@ export const SEARCH_STATE_DEFAULT: ISearchState = {
     type: 'rent',
     city: null,
     district: null,
-    bedrooms: { min: 0, max: 15 },
-    bathrooms: { min: 0, max: 15 },
-    'price-sqm': { min: 0, max: 3000 },
-    price: { min: 0, max: 300_000 },
+    bedrooms: null,
+    bathrooms: null,
+    'price-sqm': null,
+    price: null,
 
     // Special
-    'priceDeviations.city_avg_mean.monthly_total.medianDelta': { min: 0, max: 400 },
-    'priceDeviations.city_avg_mean.monthly_total.meanDelta': { min: 0, max: 400 },
-    'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm': { min: 0, max: 400 },
-    'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm': { min: 0, max: 400 },
+    'priceDeviations.city_avg_mean.monthly_total.medianDelta': null,
+    'priceDeviations.city_avg_mean.monthly_total.meanDelta': null,
+    'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm': null,
+    'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm': null,
 
-    'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta': { min: 0, max: 400 },
-    'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta': { min: 0, max: 400 },
-    'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm': { min: 0, max: 400 },
-    'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm': { min: 0, max: 400 },
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta': null,
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta': null,
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm': null,
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm': null,
 
-    'priceDeviations.city_avg_mean.daily_total.medianDelta': { min: 0, max: 400 },
-    'priceDeviations.city_avg_mean.daily_total.meanDelta': { min: 0, max: 400 },
-    'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm': { min: 0, max: 400 },
-    'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm': { min: 0, max: 400 },
+    'priceDeviations.city_avg_mean.daily_total.medianDelta': null,
+    'priceDeviations.city_avg_mean.daily_total.meanDelta': null,
+    'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm': null,
+    'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm': null,
 
-    'priceDeviations.district_avg_mean.monthly_total.medianDelta': { min: 0, max: 400 },
-    'priceDeviations.district_avg_mean.monthly_total.meanDelta': { min: 0, max: 400 },
-    'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm': { min: 0, max: 400 },
-    'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm': { min: 0, max: 400 },
+    'priceDeviations.district_avg_mean.monthly_total.medianDelta': null,
+    'priceDeviations.district_avg_mean.monthly_total.meanDelta': null,
+    'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm': null,
+    'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm': null,
 
-    'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta': { min: 0, max: 400 },
-    'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta': { min: 0, max: 400 },
-    'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm': { min: 0, max: 400 },
-    'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm': { min: 0, max: 400 },
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta': null,
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta': null,
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm': null,
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm': null,
 
-    'priceDeviations.district_avg_mean.daily_total.medianDelta': { min: 0, max: 400 },
-    'priceDeviations.district_avg_mean.daily_total.meanDelta': { min: 0, max: 400 },
-    'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm': { min: 0, max: 400 },
-    'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm': { min: 0, max: 400 },
+    'priceDeviations.district_avg_mean.daily_total.medianDelta': null,
+    'priceDeviations.district_avg_mean.daily_total.meanDelta': null,
+    'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm': null,
+    'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm': null,
 
     // Secondary
     source: null,
@@ -56,7 +54,7 @@ export const SEARCH_STATE_DEFAULT: ISearchState = {
     'construction-year': null,
     floor: null,
     parking: null,
-    'parking-places': { min: 0, max: 8 },
+    'parking-places': null,
     furnishing: null,
     'air-conditioning': null,
     pets: null,
@@ -69,12 +67,12 @@ export const SEARCH_STATE_DEFAULT: ISearchState = {
     playroom: null,
     pool: null,
     storage: null,
-    'ad_last_updated': { min: getYearAgo(), max: getTodayEnd() },
-    'updated_at': { min: getYearAgo(), max: getTodayEnd() },
-    'plot-area': { min: 0, max: 100_000 },
+    'ad_last_updated': null,
+    'updated_at': null,
+    'plot-area': null,
     category: null,
     subcategory: null,
-    activeDays: { min: 0, max: 365 },
+    activeDays: null,
   },
   sorts: {
     url: null,

@@ -19,41 +19,41 @@ export interface ISearchFilters {
   type: 'rent' | 'sale';
   city: string | null;
   district: string[] | null;
-  bedrooms: Range<number>;
-  bathrooms: Range<number>;
-  'price-sqm': Range<number>;
-  price: Range<number>;
+  bedrooms: Range<number> | null;
+  bathrooms: Range<number> | null;
+  'price-sqm': Range<number> | null;
+  price: Range<number> | null;
 
   // Special
-  'priceDeviations.city_avg_mean.monthly_total.medianDelta': Range<number>;
-  'priceDeviations.city_avg_mean.monthly_total.meanDelta': Range<number>;
-  'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm': Range<number>;
-  'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm': Range<number>;
+  'priceDeviations.city_avg_mean.monthly_total.medianDelta': Range<number> | null;
+  'priceDeviations.city_avg_mean.monthly_total.meanDelta': Range<number> | null;
+  'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm': Range<number> | null;
+  'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm': Range<number> | null;
 
-  'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta': Range<number>;
-  'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta': Range<number>;
-  'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm': Range<number>;
-  'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm': Range<number>;
+  'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta': Range<number> | null;
+  'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta': Range<number> | null;
+  'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm': Range<number> | null;
+  'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm': Range<number> | null;
 
-  'priceDeviations.city_avg_mean.daily_total.medianDelta': Range<number>;
-  'priceDeviations.city_avg_mean.daily_total.meanDelta': Range<number>;
-  'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm': Range<number>;
-  'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm': Range<number>;
+  'priceDeviations.city_avg_mean.daily_total.medianDelta': Range<number> | null;
+  'priceDeviations.city_avg_mean.daily_total.meanDelta': Range<number> | null;
+  'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm': Range<number> | null;
+  'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm': Range<number> | null;
 
-  'priceDeviations.district_avg_mean.monthly_total.medianDelta': Range<number>;
-  'priceDeviations.district_avg_mean.monthly_total.meanDelta': Range<number>;
-  'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm': Range<number>;
-  'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm': Range<number>;
+  'priceDeviations.district_avg_mean.monthly_total.medianDelta': Range<number> | null;
+  'priceDeviations.district_avg_mean.monthly_total.meanDelta': Range<number> | null;
+  'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm': Range<number> | null;
+  'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm': Range<number> | null;
 
-  'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta': Range<number>;
-  'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta': Range<number>;
-  'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm': Range<number>;
-  'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm': Range<number>;
+  'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta': Range<number> | null;
+  'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta': Range<number> | null;
+  'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm': Range<number> | null;
+  'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm': Range<number> | null;
 
-  'priceDeviations.district_avg_mean.daily_total.medianDelta': Range<number>;
-  'priceDeviations.district_avg_mean.daily_total.meanDelta': Range<number>;
-  'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm': Range<number>;
-  'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm': Range<number>;
+  'priceDeviations.district_avg_mean.daily_total.medianDelta': Range<number> | null;
+  'priceDeviations.district_avg_mean.daily_total.meanDelta': Range<number> | null;
+  'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm': Range<number> | null;
+  'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm': Range<number> | null;
 
   // Secondary
   source: Source[] | null;
@@ -64,7 +64,7 @@ export interface ISearchFilters {
   'construction-year': string[] | null;
   floor: string[] | null;
   parking: Parking[] | null;
-  'parking-places': Range<number>;
+  'parking-places': Range<number> | null;
   furnishing: Furnishing[] | null;
   'air-conditioning': AirConditioning[] | null;
   pets: Pets[] | null;

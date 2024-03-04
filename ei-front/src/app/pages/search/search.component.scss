@@ -9,3 +9,13 @@
   min-height: 400px;
   margin: auto;
 }
+
+.mat-mdc-tab-group {
+  max-width: 99.99%;
+}
+
+@media (min-width: 960px) {
+  .mat-mdc-tab-body-content {
+    min-width: 920px;
+  }
+}
