@@ -1,6 +1,6 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatTabsModule } from '@angular/material/tabs';
 
 import { Select, Store } from '@ngxs/store';
@@ -9,6 +9,9 @@ import { distinctUntilChanged, Observable, tap } from 'rxjs';
 
 import { LimitationsService } from './limitations.service';
 import { ChangeType, SearchTypeState } from './search.store';
+
+import { InputRangeComponent } from '../../components/input-range/input-range.component';
+import { IRentLimits, ISaleLimits } from '../../../../bff/types';
 
 
 enum SearchTypeTab {
@@ -21,6 +24,8 @@ enum SearchTypeTab {
   standalone: true,
   imports: [
     MatTabsModule,
+    InputRangeComponent,
+    ReactiveFormsModule,
   ],
   templateUrl: './search.component.html',
   styleUrl: './search.component.scss',
@@ -28,11 +33,30 @@ enum SearchTypeTab {
 export class SearchComponent implements OnInit {
   @Select(SearchTypeState.searchType) type$!: Observable<'rent' | 'sale'>;
 
-  public searchForm = new FormGroup({
+  public searchRentForm = new FormGroup({
     type: new FormControl(),
     city: new FormControl(),
     district: new FormControl(),
+    price: new FormControl(),
+    priceSqm: new FormControl(),
+    bedrooms: new FormControl(),
+    bathrooms: new FormControl(),
+    propertyArea: new FormControl(),
   });
+
+  public searchSaleForm = new FormGroup({
+    type: new FormControl(),
+    city: new FormControl(),
+    district: new FormControl(),
+    price: new FormControl(),
+    priceSqm: new FormControl(),
+    bedrooms: new FormControl(),
+    bathrooms: new FormControl(),
+    propertyArea: new FormControl(),
+  });
+
+  public rentLimits!: IRentLimits;
+  public saleLimits!: ISaleLimits;
 
   public activeTabIndex: number = SearchTypeTab.rent;
 
@@ -45,6 +69,9 @@ export class SearchComponent implements OnInit {
   }
 
   public ngOnInit(): void {
+    this.rentLimits = this.limitsService.getRentLimits();
+    this.saleLimits = this.limitsService.getSaleLimits();
+
     this.type$
       .pipe(
         distinctUntilChanged(),
@@ -52,12 +79,9 @@ export class SearchComponent implements OnInit {
         tap((type) => {
           this.activeTabIndex = SearchTypeTab[type];
         }),
-        tap((value: 'rent' | 'sale') => this.searchForm.controls.type.setValue(value)),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
-
-    console.log(this.limitsService.getRentLimits());
   }
 
   public onTabIndexChange(index: number): void {

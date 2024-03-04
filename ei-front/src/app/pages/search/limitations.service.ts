@@ -1,6 +1,7 @@
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, isPlatformServer } from '@angular/common';
 import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 
+import { fallBackRentLimits, fallBackSaleLimits } from '../../../../bff/fall-backs';
 import { IRentLimits, ISaleLimits } from '../../../../bff/types';
 
 
@@ -20,6 +21,9 @@ export class LimitationsService {
     if (isPlatformBrowser(this.platformId)) {
       this.rentLimits = rentLimits;
       this.saleLimits = saleLimits;
+    } else if (isPlatformServer(this.platformId)) {
+      this.rentLimits = fallBackRentLimits;
+      this.saleLimits = fallBackSaleLimits;
     }
   }
 

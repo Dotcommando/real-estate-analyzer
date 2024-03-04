@@ -11,12 +11,8 @@ import {
   Source,
   StandardSet,
 } from '../../../../bff/constants';
+import { Range } from '../../types';
 
-
-export interface Range<T> {
-  min?: T;
-  max?: T;
-}
 
 export interface ISearchFilters {
   // Primary
