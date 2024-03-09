@@ -28,10 +28,34 @@ export class LimitationsService {
   }
 
   public getRentLimits(): IRentLimits {
-    return this.rentLimits;
+    const sortedRentLimits = { ...this.rentLimits };
+
+    sortedRentLimits.cities = (this.rentLimits.cities
+      ? this.rentLimits.cities
+      : fallBackRentLimits.cities
+    )
+      .map(city => ({
+        ...city,
+        districts: city.districts.slice().sort(),
+      }))
+      .sort((a, b) => a.city.localeCompare(b.city));
+
+    return sortedRentLimits;
   }
 
   public getSaleLimits(): ISaleLimits {
-    return this.saleLimits;
+    const sortedSaleLimits = { ...this.saleLimits };
+
+    sortedSaleLimits.cities = (this.saleLimits.cities
+      ? this.saleLimits.cities
+      : fallBackSaleLimits.cities
+    )
+      .map(city => ({
+        ...city,
+        districts: city.districts.slice().sort(),
+      }))
+      .sort((a, b) => a.city.localeCompare(b.city));
+
+    return sortedSaleLimits;
   }
 }

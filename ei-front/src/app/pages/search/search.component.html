@@ -5,6 +5,24 @@
       [(selectedIndex)]="activeTabIndex"
     >
       <mat-tab label="Rent">
+        <mat-form-field>
+          <mat-label>City</mat-label>
+          <mat-select [formControl]="searchRentForm.controls.city" (selectionChange)="onCityChange($event.value, 'rent')">
+            <mat-option value="all">All Cyprus</mat-option>
+            @for (cityData of rentLimits.cities; track cityData.city) {
+              <mat-option [value]="cityData.city">{{ cityData.city }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+<!--        <mat-form-field>-->
+<!--          <mat-label>District</mat-label>-->
+<!--          <mat-select [formControl]="searchRentForm.controls.district" [disabled]="!selectedCityDistricts" multiple>-->
+<!--            @for (district of selectedCityDistricts; track district) {-->
+<!--              <mat-option [value]="district">{{ district }}</mat-option>-->
+<!--            }-->
+<!--          </mat-select>-->
+<!--        </mat-form-field>-->
+        <ei-multi-autocomplete></ei-multi-autocomplete>
         <div class="mat-elevation-z4">
           <ei-input-range
             ngDefaultControl

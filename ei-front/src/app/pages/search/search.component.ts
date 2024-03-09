@@ -1,6 +1,7 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatFormField, MatLabel, MatOption, MatSelect } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 
 import { Select, Store } from '@ngxs/store';
@@ -13,6 +14,7 @@ import { ChangeType, SearchTypeState, UpdateRentSearchState, UpdateSaleSearchSta
 
 import { IRentLimits, ISaleLimits } from '../../../../bff/types';
 import { InputRangeComponent } from '../../components/input-range/input-range.component';
+import { MultiAutocompleteComponent } from '../../components/multi-autocomplete/multi-autocomplete.component';
 import { mapSearchFormToState } from '../../mappers';
 
 
@@ -28,6 +30,11 @@ enum SearchTypeTab {
     MatTabsModule,
     InputRangeComponent,
     ReactiveFormsModule,
+    MatSelect,
+    MatLabel,
+    MatFormField,
+    MatOption,
+    MultiAutocompleteComponent,
   ],
   templateUrl: './search.component.html',
   styleUrl: './search.component.scss',
@@ -61,6 +68,7 @@ export class SearchComponent implements OnInit {
   public saleLimits!: ISaleLimits;
 
   public activeTabIndex: number = SearchTypeTab.rent;
+  public selectedCityDistricts: string[] | null = null;
 
   private destroyRef: DestroyRef = inject(DestroyRef);
 
@@ -77,6 +85,7 @@ export class SearchComponent implements OnInit {
     this.type$
       .pipe(
         distinctUntilChanged(),
+        tap(((data) => console.log(data))),
         tap((type) => {
           this.activeTabIndex = SearchTypeTab[type];
         }),
@@ -86,6 +95,7 @@ export class SearchComponent implements OnInit {
 
     this.trackSearchForm$(this.searchRentForm.valueChanges)
       .pipe(
+        tap(data => console.log(data)),
         tap((searchForm: Partial<ISearchForm>) => this.store.dispatch(
           new UpdateRentSearchState(mapSearchFormToState(searchForm)),
         )),
@@ -99,6 +109,19 @@ export class SearchComponent implements OnInit {
         )),
       )
       .subscribe();
+  }
+
+  public onCityChange(city: string, type: 'rent' | 'sale'): void {
+    if (city === 'all') {
+      this.selectedCityDistricts = null;
+      this.searchRentForm.controls.district.disable();
+    } else {
+      const cityData = this.rentLimits.cities.find(c => c.city === city);
+
+      this.selectedCityDistricts = cityData ? cityData.districts : null;
+      this.searchRentForm.controls.district.enable();
+      this.searchRentForm.controls.district.reset();
+    }
   }
 
   public onTabIndexChange(index: number): void {
