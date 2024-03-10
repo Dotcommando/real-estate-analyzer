@@ -14,8 +14,24 @@
   max-width: 99.99%;
 }
 
+.tab-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+  gap: 18px;
+  padding: 18px 0;
+
+  & > * {
+    flex: 1 1 0;
+  }
+}
+
+.price-range {
+  max-width: 300px;
+}
+
 @media (min-width: 960px) {
-  .mat-mdc-tab-body-content {
+  .search-form {
     min-width: 920px;
   }
 }

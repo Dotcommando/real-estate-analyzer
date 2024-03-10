@@ -1,4 +1,4 @@
-<ng-container>
+<div class="multi-autocomplete-wrapper">
   <mat-form-field appearance="fill">
     <mat-chip-grid #chipGrid [attr.aria-label]="label">
       @for (item of selectedItems; track item.value) {
@@ -28,4 +28,4 @@
       <mat-option [value]="option">{{ option.name }}</mat-option>
     }
   </mat-autocomplete>
-</ng-container>
+</div>

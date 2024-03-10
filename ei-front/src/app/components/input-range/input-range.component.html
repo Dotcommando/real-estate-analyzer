@@ -1,12 +1,12 @@
 <div class="input-range-wrapper">
   <div class="input-range-label">{{ label }}</div>
   <div class="input-range-fields">
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="fill" class="input-range-field">
       <mat-label>From</mat-label>
       <input matInput [formControl]="form.controls['min'] | formControl" type="number">
     </mat-form-field>
     <span class="delimiter">&mdash;</span>
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="fill" class="input-range-field">
       <mat-label>To</mat-label>
       <input matInput [formControl]="form.controls['max'] | formControl" type="number">
     </mat-form-field>

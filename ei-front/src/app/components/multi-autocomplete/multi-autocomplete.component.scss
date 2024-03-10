@@ -1,0 +1,8 @@
+.multi-autocomplete-wrapper {
+  display: flex;
+  flex-direction: column;
+
+  & > * {
+    flex: 1 0 0;
+  }
+}

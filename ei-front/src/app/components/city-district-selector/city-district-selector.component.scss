@@ -1,0 +1,17 @@
+.city-districts-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: stretch;
+  gap: 18px;
+
+  & > * {
+    flex: 1 0 0;
+  }
+}
+
+@media (min-width: 960px) {
+  .city {
+    max-width: 150px;
+  }
+}

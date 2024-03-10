@@ -2,33 +2,41 @@
   <div class="search-form">
     <mat-tab-group (selectedIndexChange)="onTabIndexChange($event)" [(selectedIndex)]="activeTabIndex">
       <mat-tab label="Rent">
-        <ei-city-district-selector
-          [maxDistrictItems]="maxDistrictItems"
-          [citiesDistrictsData]="rentLimits.cities"
-          [formControl]="searchRentForm.controls.cityDistrict"
-        ></ei-city-district-selector>
-        <div class="mat-elevation-z4">
-          <ei-input-range
-            ngDefaultControl
-            [label]="'Price'"
-            [range]="{ min: rentLimits.ranges.priceRange['min'], max: rentLimits.ranges.priceRange['max'] }"
-            [formControl]="searchRentForm.controls.price"
-          ></ei-input-range>
+        <div class="tab-wrapper">
+          <div class="city-districts">
+            <ei-city-district-selector
+              [maxDistrictItems]="maxDistrictItems"
+              [citiesDistrictsData]="rentLimits.cities"
+              [formControl]="searchRentForm.controls.cityDistrict"
+            ></ei-city-district-selector>
+          </div>
+          <div class="price-range">
+            <ei-input-range
+              ngDefaultControl
+              [label]="'Price'"
+              [range]="{ min: rentLimits.ranges.priceRange['min'], max: rentLimits.ranges.priceRange['max'] }"
+              [formControl]="searchRentForm.controls.price"
+            ></ei-input-range>
+          </div>
         </div>
       </mat-tab>
       <mat-tab label="Sale">
-        <ei-city-district-selector
-          [maxDistrictItems]="maxDistrictItems"
-          [citiesDistrictsData]="saleLimits.cities"
-          [formControl]="searchSaleForm.controls.cityDistrict"
-        ></ei-city-district-selector>
-        <div class="mat-elevation-z4">
-          <ei-input-range
-            ngDefaultControl
-            [label]="'Price'"
-            [range]="{ min: saleLimits.ranges.priceRange.min, max: saleLimits.ranges.priceRange.max }"
-            [formControl]="searchSaleForm.controls.price"
-          ></ei-input-range>
+        <div class="tab-wrapper">
+          <div class="city-districts">
+            <ei-city-district-selector
+              [maxDistrictItems]="maxDistrictItems"
+              [citiesDistrictsData]="saleLimits.cities"
+              [formControl]="searchSaleForm.controls.cityDistrict"
+            ></ei-city-district-selector>
+          </div>
+          <div class="price-range">
+            <ei-input-range
+              ngDefaultControl
+              [label]="'Price'"
+              [range]="{ min: saleLimits.ranges.priceRange.min, max: saleLimits.ranges.priceRange.max }"
+              [formControl]="searchSaleForm.controls.price"
+            ></ei-input-range>
+          </div>
         </div>
       </mat-tab>
     </mat-tab-group>
