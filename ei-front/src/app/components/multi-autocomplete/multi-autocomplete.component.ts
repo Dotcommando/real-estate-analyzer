@@ -14,15 +14,12 @@ import { MatLabel } from '@angular/material/select';
 
 import { map, Observable, startWith } from 'rxjs';
 
+import { IDistrictOption } from '../../types';
+
 
 export interface IOptionSet {
   value: string;
   synonyms: string[];
-}
-
-export interface IValue {
-  value: string;
-  name: string;
 }
 
 @Component({
@@ -53,21 +50,22 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
   @Input() label = '';
   @Input() placeholder = 'Select...';
   @Input() options: Array<string | IOptionSet> = [];
-  public selectedItems: IValue[] = [];
-  public inputControl = new FormControl<IValue | null>(null);
-  public filteredOptions!: Observable<IValue[]>;
+  @Input() maxSelectedItems?: number;
+  public selectedItems: IDistrictOption[] = [];
+  public inputControl = new FormControl<IDistrictOption | null>(null);
+  public filteredOptions!: Observable<IDistrictOption[]>;
   public separatorKeysCodes: number[] = [ ENTER, COMMA ];
 
   @ViewChild('inputElement') inputElement!: ElementRef<HTMLInputElement>;
 
-  private _onChange = (value: IValue[]) => {};
+  private _onChange = (value: IDistrictOption[]) => {};
   private _onTouched = () => {};
 
   public ngOnInit(): void {
     this.filteredOptions = this.inputControl.valueChanges
       .pipe(
         startWith(''),
-        map((input: string | IValue | null) => {
+        map((input: string | IDistrictOption | null) => {
           const filterValue = typeof input === 'string' ? input : input?.name ?? '';
 
           return this.filterAlreadySelected(filterValue);
@@ -75,21 +73,20 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
       );
   }
 
-  public filterAlreadySelected(input: string | IValue | null): IValue[] {
+  public filterAlreadySelected(input: string | IDistrictOption | null): IDistrictOption[] {
     const filterValue = typeof input === 'string'
       ? input.toLowerCase()
       : typeof input === 'object' && input !== null
         ? input.value.toLowerCase()
         : '';
 
-    return this.toIValue(this.options).filter((option: IValue) =>
-      !this.selectedItems.find(item => item.value === option.value)
+    return this.toIDistrictOption(this.options).filter((option: IDistrictOption) =>
+      !this.selectedItems.find((selected: IDistrictOption) => selected.value === option.value)
         && (filterValue === '' || option.name.toLowerCase().includes(filterValue)),
     );
   }
 
-
-  public toIValue(opts: Array<string | IOptionSet>): IValue[] {
+  public toIDistrictOption(opts: Array<string | IOptionSet>): IDistrictOption[] {
     return opts.flatMap((opt: string | IOptionSet) => typeof opt === 'string'
       ? [ { value: opt, name: opt } ]
       : opt.synonyms.map(synonym => ({ value: opt.value, name: synonym })),
@@ -97,11 +94,16 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
   }
 
   public add(event: MatChipInputEvent): void {
+    if (this.maxSelectedItems && this.selectedItems.length >= this.maxSelectedItems) {
+      return;
+    }
+
     const input = event.value.trim();
 
     if (!input) return;
 
-    const valueToAdd = this.toIValue([ input ]).find(v => !this.selectedItems.map(item => item.value).includes(v.value));
+    const valueToAdd: IDistrictOption | undefined = this.toIDistrictOption([ input ])
+      .find(v => !this.selectedItems.map(item => item.value).includes(v.value));
 
     if (valueToAdd) this.selectedItems.push(valueToAdd);
 
@@ -110,7 +112,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
     this._onChange(this.selectedItems);
   }
 
-  public remove(item: IValue): void {
+  public remove(item: IDistrictOption): void {
     const index = this.selectedItems.findIndex(selected => selected.value === item.value);
 
     if (index >= 0) {
@@ -121,7 +123,14 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
   }
 
   public selected(event: MatAutocompleteSelectedEvent): void {
-    const valueToAdd = event.option.value as IValue;
+    if (this.maxSelectedItems !== undefined && this.selectedItems.length >= this.maxSelectedItems) {
+      this.inputElement.nativeElement.value = '';
+      this.inputControl.setValue(null);
+
+      return;
+    }
+
+    const valueToAdd = event.option.value as IDistrictOption;
 
     if (!this.selectedItems.map(item => item.value).includes(valueToAdd.value)) {
       this.selectedItems = [ ...this.selectedItems ];
@@ -132,22 +141,22 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
     }
   }
 
-  public filter(input: IValue | null): IValue[] {
+  public filter(input: IDistrictOption | null): IDistrictOption[] {
     const filterValue = (input?.name ?? '').toLowerCase();
 
-    return this.toIValue(this.options)
-      .filter((option: IValue) => option.name.toLowerCase().includes(filterValue)
+    return this.toIDistrictOption(this.options)
+      .filter((option: IDistrictOption) => option.name.toLowerCase().includes(filterValue)
         && !this.selectedItems
-          .map((item: IValue): string => item.value)
+          .map((item: IDistrictOption): string => item.value)
           .includes(option.value),
       );
   }
 
-  public writeValue(value: IValue[]): void {
+  public writeValue(value: IDistrictOption[]): void {
     this.selectedItems = value ? [ ...value ] : [];
   }
 
-  public registerOnChange(fn: (value: IValue[]) => void): void {
+  public registerOnChange(fn: (value: IDistrictOption[]) => void): void {
     this._onChange = fn;
   }
 

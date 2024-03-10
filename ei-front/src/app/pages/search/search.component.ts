@@ -16,6 +16,7 @@ import { IRentLimits, ISaleLimits } from '../../../../bff/types';
 import { InputRangeComponent } from '../../components/input-range/input-range.component';
 import { MultiAutocompleteComponent } from '../../components/multi-autocomplete/multi-autocomplete.component';
 import { mapSearchFormToState } from '../../mappers';
+import { IDistrictOption } from '../../types';
 
 
 enum SearchTypeTab {
@@ -42,10 +43,15 @@ enum SearchTypeTab {
 export class SearchComponent implements OnInit {
   @Select(SearchTypeState.searchType) type$!: Observable<'rent' | 'sale'>;
 
+  public initialDistricts: IDistrictOption[] = [
+    { value: 'Eledio', name: 'Eledio' },
+    { value: 'Tala', name: 'Tala' },
+  ];
+
   public searchRentForm = new FormGroup({
     type: new FormControl(),
     city: new FormControl(),
-    district: new FormControl(),
+    district: new FormControl(this.initialDistricts),
     price: new FormControl(),
     priceSqm: new FormControl(),
     bedrooms: new FormControl(),

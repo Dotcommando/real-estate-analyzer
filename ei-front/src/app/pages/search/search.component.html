@@ -23,6 +23,7 @@
 <!--          </mat-select>-->
 <!--        </mat-form-field>-->
         <ei-multi-autocomplete
+          [maxSelectedItems]="3"
           [options]="districtsExample"
           [formControl]="searchRentForm.controls.district"
         ></ei-multi-autocomplete>

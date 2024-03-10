@@ -1,11 +1,12 @@
 import { ISearchForm, ISearchState } from '../pages/search/search.model';
+import { IDistrictOption } from '../types';
 
 
 export function mapSearchFormToState(data: Partial<ISearchForm>): Partial<ISearchState> {
   return {
     filters: {
       ...(data.city && { city: data.city }),
-      ...(data.district && { district: data.district }),
+      ...(data.district?.length && { district: data.district.map((district: IDistrictOption) => district.value) }),
       ...(data.price && { price: data.price }),
       ...(data.priceSqm && { 'price-sqm': data.priceSqm }),
       ...(data.bedrooms && { bedrooms: data.bedrooms }),
