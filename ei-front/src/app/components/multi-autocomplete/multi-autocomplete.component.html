@@ -4,7 +4,7 @@
       @for (item of selectedItems; track item.value) {
         <mat-chip-row (removed)="remove(item)" removable>
           {{ item.name }}
-          <button matChipRemove>
+          <button matChipRemove [attr.aria-label]="'Remove'">
             <mat-icon>cancel</mat-icon>
           </button>
         </mat-chip-row>

@@ -3,14 +3,13 @@ import { AsyncPipe } from '@angular/common';
 import { Component, ElementRef, forwardRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import {
-  MatAutocomplete,
+  MatAutocompleteModule,
   MatAutocompleteSelectedEvent,
-  MatAutocompleteTrigger,
   MatOption,
 } from '@angular/material/autocomplete';
-import { MatChipGrid, MatChipInput, MatChipInputEvent, MatChipRow } from '@angular/material/chips';
+import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
 import { MatFormField } from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
+import { MatIconModule } from '@angular/material/icon';
 import { MatLabel } from '@angular/material/select';
 
 import { map, Observable, startWith } from 'rxjs';
@@ -39,17 +38,15 @@ export interface IValue {
   ],
   standalone: true,
   imports: [
-    MatChipInput,
-    MatAutocomplete,
     MatOption,
-    MatChipGrid,
-    MatChipRow,
     MatFormField,
     MatLabel,
     ReactiveFormsModule,
     AsyncPipe,
-    MatAutocompleteTrigger,
-    MatIcon,
+    MatAutocompleteModule,
+    MatChipsModule,
+    MatIconModule,
+    ReactiveFormsModule,
   ],
 })
 export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit {
@@ -117,6 +114,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
     const index = this.selectedItems.findIndex(selected => selected.value === item.value);
 
     if (index >= 0) {
+      this.selectedItems = [ ...this.selectedItems ];
       this.selectedItems.splice(index, 1);
       this._onChange(this.selectedItems);
     }
