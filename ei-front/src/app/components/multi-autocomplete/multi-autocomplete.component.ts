@@ -85,17 +85,17 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
         ? input.value.toLowerCase()
         : '';
 
-    return this.toIValue(this.options)
-      .filter((option: IValue) =>
-        !this.selectedItems.find(item => item.value === option.value)
-          && (filterValue === '' || option.name.toLowerCase().includes(filterValue)),
-      );
+    return this.toIValue(this.options).filter((option: IValue) =>
+      !this.selectedItems.find(item => item.value === option.value)
+        && (filterValue === '' || option.name.toLowerCase().includes(filterValue)),
+    );
   }
 
 
   public toIValue(opts: Array<string | IOptionSet>): IValue[] {
-    return opts.flatMap(opt =>
-      typeof opt === 'string' ? [ { value: opt, name: opt } ] : opt.synonyms.map(synonym => ({ value: opt.value, name: synonym })),
+    return opts.flatMap((opt: string | IOptionSet) => typeof opt === 'string'
+      ? [ { value: opt, name: opt } ]
+      : opt.synonyms.map(synonym => ({ value: opt.value, name: synonym })),
     );
   }
 
@@ -126,6 +126,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
     const valueToAdd = event.option.value as IValue;
 
     if (!this.selectedItems.map(item => item.value).includes(valueToAdd.value)) {
+      this.selectedItems = [ ...this.selectedItems ];
       this.selectedItems.push(valueToAdd);
       this.inputElement.nativeElement.value = '';
       this.inputControl.setValue(null);
@@ -145,7 +146,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
   }
 
   public writeValue(value: IValue[]): void {
-    this.selectedItems = value ? value : [];
+    this.selectedItems = value ? [ ...value ] : [];
   }
 
   public registerOnChange(fn: (value: IValue[]) => void): void {

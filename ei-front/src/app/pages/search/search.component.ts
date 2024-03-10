@@ -130,6 +130,13 @@ export class SearchComponent implements OnInit {
         )),
       )
       .subscribe();
+
+    this.searchRentForm.controls.district
+      .valueChanges
+      .pipe(
+        tap((data) => console.log(data)),
+      )
+      .subscribe();
   }
 
   public onCityChange(city: string, type: 'rent' | 'sale'): void {
