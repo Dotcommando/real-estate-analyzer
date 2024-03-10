@@ -99,7 +99,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
 
     return this.toIDistrictOption(this.options).filter((option: IDistrictOption) =>
       !this.selectedItems.find((selected: IDistrictOption) => selected.value === option.value)
-        && (filterValue === '' || option.name.toLowerCase().includes(filterValue)),
+        && (filterValue === '' || option.name?.toLowerCase().includes(filterValue)),
     );
   }
 

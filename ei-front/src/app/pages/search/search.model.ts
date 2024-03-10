@@ -11,7 +11,7 @@ import {
   Source,
   StandardSet,
 } from '../../../../bff/constants';
-import { IDistrictOption, Range } from '../../types';
+import { ICityDistrict, IDistrictOption, Range } from '../../types';
 
 
 export interface ISearchFilters {
@@ -156,8 +156,7 @@ export interface ISearchState {
 
 export interface ISearchForm {
   type: 'rent' | 'sale';
-  city: string;
-  district: IDistrictOption[] | null;
+  cityDistrict: ICityDistrict;
   price: Range<number>;
   priceSqm: Range<number>;
   bedrooms: Range<number>;

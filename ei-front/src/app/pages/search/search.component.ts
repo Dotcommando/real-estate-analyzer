@@ -13,10 +13,12 @@ import { ISearchForm } from './search.model';
 import { ChangeType, SearchTypeState, UpdateRentSearchState, UpdateSaleSearchState } from './search.store';
 
 import { IRentLimits, ISaleLimits } from '../../../../bff/types';
+import {
+  CityDistrictSelectorComponent,
+} from '../../components/city-district-selector/city-district-selector.component';
 import { InputRangeComponent } from '../../components/input-range/input-range.component';
 import { MultiAutocompleteComponent } from '../../components/multi-autocomplete/multi-autocomplete.component';
 import { mapSearchFormToState } from '../../mappers';
-import { IDistrictOption } from '../../types';
 
 
 enum SearchTypeTab {
@@ -36,6 +38,7 @@ enum SearchTypeTab {
     MatFormField,
     MatOption,
     MultiAutocompleteComponent,
+    CityDistrictSelectorComponent,
   ],
   templateUrl: './search.component.html',
   styleUrl: './search.component.scss',
@@ -43,15 +46,9 @@ enum SearchTypeTab {
 export class SearchComponent implements OnInit {
   @Select(SearchTypeState.searchType) type$!: Observable<'rent' | 'sale'>;
 
-  public initialDistricts: IDistrictOption[] = [
-    { value: 'Eledio', name: 'Eledio' },
-    { value: 'Tala', name: 'Tala' },
-  ];
-
   public searchRentForm = new FormGroup({
     type: new FormControl(),
-    city: new FormControl(),
-    district: new FormControl(this.initialDistricts),
+    cityDistrict: new FormControl(),
     price: new FormControl(),
     priceSqm: new FormControl(),
     bedrooms: new FormControl(),
@@ -61,8 +58,7 @@ export class SearchComponent implements OnInit {
 
   public searchSaleForm = new FormGroup({
     type: new FormControl(),
-    city: new FormControl(),
-    district: new FormControl(),
+    cityDistrict: new FormControl(),
     price: new FormControl(),
     priceSqm: new FormControl(),
     bedrooms: new FormControl(),
@@ -74,30 +70,9 @@ export class SearchComponent implements OnInit {
   public saleLimits!: ISaleLimits;
 
   public activeTabIndex: number = SearchTypeTab.rent;
-  public selectedCityDistricts: string[] | null = null;
+  public maxDistrictItems = 5;
 
   private destroyRef: DestroyRef = inject(DestroyRef);
-
-  public districtsExample = [
-    'Eledio',
-    'Tala',
-    'Koili',
-    'Choulou',
-    'Arodes Pano',
-    'Pegeia',
-    'Giolou',
-    {
-      value: 'Agia Marina Chrysochous',
-      synonyms: [
-        'Ag. Marina Chrysochous',
-        'Agia Marina Chrysochous',
-        'Marina Agia Chrysochous',
-        'Chrysochous Marina Agia ',
-      ],
-    },
-    'Koloni',
-    'Kouklia Pafou',
-  ];
 
   constructor(
     private readonly store: Store,
@@ -136,19 +111,6 @@ export class SearchComponent implements OnInit {
         )),
       )
       .subscribe();
-  }
-
-  public onCityChange(city: string, type: 'rent' | 'sale'): void {
-    if (city === 'all') {
-      this.selectedCityDistricts = null;
-      this.searchRentForm.controls.district.disable();
-    } else {
-      const cityData = this.rentLimits.cities.find(c => c.city === city);
-
-      this.selectedCityDistricts = cityData ? cityData.districts : null;
-      this.searchRentForm.controls.district.enable();
-      this.searchRentForm.controls.district.reset();
-    }
   }
 
   public onTabIndexChange(index: number): void {

@@ -36,9 +36,9 @@ export class LimitationsService {
     )
       .map(city => ({
         ...city,
-        districts: city.districts.slice().sort(),
+        ...(city.districts?.length ? { districts: city.districts.slice().sort() } : { districts: []}),
       }))
-      .sort((a, b) => a.city.localeCompare(b.city));
+      .sort((a, b) => (a.city as string).localeCompare(b.city as string));
 
     return sortedRentLimits;
   }
@@ -52,9 +52,9 @@ export class LimitationsService {
     )
       .map(city => ({
         ...city,
-        districts: city.districts.slice().sort(),
+        ...(city.districts?.length ? { districts: city.districts.slice().sort() } : { districts: []}),
       }))
-      .sort((a, b) => a.city.localeCompare(b.city));
+      .sort((a, b) => (a.city as string).localeCompare(b.city as string));
 
     return sortedSaleLimits;
   }

@@ -1,20 +1,16 @@
-<div [formGroup]="form">
+<form [formGroup]="form">
   <mat-form-field appearance="fill">
     <mat-label>City</mat-label>
-    <mat-select [formControl]="form.controls.city" (selectionChange)="onCityChange($event.value)">
-      <mat-option value="all">All Cyprus</mat-option>
-      @for (cityData of rentLimits.cities; track cityData.city) {
-        <mat-option [value]="cityData.city">{{ cityData.city }}</mat-option>
+    <mat-select formControlName="city">
+      @for (cityDistrict of citiesDistrictsData; track cityDistrict.city) {
+        <mat-option [value]="cityDistrict.city">{{cityDistrict.city}}</mat-option>
       }
     </mat-select>
   </mat-form-field>
 
-  <mat-form-field appearance="fill">
-    <mat-label>Districts</mat-label>
-    <mat-select formControlName="districts" multiple>
-      @for (let district of selectedCityDistricts; track district) {
-        <mat-option [value]="district">{{ district }}</mat-option>
-      }
-    </mat-select>
-  </mat-form-field>
-</div>
+  <ei-multi-autocomplete
+    [options]="(districtsOptions$ | async) ?? []"
+    [maxSelectedItems]="maxDistrictItems"
+    formControlName="districts"
+  ></ei-multi-autocomplete>
+</form>

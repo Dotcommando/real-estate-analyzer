@@ -1,5 +1,5 @@
-<form>
-  <mat-form-field class="example-chip-list" appearance="fill">
+<ng-container>
+  <mat-form-field appearance="fill">
     <mat-chip-grid #chipGrid [attr.aria-label]="label">
       @for (item of selectedItems; track item.value) {
         <mat-chip-row (removed)="remove(item)" removable>
@@ -28,4 +28,4 @@
       <mat-option [value]="option">{{ option.name }}</mat-option>
     }
   </mat-autocomplete>
-</form>
+</ng-container>

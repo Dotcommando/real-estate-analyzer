@@ -1,12 +1,31 @@
-import { Component, forwardRef, Input, OnInit } from '@angular/core';
+import { AsyncPipe, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  forwardRef, Inject,
+  inject,
+  Input,
+  OnInit, PLATFORM_ID,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ControlValueAccessor, FormControl, FormGroup, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
-import { MatFormField } from '@angular/material/form-field';
-import { MatOption, MatSelect } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+
+import { BehaviorSubject, distinctUntilChanged, map, Observable, startWith, switchMap, tap } from 'rxjs';
+
+import { IDistrictOption, ISimpleCityDistrict } from '../../types';
+import { MultiAutocompleteComponent } from '../multi-autocomplete/multi-autocomplete.component';
+import { IOptionSet } from '../multi-autocomplete/multi-autocomplete.component';
 
 
 @Component({
   selector: 'ei-city-district-selector',
   templateUrl: './city-district-selector.component.html',
+  styleUrls: [ './city-district-selector.component.scss' ],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -16,41 +35,83 @@ import { MatOption, MatSelect } from '@angular/material/select';
   ],
   standalone: true,
   imports: [
-    MatFormField,
-    MatSelect,
-    MatOption,
     ReactiveFormsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    MultiAutocompleteComponent,
+    AsyncPipe,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CityDistrictSelectorComponent implements OnInit, ControlValueAccessor {
-  @Input() citiesData: {
-    city: string;
-    districts: string[];
-  }[] = [];
-  @Input() optionAllText = '';
-
+export class CityDistrictSelectorComponent implements ControlValueAccessor, OnInit {
   form: FormGroup = new FormGroup({
-    city: new FormControl(''),
-    districts: new FormControl([]),
+    city: new FormControl(null),
+    districts: new FormControl(null),
   });
 
-  selectedCityDistricts: string[] = [];
+  private districtsOptionsSubject$ = new BehaviorSubject<Array<string | IOptionSet> | null>(null);
+  public districtsOptions$: Observable<Array<string | IOptionSet> | null> = this.districtsOptionsSubject$.asObservable();
 
-  private onChange: Function = (value: any) => {};
-  private onTouched: Function = () => {};
+  private citesDistrictsDataSubject$ = new BehaviorSubject<ISimpleCityDistrict[]>([]);
+  public citesDistrictsData$ = this.citesDistrictsDataSubject$.asObservable();
 
-  constructor() {}
+  private destroyRef: DestroyRef = inject(DestroyRef);
 
-  public ngOnInit(): void {
-    this.form.valueChanges.subscribe(value => {
-      this.onChange(value);
-    });
+  @Input() maxDistrictItems = 5;
+
+  @Input()
+  set citiesDistrictsData(value: ISimpleCityDistrict[]) {
+    this.citesDistrictsDataSubject$.next(value ?? []);
+  }
+  get citiesDistrictsData(): ISimpleCityDistrict[] {
+    return this.citesDistrictsDataSubject$.getValue();
   }
 
-  public writeValue(value: any): void {
+  constructor(
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: Object,
+  ) {
+  }
+
+  public ngOnInit(): void {
+    this.updateDistrictsOnCityChange$()
+      .subscribe();
+  }
+
+  public updateDistrictsOnCityChange$(): Observable<IOptionSet[]> {
+    return this.form.get('city')!.valueChanges
+      .pipe(
+        startWith(this.form.get('city')!.value),
+        distinctUntilChanged(),
+        switchMap((city): Observable<IOptionSet[]> => this.citesDistrictsData$
+          .pipe(
+            map((citiesDistricts: ISimpleCityDistrict[]): IOptionSet[] => {
+              const cityData: ISimpleCityDistrict | undefined = citiesDistricts
+                .find((cityDistrict: ISimpleCityDistrict) => cityDistrict.city === city);
+
+              if (!cityData?.districts?.length) {
+                return [];
+              }
+
+              return cityData.districts
+                .map((district: string): IOptionSet => ({
+                  value: district,
+                  synonyms: [ district ],
+                }));
+            }),
+          ),
+        ),
+        tap((districtOptions: IOptionSet[]) => {
+          this.districtsOptionsSubject$.next(districtOptions);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      );
+  }
+
+  public writeValue(value: { city: string | null; districts: IDistrictOption[] | null }): void {
     if (value) {
       this.form.setValue(value, { emitEvent: false });
-      this.updateDistricts(value.city);
     }
   }
 
@@ -59,21 +120,13 @@ export class CityDistrictSelectorComponent implements OnInit, ControlValueAccess
   }
 
   public registerOnTouched(fn: any): void {
-    this.onTouched = fn;
+    this.onTouch = fn;
   }
 
   public setDisabledState?(isDisabled: boolean): void {
     isDisabled ? this.form.disable() : this.form.enable();
   }
 
-  public onCityChange(city: string): void {
-    this.updateDistricts(city);
-    this.form.get('districts')?.reset();
-  }
-
-  private updateDistricts(city: string): void {
-    const cityData = this.citiesData.find(c => c.city === city);
-
-    this.selectedCityDistricts = cityData ? cityData.districts : [];
-  }
+  private onChange: any = () => {};
+  private onTouch: any = () => {};
 }

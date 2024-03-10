@@ -5,8 +5,10 @@ import { IDistrictOption } from '../types';
 export function mapSearchFormToState(data: Partial<ISearchForm>): Partial<ISearchState> {
   return {
     filters: {
-      ...(data.city && { city: data.city }),
-      ...(data.district?.length && { district: data.district.map((district: IDistrictOption) => district.value) }),
+      ...(data.cityDistrict && {
+        ...(data.cityDistrict?.districts && { district: data?.cityDistrict?.districts.map((district: IDistrictOption) => district.value) ?? []}),
+        ...(data.cityDistrict?.city && { city: data.cityDistrict.city }),
+      }),
       ...(data.price && { price: data.price }),
       ...(data.priceSqm && { 'price-sqm': data.priceSqm }),
       ...(data.bedrooms && { bedrooms: data.bedrooms }),
