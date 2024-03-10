@@ -30,7 +30,7 @@ export class LimitationsService {
   public getRentLimits(): IRentLimits {
     const sortedRentLimits = { ...this.rentLimits };
 
-    sortedRentLimits.cities = (this.rentLimits.cities
+    sortedRentLimits.cities = (this.rentLimits?.cities
       ? this.rentLimits.cities
       : fallBackRentLimits.cities
     )
@@ -46,7 +46,7 @@ export class LimitationsService {
   public getSaleLimits(): ISaleLimits {
     const sortedSaleLimits = { ...this.saleLimits };
 
-    sortedSaleLimits.cities = (this.saleLimits.cities
+    sortedSaleLimits.cities = (this.saleLimits?.cities
       ? this.saleLimits.cities
       : fallBackSaleLimits.cities
     )

@@ -72,6 +72,27 @@ export class SearchComponent implements OnInit {
 
   private destroyRef: DestroyRef = inject(DestroyRef);
 
+  public districtsExample = [
+    'Eledio',
+    'Tala',
+    'Koili',
+    'Choulou',
+    'Arodes Pano',
+    'Pegeia',
+    'Giolou',
+    {
+      value: 'Agia Marina Chrysochous',
+      synonyms: [
+        'Ag. Marina Chrysochous',
+        'Agia Marina Chrysochous',
+        'Marina Agia Chrysochous',
+        'Chrysochous Marina Agia ',
+      ],
+    },
+    'Koloni',
+    'Kouklia Pafou',
+  ];
+
   constructor(
     private readonly store: Store,
     private readonly limitsService: LimitationsService,
