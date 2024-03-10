@@ -8,8 +8,9 @@ import {
   MatOption,
 } from '@angular/material/autocomplete';
 import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
-import { MatFormField } from '@angular/material/form-field';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatLabel } from '@angular/material/select';
 
 import { map, Observable, startWith } from 'rxjs';
@@ -35,15 +36,15 @@ export interface IOptionSet {
   ],
   standalone: true,
   imports: [
-    MatOption,
-    MatFormField,
-    MatLabel,
-    ReactiveFormsModule,
-    AsyncPipe,
+    MatFormFieldModule,
+    MatInputModule,
     MatAutocompleteModule,
     MatChipsModule,
     MatIconModule,
+    MatOption,
+    MatLabel,
     ReactiveFormsModule,
+    AsyncPipe,
   ],
 })
 export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit {
@@ -55,6 +56,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
   public inputControl = new FormControl<IDistrictOption | null>(null);
   public filteredOptions!: Observable<IDistrictOption[]>;
   public separatorKeysCodes: number[] = [ ENTER, COMMA ];
+  public isMaxSelectedItemsReached = false;
 
   @ViewChild('inputElement') inputElement!: ElementRef<HTMLInputElement>;
 
@@ -93,10 +95,14 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
     );
   }
 
+  private updateIsMaxSelectedItemsReached(): void {
+    this.isMaxSelectedItemsReached = this.maxSelectedItems !== undefined && this.selectedItems.length >= this.maxSelectedItems;
+  }
+
   public add(event: MatChipInputEvent): void {
-    if (this.maxSelectedItems && this.selectedItems.length >= this.maxSelectedItems) {
-      return;
-    }
+    this.updateIsMaxSelectedItemsReached();
+
+    if (this.isMaxSelectedItemsReached) return;
 
     const input = event.value.trim();
 
@@ -120,10 +126,14 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
       this.selectedItems.splice(index, 1);
       this._onChange(this.selectedItems);
     }
+
+    this.updateIsMaxSelectedItemsReached();
   }
 
   public selected(event: MatAutocompleteSelectedEvent): void {
-    if (this.maxSelectedItems !== undefined && this.selectedItems.length >= this.maxSelectedItems) {
+    this.updateIsMaxSelectedItemsReached();
+
+    if (this.isMaxSelectedItemsReached) {
       this.inputElement.nativeElement.value = '';
       this.inputControl.setValue(null);
 
