@@ -1,6 +1,15 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { AsyncPipe } from '@angular/common';
-import { Component, ElementRef, forwardRef, Input, OnInit, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  forwardRef,
+  Input,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import {
   MatAutocompleteModule,
@@ -46,6 +55,7 @@ export interface IOptionSet {
     ReactiveFormsModule,
     AsyncPipe,
   ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit {
   @Input() label = '';
@@ -62,6 +72,11 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
 
   private _onChange = (value: IDistrictOption[]) => {};
   private _onTouched = () => {};
+
+  constructor(
+    private changeDetectorRef: ChangeDetectorRef,
+  ) {
+  }
 
   public ngOnInit(): void {
     this.filteredOptions = this.inputControl.valueChanges
@@ -97,6 +112,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
 
   private updateIsMaxSelectedItemsReached(): void {
     this.isMaxSelectedItemsReached = this.maxSelectedItems !== undefined && this.selectedItems.length >= this.maxSelectedItems;
+    this.changeDetectorRef.markForCheck();
   }
 
   public add(event: MatChipInputEvent): void {
@@ -116,6 +132,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
     this.inputControl.setValue(null);
     this.inputElement.nativeElement.value = '';
     this._onChange(this.selectedItems);
+    this.changeDetectorRef.markForCheck();
   }
 
   public remove(item: IDistrictOption): void {
@@ -136,6 +153,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
     if (this.isMaxSelectedItemsReached) {
       this.inputElement.nativeElement.value = '';
       this.inputControl.setValue(null);
+      this.changeDetectorRef.markForCheck();
 
       return;
     }
@@ -149,6 +167,8 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
       this.inputControl.setValue(null);
       this._onChange(this.selectedItems);
     }
+
+    this.changeDetectorRef.markForCheck();
   }
 
   public filter(input: IDistrictOption | null): IDistrictOption[] {
