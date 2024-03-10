@@ -1,13 +1,15 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   ElementRef,
   forwardRef,
+  Inject,
   Input,
   OnInit,
+  PLATFORM_ID,
   ViewChild,
 } from '@angular/core';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
@@ -75,6 +77,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
 
   constructor(
     private changeDetectorRef: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: Object,
   ) {
   }
 
@@ -182,8 +185,19 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
       );
   }
 
-  public writeValue(value: IDistrictOption[]): void {
-    this.selectedItems = value ? [ ...value ] : [];
+  public writeValue(value: Array<IDistrictOption | string>): void {
+    if (value && Array.isArray(value)) {
+      this.selectedItems = value
+        ? [
+          ...value
+            .filter(Boolean)
+            .map((district: string | IDistrictOption) => typeof district === 'string'
+              ? { name: district, value: district }
+              : district,
+            ),
+        ]
+        : [];
+    }
   }
 
   public registerOnChange(fn: (value: IDistrictOption[]) => void): void {

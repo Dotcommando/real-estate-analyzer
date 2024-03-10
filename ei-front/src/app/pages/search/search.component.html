@@ -17,6 +17,11 @@
         </div>
       </mat-tab>
       <mat-tab label="Sale">
+        <ei-city-district-selector
+          [maxDistrictItems]="maxDistrictItems"
+          [citiesDistrictsData]="saleLimits.cities"
+          [formControl]="searchSaleForm.controls.cityDistrict"
+        ></ei-city-district-selector>
         <div class="mat-elevation-z4">
           <ei-input-range
             ngDefaultControl

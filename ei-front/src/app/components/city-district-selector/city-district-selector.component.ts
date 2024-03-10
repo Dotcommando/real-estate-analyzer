@@ -77,6 +77,13 @@ export class CityDistrictSelectorComponent implements ControlValueAccessor, OnIn
   public ngOnInit(): void {
     this.updateDistrictsOnCityChange$()
       .subscribe();
+
+    this.form.valueChanges
+      .pipe(
+        tap((value) => this.onChange(value)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
   }
 
   public updateDistrictsOnCityChange$(): Observable<IOptionSet[]> {
