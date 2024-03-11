@@ -28,6 +28,7 @@ import {
 
 import { toIDistrictOption } from '../../mappers';
 import { IDistrictOption, IOptionSet, ISimpleCityDistrict } from '../../types';
+import { FieldTopLabelComponent } from '../field-top-label/field-top-label.component';
 import { MultiAutocompleteComponent } from '../multi-autocomplete/multi-autocomplete.component';
 
 
@@ -85,6 +86,7 @@ const noCitySelectedOption: ISimpleCityDistrict = {
     MatOptionModule,
     MultiAutocompleteComponent,
     AsyncPipe,
+    FieldTopLabelComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -119,6 +121,9 @@ export class CityDistrictSelectorComponent implements ControlValueAccessor, OnIn
   get citiesDistrictsData(): ISimpleCityDistrict[] {
     return this.citesDistrictsDataSubject$.getValue();
   }
+
+  public cityFocused = false;
+  public districtFocused = false;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -238,4 +243,20 @@ export class CityDistrictSelectorComponent implements ControlValueAccessor, OnIn
 
   private onChange: any = () => {};
   private onTouch: any = () => {};
+
+  public onCityFocus(): void {
+    this.cityFocused = true;
+  }
+
+  public onCityBlur(): void {
+    this.cityFocused = false;
+  }
+
+  public onDistrictFocus(): void {
+    this.districtFocused = true;
+  }
+
+  public onDistrictBlur(): void {
+    this.districtFocused = false;
+  }
 }

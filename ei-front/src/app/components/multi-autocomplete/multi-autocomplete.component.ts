@@ -6,11 +6,13 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  EventEmitter,
   forwardRef,
   Inject,
   inject,
   Input,
   OnInit,
+  Output,
   PLATFORM_ID,
   ViewChild,
 } from '@angular/core';
@@ -71,6 +73,8 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
   get options(): Array<string | IOptionSet> {
     return this._options;
   }
+  @Output() focus = new EventEmitter<void>();
+  @Output() blur = new EventEmitter<void>();
   public selectedItems: IDistrictOption[] = [];
   public inputControl: FormControl<string | null> = new FormControl<string | null>('');
   public autocompleteOptions!: IDistrictOption[];
@@ -212,5 +216,16 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
 
   public registerOnTouched(fn: () => void): void {
     this._onTouched = fn;
+  }
+
+  public onInputFocus(): void {
+    this.filterOptionsOnFocus();
+    this.focus.emit();
+    this._onTouched();
+  }
+
+  public onInputBlur(): void {
+    this.blur.emit();
+    this._onTouched();
   }
 }

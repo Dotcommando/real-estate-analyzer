@@ -1,14 +1,29 @@
 <div class="input-range-wrapper">
-  <div class="input-range-label">{{ label }}</div>
+  <div class="input-range-label">
+    <ei-field-top-label
+      [label]="label"
+      [focused]="isFocused"
+    ></ei-field-top-label>
+  </div>
   <div class="input-range-fields">
     <mat-form-field appearance="fill" class="input-range-field">
       <mat-label>From</mat-label>
-      <input matInput [formControl]="form.controls['min'] | formControl" type="number">
+      <input matInput
+             type="number"
+             [formControl]="form.controls['min'] | formControl"
+             (focus)="onFocus()"
+             (blur)="onBlur()"
+      >
     </mat-form-field>
     <span class="delimiter">&mdash;</span>
     <mat-form-field appearance="fill" class="input-range-field">
       <mat-label>To</mat-label>
-      <input matInput [formControl]="form.controls['max'] | formControl" type="number">
+      <input matInput
+             type="number"
+             [formControl]="form.controls['max'] | formControl"
+             (focus)="onFocus()"
+             (blur)="onBlur()"
+      >
     </mat-form-field>
   </div>
 </div>

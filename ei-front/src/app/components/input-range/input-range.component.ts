@@ -21,6 +21,7 @@ import { distinctUntilChanged, map, startWith, tap } from 'rxjs';
 
 import { FormControlPipe } from '../../pipes';
 import { Range } from '../../types';
+import { FieldTopLabelComponent } from '../field-top-label/field-top-label.component';
 
 
 @Component({
@@ -30,6 +31,7 @@ import { Range } from '../../types';
     ReactiveFormsModule,
     MatInputModule,
     FormControlPipe,
+    FieldTopLabelComponent,
   ],
   providers: [
     {
@@ -55,6 +57,16 @@ export class InputRangeComponent implements OnInit {
 
   onChange: any = () => {};
   onTouched: any = () => {};
+
+  public isFocused: boolean = false;
+
+  public onFocus() {
+    this.isFocused = true;
+  }
+
+  public onBlur() {
+    this.isFocused = false;
+  }
 
   public writeValue(obj: any): void {
     if (obj) {
