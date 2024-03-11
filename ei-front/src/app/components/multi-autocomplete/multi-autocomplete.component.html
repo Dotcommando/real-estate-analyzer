@@ -18,13 +18,14 @@
       [matChipInputFor]="chipGrid"
       [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
       (matChipInputTokenEnd)="add($event)"
+      (focus)="filterOptionsOnFocus()"
     />
     @if (isMaxSelectedItemsReached) {
       <mat-hint class="max-items-reached">You've reached the&nbsp;maximum number of&nbsp;selected options: {{ maxSelectedItems }}.</mat-hint>
     }
   </mat-form-field>
   <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
-    @for (option of filteredOptions | async; track option.value) {
+    @for (option of autocompleteOptions; track option.value) {
       <mat-option [value]="option">{{ option.name }}</mat-option>
     }
   </mat-autocomplete>

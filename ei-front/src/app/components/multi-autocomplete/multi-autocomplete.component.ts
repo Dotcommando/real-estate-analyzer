@@ -1,17 +1,20 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
-import { AsyncPipe, isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   ElementRef,
   forwardRef,
   Inject,
+  inject,
   Input,
   OnInit,
   PLATFORM_ID,
   ViewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import {
   MatAutocompleteModule,
@@ -24,15 +27,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatLabel } from '@angular/material/select';
 
-import { map, Observable, startWith } from 'rxjs';
+import { filter, tap } from 'rxjs';
 
-import { IDistrictOption } from '../../types';
+import { toIDistrictOption } from '../../mappers';
+import { IDistrictOption, IOptionSet } from '../../types';
 
-
-export interface IOptionSet {
-  value: string;
-  synonyms: string[];
-}
 
 @Component({
   selector: 'ei-multi-autocomplete',
@@ -55,18 +54,26 @@ export interface IOptionSet {
     MatOption,
     MatLabel,
     ReactiveFormsModule,
-    AsyncPipe,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit {
   @Input() label = '';
   @Input() placeholder = 'Select...';
-  @Input() options: Array<string | IOptionSet> = [];
   @Input() maxSelectedItems?: number;
+  private _options: Array<string | IOptionSet> = [];
+  @Input()
+  set options(options: Array<string | IOptionSet>) {
+    this._options = options;
+    this.autocompleteOptions = this.filterOptions(toIDistrictOption(options), this.selectedItems);
+    this.cdr.markForCheck();
+  };
+  get options(): Array<string | IOptionSet> {
+    return this._options;
+  }
   public selectedItems: IDistrictOption[] = [];
-  public inputControl = new FormControl<IDistrictOption | null>(null);
-  public filteredOptions!: Observable<IDistrictOption[]>;
+  public inputControl: FormControl<string | null> = new FormControl<string | null>('');
+  public autocompleteOptions!: IDistrictOption[];
   public separatorKeysCodes: number[] = [ ENTER, COMMA ];
   public isMaxSelectedItemsReached = false;
 
@@ -74,48 +81,47 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
 
   private _onChange = (value: IDistrictOption[]) => {};
   private _onTouched = () => {};
+  private destroyRef: DestroyRef = inject(DestroyRef);
 
   constructor(
-    private changeDetectorRef: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {
   }
 
   public ngOnInit(): void {
-    this.filteredOptions = this.inputControl.valueChanges
+    this.inputControl.valueChanges
       .pipe(
-        startWith(''),
-        map((input: string | IDistrictOption | null) => {
-          const filterValue = typeof input === 'string' ? input : input?.name ?? '';
-
-          return this.filterAlreadySelected(filterValue);
+        // @ts-ignore
+        filter((userInput: string | null) => typeof userInput === 'string'),
+        tap((userInput: string) => {
+          this.autocompleteOptions = this.filterOptions(toIDistrictOption(this.options), this.selectedItems, userInput);
         }),
-      );
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
   }
 
-  public filterAlreadySelected(input: string | IDistrictOption | null): IDistrictOption[] {
-    const filterValue = typeof input === 'string'
-      ? input.toLowerCase()
-      : typeof input === 'object' && input !== null
-        ? input.value.toLowerCase()
-        : '';
+  private filterOptions(options: IDistrictOption[], selectedItems: IDistrictOption[], userInput = ''): IDistrictOption[] {
+    const selectedItemsValues = selectedItems.map((selectedItem: IDistrictOption) => selectedItem.value.toLowerCase());
 
-    return this.toIDistrictOption(this.options).filter((option: IDistrictOption) =>
-      !this.selectedItems.find((selected: IDistrictOption) => selected.value === option.value)
-        && (filterValue === '' || option.name?.toLowerCase().includes(filterValue)),
-    );
+    return userInput
+      ? options
+        .filter((option: IDistrictOption) => option.name?.toLowerCase().startsWith(userInput.toLowerCase()))
+        .filter((option: IDistrictOption) => !selectedItemsValues.includes(option.value?.toLowerCase()))
+      : options
+        .filter((option: IDistrictOption) => !selectedItemsValues.includes(option.value?.toLowerCase()));
   }
 
-  public toIDistrictOption(opts: Array<string | IOptionSet>): IDistrictOption[] {
-    return opts.flatMap((opt: string | IOptionSet) => typeof opt === 'string'
-      ? [ { value: opt, name: opt } ]
-      : opt.synonyms.map(synonym => ({ value: opt.value, name: synonym })),
-    );
+  public filterOptionsOnFocus(): void {
+    this.autocompleteOptions = this.filterOptions(toIDistrictOption(this.options), this.selectedItems, this.inputControl.value ?? '');
+
+    this.cdr.markForCheck();
   }
 
   private updateIsMaxSelectedItemsReached(): void {
     this.isMaxSelectedItemsReached = this.maxSelectedItems !== undefined && this.selectedItems.length >= this.maxSelectedItems;
-    this.changeDetectorRef.markForCheck();
+    this.cdr.markForCheck();
   }
 
   public add(event: MatChipInputEvent): void {
@@ -127,7 +133,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
 
     if (!input) return;
 
-    const valueToAdd: IDistrictOption | undefined = this.toIDistrictOption([ input ])
+    const valueToAdd: IDistrictOption | undefined = toIDistrictOption([ input ])
       .find(v => !this.selectedItems.map(item => item.value).includes(v.value));
 
     if (valueToAdd) this.selectedItems.push(valueToAdd);
@@ -135,7 +141,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
     this.inputControl.setValue(null);
     this.inputElement.nativeElement.value = '';
     this._onChange(this.selectedItems);
-    this.changeDetectorRef.markForCheck();
+    this.cdr.markForCheck();
   }
 
   public remove(item: IDistrictOption): void {
@@ -156,7 +162,7 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
     if (this.isMaxSelectedItemsReached) {
       this.inputElement.nativeElement.value = '';
       this.inputControl.setValue(null);
-      this.changeDetectorRef.markForCheck();
+      this.cdr.markForCheck();
 
       return;
     }
@@ -171,13 +177,13 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
       this._onChange(this.selectedItems);
     }
 
-    this.changeDetectorRef.markForCheck();
+    this.cdr.markForCheck();
   }
 
   public filter(input: IDistrictOption | null): IDistrictOption[] {
     const filterValue = (input?.name ?? '').toLowerCase();
 
-    return this.toIDistrictOption(this.options)
+    return toIDistrictOption(this.options)
       .filter((option: IDistrictOption) => option.name.toLowerCase().includes(filterValue)
         && !this.selectedItems
           .map((item: IDistrictOption): string => item.value)
