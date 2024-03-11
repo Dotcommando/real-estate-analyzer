@@ -61,6 +61,11 @@ function compareCityDistrictData(prev: ISimpleCityDistrict[], curr: ISimpleCityD
   });
 }
 
+const noCitySelectedOption: ISimpleCityDistrict = {
+  city: 'Select city...',
+  districts: [],
+};
+
 @Component({
   selector: 'ei-city-district-selector',
   templateUrl: './city-district-selector.component.html',
@@ -97,11 +102,19 @@ export class CityDistrictSelectorComponent implements ControlValueAccessor, OnIn
 
   private destroyRef: DestroyRef = inject(DestroyRef);
 
+  @Input() cityFieldLabel = 'City';
+  @Input() districtFieldLabel = 'District';
+  @Input() districtFieldPlaceholder = 'Select district...';
   @Input() maxDistrictItems = 5;
 
   @Input()
   set citiesDistrictsData(value: ISimpleCityDistrict[]) {
-    this.citesDistrictsDataSubject$.next(value ?? []);
+    const data = [
+      noCitySelectedOption,
+      ...(value ? value : []),
+    ];
+
+    this.citesDistrictsDataSubject$.next(data);
   }
   get citiesDistrictsData(): ISimpleCityDistrict[] {
     return this.citesDistrictsDataSubject$.getValue();
@@ -191,7 +204,10 @@ export class CityDistrictSelectorComponent implements ControlValueAccessor, OnIn
       }),
       tap(([ city, districts ]) => {
         this.form.controls['districts'].setValue(districts);
-        this.onChange({ city, districts });
+        this.onChange({
+          city: city === noCitySelectedOption.city ? null : city,
+          districts,
+        });
         this.cdr.markForCheck();
       }),
       takeUntilDestroyed(this.destroyRef),

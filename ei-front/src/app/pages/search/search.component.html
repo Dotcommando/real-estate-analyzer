@@ -5,6 +5,9 @@
         <div class="tab-wrapper">
           <div class="city-districts">
             <ei-city-district-selector
+              cityFieldLabel="City"
+              districtFieldLabel="District"
+              districtFieldPlaceholder="Select district..."
               [maxDistrictItems]="maxDistrictItems"
               [citiesDistrictsData]="rentLimits.cities"
               [formControl]="searchRentForm.controls.cityDistrict"

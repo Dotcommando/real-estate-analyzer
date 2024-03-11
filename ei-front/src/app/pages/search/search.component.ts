@@ -111,7 +111,6 @@ export class SearchComponent implements OnInit {
 
     this.trackSearchForm$(this.searchRentForm.valueChanges)
       .pipe(
-        tap(data => console.log(data)),
         tap((searchForm: Partial<ISearchForm>) => this.store.dispatch(
           new UpdateRentSearchState(mapSearchFormToState(searchForm)),
         )),

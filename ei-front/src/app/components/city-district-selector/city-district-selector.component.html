@@ -1,7 +1,7 @@
 <form [formGroup]="form">
   <div class="city-districts-wrapper">
     <mat-form-field appearance="fill" class="city">
-      <mat-label>City</mat-label>
+      <mat-label>{{ cityFieldLabel }}</mat-label>
       <mat-select formControlName="city">
         @for (cityDistrict of citiesDistrictsData; track cityDistrict.city) {
           <mat-option [value]="cityDistrict.city">{{cityDistrict.city}}</mat-option>
@@ -10,6 +10,7 @@
     </mat-form-field>
 
     <ei-multi-autocomplete
+      [placeholder]="districtFieldPlaceholder"
       class="districts"
       [options]="(districtsOptions$ | async) ?? []"
       [maxSelectedItems]="maxDistrictItems"
