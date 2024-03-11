@@ -39,6 +39,15 @@ export class LimitationsService {
         ...(city.districts?.length ? { districts: city.districts.slice().sort() } : { districts: []}),
       }))
       .sort((a, b) => (a.city as string).localeCompare(b.city as string));
+    sortedRentLimits.limits.bedrooms = sortedRentLimits.limits.bedrooms.sort((a, b) => a - b);
+    sortedRentLimits.limits.bathrooms = sortedRentLimits.limits.bathrooms.sort((a, b) => a - b);
+    sortedRentLimits.categories = sortedRentLimits.categories.sort((a, b) => a.category >= b.category ? 1 : -1);
+
+    sortedRentLimits.categories.map((category) => {
+      category.subcategories = category.subcategories
+        .filter((subcategory) => Boolean(subcategory) && subcategory.length > 1)
+        .sort();
+    });
 
     return sortedRentLimits;
   }
@@ -55,6 +64,15 @@ export class LimitationsService {
         ...(city.districts?.length ? { districts: city.districts.slice().sort() } : { districts: []}),
       }))
       .sort((a, b) => (a.city as string).localeCompare(b.city as string));
+    sortedSaleLimits.limits.bedrooms = sortedSaleLimits.limits.bedrooms.sort((a, b) => a - b);
+    sortedSaleLimits.limits.bathrooms = sortedSaleLimits.limits.bathrooms.sort((a, b) => a - b);
+    sortedSaleLimits.categories = sortedSaleLimits.categories.sort((a, b) => a.category >= b.category ? 1 : -1);
+
+    sortedSaleLimits.categories.map((category) => {
+      category.subcategories = category.subcategories
+        .filter((subcategory) => Boolean(subcategory) && subcategory.length > 1)
+        .sort();
+    });
 
     return sortedSaleLimits;
   }

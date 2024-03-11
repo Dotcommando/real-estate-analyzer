@@ -5,9 +5,9 @@
 }
 
 .search-form {
-  max-width: 500px;
   min-height: 400px;
   margin: auto;
+  padding: 20px;
 }
 
 .mat-mdc-tab-group {
@@ -24,14 +24,19 @@
   & > * {
     flex: 1 1 0;
   }
+
+  .bedrooms,
+  .bathrooms {
+    flex: 0 0 0;
+  }
 }
 
-.price-range {
-  max-width: 300px;
+.input-range {
+  max-width: 180px;
 }
 
-@media (min-width: 960px) {
+@media (min-width: 1920px) {
   .search-form {
-    min-width: 920px;
+    width: 1880px;
   }
 }

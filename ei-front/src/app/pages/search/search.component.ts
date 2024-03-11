@@ -2,7 +2,8 @@ import { isPlatformBrowser } from '@angular/common';
 import { Component, DestroyRef, Inject, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { MatFormField, MatLabel, MatOption, MatSelect } from '@angular/material/select';
+import { MatButtonToggle, MatButtonToggleGroup } from '@angular/material/button-toggle';
+import { MatFormField, MatLabel, MatOptgroup, MatOption, MatSelect } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 
 import { Select, Store } from '@ngxs/store';
@@ -24,6 +25,7 @@ import { IRentLimits, ISaleLimits } from '../../../../bff/types';
 import {
   CityDistrictSelectorComponent,
 } from '../../components/city-district-selector/city-district-selector.component';
+import { FieldTopLabelComponent } from '../../components/field-top-label/field-top-label.component';
 import { InputRangeComponent } from '../../components/input-range/input-range.component';
 import { MultiAutocompleteComponent } from '../../components/multi-autocomplete/multi-autocomplete.component';
 import { mapSearchFormToState } from '../../mappers';
@@ -47,6 +49,10 @@ enum SearchTypeTab {
     MatOption,
     MultiAutocompleteComponent,
     CityDistrictSelectorComponent,
+    MatButtonToggleGroup,
+    MatButtonToggle,
+    FieldTopLabelComponent,
+    MatOptgroup,
   ],
   templateUrl: './search.component.html',
   styleUrl: './search.component.scss',
@@ -59,6 +65,7 @@ export class SearchComponent implements OnInit {
   public searchRentForm = new FormGroup({
     type: new FormControl(),
     cityDistrict: new FormControl(),
+    subcategory: new FormControl(),
     price: new FormControl(),
     priceSqm: new FormControl(),
     bedrooms: new FormControl(),
@@ -69,6 +76,7 @@ export class SearchComponent implements OnInit {
   public searchSaleForm = new FormGroup({
     type: new FormControl(),
     cityDistrict: new FormControl(),
+    subcategory: new FormControl(),
     price: new FormControl(),
     priceSqm: new FormControl(),
     bedrooms: new FormControl(),
@@ -81,6 +89,9 @@ export class SearchComponent implements OnInit {
 
   public activeTabIndex: number = SearchTypeTab.rent;
   public maxDistrictItems = 5;
+
+  public rentTypeFocused = false;
+  public saleTypeFocused = false;
 
   private destroyRef: DestroyRef = inject(DestroyRef);
 
@@ -95,13 +106,17 @@ export class SearchComponent implements OnInit {
     this.rentLimits = this.limitsService.getRentLimits();
     this.saleLimits = this.limitsService.getSaleLimits();
 
+    if (isPlatformBrowser(this.platformId)) {
+      console.log(this.rentLimits);
+      console.log(this.saleLimits);
+    }
+
     this.restoreFormState(this.rentState$, this.searchRentForm);
     this.restoreFormState(this.saleState$, this.searchSaleForm);
 
     this.type$
       .pipe(
         distinctUntilChanged(),
-        tap(((data) => console.log(data))),
         tap((type) => {
           this.activeTabIndex = SearchTypeTab[type];
         }),
@@ -167,26 +182,18 @@ export class SearchComponent implements OnInit {
           }
 
           if (state.filters.bedrooms !== null) {
-            formValue.bedrooms = { min: null, max: null };
+            formValue.bedrooms = [];
 
-            if (typeof state.filters.bedrooms?.min === 'number') {
-              formValue.bedrooms.min = state.filters.bedrooms.min;
-            }
-
-            if (typeof state.filters.bedrooms?.max === 'number') {
-              formValue.bedrooms.max = state.filters.bedrooms.max;
+            if (Array.isArray(state.filters.bedrooms)) {
+              formValue.bedrooms = [ ...state.filters.bedrooms ];
             }
           }
 
           if (state.filters.bathrooms !== null) {
-            formValue.bathrooms = { min: null, max: null };
+            formValue.bathrooms = [];
 
-            if (typeof state.filters.bathrooms?.min === 'number') {
-              formValue.bathrooms.min = state.filters.bathrooms.min;
-            }
-
-            if (typeof state.filters.bathrooms?.max === 'number') {
-              formValue.bathrooms.max = state.filters.bathrooms.max;
+            if (Array.isArray(state.filters.bathrooms)) {
+              formValue.bathrooms = [ ...state.filters.bathrooms ];
             }
           }
 
@@ -200,6 +207,10 @@ export class SearchComponent implements OnInit {
             if (typeof state.filters['property-area']?.max === 'number') {
               formValue.propertyArea.max = state.filters['property-area'].max;
             }
+          }
+
+          if (Array.isArray(state.filters.subcategory)) {
+            formValue.subcategory = state.filters.subcategory;
           }
 
           form.patchValue(formValue);
@@ -224,5 +235,21 @@ export class SearchComponent implements OnInit {
         tap((data) => console.log(data)),
         takeUntilDestroyed(this.destroyRef),
       );
+  }
+
+  public onRentTypeFocus(): void {
+    this.rentTypeFocused = true;
+  }
+
+  public onRentTypeBlur(): void {
+    this.rentTypeFocused = false;
+  }
+
+  public onSaleTypeFocus(): void {
+    this.saleTypeFocused = true;
+  }
+
+  public onSaleTypeBlur(): void {
+    this.saleTypeFocused = false;
   }
 }

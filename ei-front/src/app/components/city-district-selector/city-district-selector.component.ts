@@ -63,7 +63,7 @@ function compareCityDistrictData(prev: ISimpleCityDistrict[], curr: ISimpleCityD
 }
 
 const noCitySelectedOption: ISimpleCityDistrict = {
-  city: 'Select city...',
+  city: 'All Cyprus',
   districts: [],
 };
 

@@ -157,6 +157,7 @@ export interface ISearchState {
 export interface ISearchForm {
   type: 'rent' | 'sale';
   cityDistrict: ICityDistrict;
+  subcategory: string[];
   price: Range<number>;
   priceSqm: Range<number>;
   bedrooms: Range<number>;

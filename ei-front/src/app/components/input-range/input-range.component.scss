@@ -13,6 +13,16 @@
   display: flex;
   flex-direction: row;
   align-items: stretch;
+
+  input[type=number] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+    -webkit-appearance: textfield;
+  }
+
+  input[type=number]::-webkit-inner-spin-button {
+    display: none;
+  }
 }
 
 .input-range-field {
