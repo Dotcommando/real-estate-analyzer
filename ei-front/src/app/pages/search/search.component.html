@@ -1,6 +1,11 @@
 <div class="search-wrapper">
   <div class="search-form">
-    <mat-tab-group (selectedIndexChange)="onTabIndexChange($event)" [(selectedIndex)]="activeTabIndex">
+    <mat-tab-group
+      mat-stretch-tabs="false"
+      mat-align-tabs="center"
+      (selectedIndexChange)="onTabIndexChange($event)"
+      [(selectedIndex)]="activeTabIndex"
+    >
       <mat-tab label="Rent">
         <div class="tab-wrapper">
           <div class="estate-type">

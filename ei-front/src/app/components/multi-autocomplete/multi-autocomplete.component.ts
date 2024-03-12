@@ -10,7 +10,7 @@ import {
   forwardRef,
   Inject,
   inject,
-  Input,
+  Input, NgZone,
   OnInit,
   Output,
   PLATFORM_ID,
@@ -29,7 +29,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatLabel } from '@angular/material/select';
 
-import { filter, tap } from 'rxjs';
+import { BehaviorSubject, filter, switchMap, tap } from 'rxjs';
 
 import { toIDistrictOption } from '../../mappers';
 import { IDistrictOption, IOptionSet } from '../../types';
@@ -80,17 +80,25 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
   public autocompleteOptions!: IDistrictOption[];
   public separatorKeysCodes: number[] = [ ENTER, COMMA ];
   public isMaxSelectedItemsReached = false;
+  public focused = false;
+  public inputInnerText = this.placeholder;
 
   @ViewChild('inputElement') inputElement!: ElementRef<HTMLInputElement>;
 
   private _onChange = (value: IDistrictOption[]) => {};
   private _onTouched = () => {};
+  private blurTimeout!: ReturnType<typeof setTimeout>;
+  private focusedSubject$ = new BehaviorSubject(false);
+  public focused$ = this.focusedSubject$.asObservable();
   private destroyRef: DestroyRef = inject(DestroyRef);
 
   constructor(
     private cdr: ChangeDetectorRef,
+    private zone: NgZone,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {
+    this.postponedBlur = this.postponedBlur.bind(this);
+    this.removeFocus = this.removeFocus.bind(this);
   }
 
   public ngOnInit(): void {
@@ -100,6 +108,19 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
         filter((userInput: string | null) => typeof userInput === 'string'),
         tap((userInput: string) => {
           this.autocompleteOptions = this.filterOptions(toIDistrictOption(this.options), this.selectedItems, userInput);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
+
+    this.focused$
+      .pipe(
+        tap((focused) => {
+          if (focused) {
+            this.inputInnerText = this.placeholder;
+          } else if (this.selectedItems.length) {
+            this.inputInnerText = 'Chosen: ' + this.selectedItems.length;
+          }
         }),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -219,12 +240,27 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
   }
 
   public onInputFocus(): void {
+    clearTimeout(this.blurTimeout);
+    this.focused = true;
+    this.focusedSubject$.next(true);
     this.filterOptionsOnFocus();
     this.focus.emit();
     this._onTouched();
   }
 
+  private removeFocus(): void {
+    this.focused = false;
+    this.focusedSubject$.next(false);
+    this.cdr.detectChanges();
+  }
+
+  private postponedBlur() {
+    this.zone.run(this.removeFocus);
+  }
+
   public onInputBlur(): void {
+    this.blurTimeout = setTimeout(this.postponedBlur, 100);
+
     this.blur.emit();
     this._onTouched();
   }

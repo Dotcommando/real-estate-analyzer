@@ -1,17 +1,25 @@
 <div class="multi-autocomplete-wrapper">
   <mat-form-field appearance="fill">
-    <mat-chip-grid #chipGrid [attr.aria-label]="label">
-      @for (item of selectedItems; track item.value) {
-        <mat-chip-row (removed)="remove(item)" removable>
-          {{ item.name }}
-          <button matChipRemove [attr.aria-label]="'Remove'">
-            <mat-icon>cancel</mat-icon>
-          </button>
-        </mat-chip-row>
-      }
-    </mat-chip-grid>
+      <mat-chip-grid #chipGrid [attr.aria-label]="label">
+        @if (focused) {
+          <ng-container>
+          @for (item of selectedItems; track item.value) {
+            <mat-chip-row
+              removable
+              (removed)="remove(item)"
+              (click)="remove(item)"
+            >
+              {{ item.name }}
+              <button matChipRemove [attr.aria-label]="'Remove'">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip-row>
+          }
+          </ng-container>
+        }
+      </mat-chip-grid>
     <input
-      placeholder="{{ placeholder }}"
+      placeholder="{{ inputInnerText }}"
       #inputElement
       [formControl]="inputControl"
       [matAutocomplete]="auto"
@@ -21,7 +29,7 @@
       (focus)="onInputFocus()"
       (blur)="onInputBlur()"
     />
-    @if (isMaxSelectedItemsReached) {
+    @if (focused && isMaxSelectedItemsReached) {
       <mat-hint class="max-items-reached">You've reached the&nbsp;maximum number of&nbsp;selected options: {{ maxSelectedItems }}.</mat-hint>
     }
   </mat-form-field>
