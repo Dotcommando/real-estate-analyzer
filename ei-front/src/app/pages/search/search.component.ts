@@ -4,6 +4,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonToggle, MatButtonToggleGroup } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatIconModule } from '@angular/material/icon';
 import { MatFormField, MatLabel, MatOptgroup, MatOption, MatSelect } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 
@@ -41,10 +43,12 @@ enum SearchTypeTab {
   selector: 'ei-search',
   standalone: true,
   imports: [
+    MatExpansionModule,
     MatCardModule,
     MatTabsModule,
-    InputRangeComponent,
     ReactiveFormsModule,
+    InputRangeComponent,
+    MatIconModule,
     MatSelect,
     MatLabel,
     MatFormField,
@@ -73,6 +77,26 @@ export class SearchComponent implements OnInit {
     bedrooms: new FormControl(),
     bathrooms: new FormControl(),
     propertyArea: new FormControl(),
+
+    'priceDeviations.district_avg_mean.daily_total.medianDelta': new FormControl(),
+    'priceDeviations.district_avg_mean.daily_total.meanDelta': new FormControl(),
+    'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm': new FormControl(),
+    'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm': new FormControl(),
+
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta': new FormControl(),
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta': new FormControl(),
+    'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm': new FormControl(),
+    'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm': new FormControl(),
+
+    'priceDeviations.city_avg_mean.daily_total.medianDelta': new FormControl(),
+    'priceDeviations.city_avg_mean.daily_total.meanDelta': new FormControl(),
+    'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm': new FormControl(),
+    'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm': new FormControl(),
+
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta': new FormControl(),
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta': new FormControl(),
+    'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm': new FormControl(),
+    'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm': new FormControl(),
   });
 
   public searchSaleForm = new FormGroup({

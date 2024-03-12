@@ -6,7 +6,7 @@
 
 .search-form {
   min-height: 400px;
-  margin: auto;
+  margin: 0 auto auto auto;
   padding: 20px;
 }
 
@@ -14,12 +14,17 @@
   max-width: 99.99%;
 }
 
-.tab-wrapper {
+::ng-deep .search-wrapper .mat-mdc-tab-body-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.filter-set-wrapper {
   display: flex;
   flex-direction: row;
   justify-content: stretch;
   gap: 18px;
-  padding: 18px 0;
 
   & > * {
     flex: 1 1 0;
@@ -31,8 +36,34 @@
   }
 }
 
-.input-range {
+.main-filters .input-range {
   max-width: 180px;
+}
+
+.median-mean-ranges-accordion {
+  .input-range {
+    max-width: 380px;
+  }
+
+  .mat-expansion-panel-header-description {
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .filter-set-wrapper {
+    justify-content: center;
+  }
+}
+
+.estate-type {
+  display: flex;
+  flex-direction: column;
+  max-width: 220px;
+  max-height: 98px;
+
+  & > * {
+    flex: 1 1 0;
+  }
 }
 
 @media (min-width: 1920px) {
