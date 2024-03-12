@@ -29,7 +29,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatLabel } from '@angular/material/select';
 
-import { BehaviorSubject, filter, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, filter, tap } from 'rxjs';
 
 import { toIDistrictOption } from '../../mappers';
 import { IDistrictOption, IOptionSet } from '../../types';

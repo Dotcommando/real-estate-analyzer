@@ -3,199 +3,214 @@
     <mat-tab-group
       mat-stretch-tabs="false"
       mat-align-tabs="center"
+      animationDuration="0ms"
       (selectedIndexChange)="onTabIndexChange($event)"
       [(selectedIndex)]="activeTabIndex"
     >
       <mat-tab label="Rent">
-        <div class="tab-wrapper">
-          <div class="estate-type">
-            <ei-field-top-label
-              [label]="'Type'"
-              [focused]="rentTypeFocused"
-            ></ei-field-top-label>
-            <mat-form-field>
-              <mat-label>Type</mat-label>
-              <mat-select
-                multiple
-                [formControl]="searchRentForm.controls.subcategory"
-                (focus)="onRentTypeFocus()"
-                (blur)="onRentTypeBlur()"
-              >
-                @for (category of rentLimits.categories; track $index) {
-                  <mat-optgroup [label]="category.category">
-                    @for (subcategory of category.subcategories; track $index) {
-                      <mat-option [value]="subcategory">{{ subcategory }}</mat-option>
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Main parameters</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="tab-wrapper">
+              <div class="estate-type">
+                <ei-field-top-label
+                  [label]="'Type'"
+                  [focused]="rentTypeFocused"
+                ></ei-field-top-label>
+                <mat-form-field>
+                  <mat-label>Type</mat-label>
+                  <mat-select
+                    multiple
+                    [formControl]="searchRentForm.controls.subcategory"
+                    (focus)="onRentTypeFocus()"
+                    (blur)="onRentTypeBlur()"
+                  >
+                    @for (category of rentLimits.categories; track $index) {
+                      <mat-optgroup [label]="category.category">
+                        @for (subcategory of category.subcategories; track $index) {
+                          <mat-option [value]="subcategory">{{ subcategory }}</mat-option>
+                        }
+                      </mat-optgroup>
                     }
-                  </mat-optgroup>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
-          <div class="bedrooms">
-            <ei-field-top-label
-              [label]="'Bedrooms'"
-            ></ei-field-top-label>
-            <mat-button-toggle-group
-              multiple
-              aria-label="Bedrooms"
-              [formControl]="searchRentForm.controls.bedrooms"
-            >
-              @for (bedroomNumber of rentLimits.limits.bedrooms; track $index) {
-                @if (bedroomNumber <= 4) {
-                  <mat-button-toggle value="{{ bedroomNumber }}">{{ bedroomNumber }}</mat-button-toggle>
-                } @else if (bedroomNumber === 5) {
-                  <mat-button-toggle value="{{ bedroomNumber }}+">{{ bedroomNumber }}+</mat-button-toggle>
-                }
-              }
-            </mat-button-toggle-group>
-          </div>
-          <div class="bathrooms">
-            <ei-field-top-label
-              [label]="'Bathrooms'"
-            ></ei-field-top-label>
-            <mat-button-toggle-group
-              multiple
-              aria-label="Bathrooms"
-              [formControl]="searchRentForm.controls.bathrooms"
-            >
-              @for (bathroomNumber of rentLimits.limits.bathrooms; track $index) {
-                @if (bathroomNumber <= 3) {
-                  <mat-button-toggle value="{{ bathroomNumber }}">{{ bathroomNumber }}</mat-button-toggle>
-                } @else if (bathroomNumber === 4) {
-                  <mat-button-toggle value="{{ bathroomNumber }}+">{{ bathroomNumber }}+</mat-button-toggle>
-                }
-              }
-            </mat-button-toggle-group>
-          </div>
-          <div class="city-districts">
-            <ei-city-district-selector
-              cityFieldLabel="City"
-              districtFieldLabel="District"
-              districtFieldPlaceholder="Select district..."
-              [maxDistrictItems]="maxDistrictItems"
-              [citiesDistrictsData]="rentLimits.cities"
-              [formControl]="searchRentForm.controls.cityDistrict"
-            ></ei-city-district-selector>
-          </div>
-          <div class="input-range price-range">
-            <ei-input-range
-              ngDefaultControl
-              [label]="'Price'"
-              [range]="{ min: rentLimits.ranges.priceRange['min'], max: rentLimits.ranges.priceRange['max'] }"
-              [formControl]="searchRentForm.controls.price"
-            ></ei-input-range>
-          </div>
-          <div class="input-range price-sqm-range">
-            <ei-input-range
-              ngDefaultControl
-              [label]="'Price m²/month'"
-              [range]="{ min: rentLimits.ranges.priceSqmRange['min'], max: rentLimits.ranges.priceSqmRange['max'] }"
-              [formControl]="searchRentForm.controls.priceSqm"
-            ></ei-input-range>
-          </div>
-          <div class="input-range price-sqm-range">
-            <ei-input-range
-              ngDefaultControl
-              [label]="'Property area, m²'"
-              [range]="{ min: rentLimits.ranges.propertyAreaRange['min'], max: rentLimits.ranges.propertyAreaRange['max'] }"
-              [formControl]="searchRentForm.controls.propertyArea"
-            ></ei-input-range>
-          </div>
-        </div>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="bedrooms">
+                <ei-field-top-label
+                  [label]="'Bedrooms'"
+                ></ei-field-top-label>
+                <mat-button-toggle-group
+                  multiple
+                  aria-label="Bedrooms"
+                  [formControl]="searchRentForm.controls.bedrooms"
+                >
+                  @for (bedroomNumber of rentLimits.limits.bedrooms; track $index) {
+                    @if (bedroomNumber <= 4) {
+                      <mat-button-toggle value="{{ bedroomNumber }}">{{ bedroomNumber }}</mat-button-toggle>
+                    } @else if (bedroomNumber === 5) {
+                      <mat-button-toggle value="{{ bedroomNumber }}+">{{ bedroomNumber }}+</mat-button-toggle>
+                    }
+                  }
+                </mat-button-toggle-group>
+              </div>
+              <div class="bathrooms">
+                <ei-field-top-label
+                  [label]="'Bathrooms'"
+                ></ei-field-top-label>
+                <mat-button-toggle-group
+                  multiple
+                  aria-label="Bathrooms"
+                  [formControl]="searchRentForm.controls.bathrooms"
+                >
+                  @for (bathroomNumber of rentLimits.limits.bathrooms; track $index) {
+                    @if (bathroomNumber <= 3) {
+                      <mat-button-toggle value="{{ bathroomNumber }}">{{ bathroomNumber }}</mat-button-toggle>
+                    } @else if (bathroomNumber === 4) {
+                      <mat-button-toggle value="{{ bathroomNumber }}+">{{ bathroomNumber }}+</mat-button-toggle>
+                    }
+                  }
+                </mat-button-toggle-group>
+              </div>
+              <div class="city-districts">
+                <ei-city-district-selector
+                  cityFieldLabel="City"
+                  districtFieldLabel="District"
+                  districtFieldPlaceholder="Select district..."
+                  [maxDistrictItems]="maxDistrictItems"
+                  [citiesDistrictsData]="rentLimits.cities"
+                  [formControl]="searchRentForm.controls.cityDistrict"
+                ></ei-city-district-selector>
+              </div>
+              <div class="input-range price-range">
+                <ei-input-range
+                  ngDefaultControl
+                  [label]="'Price'"
+                  [range]="{ min: rentLimits.ranges.priceRange['min'], max: rentLimits.ranges.priceRange['max'] }"
+                  [formControl]="searchRentForm.controls.price"
+                ></ei-input-range>
+              </div>
+              <div class="input-range price-sqm-range">
+                <ei-input-range
+                  ngDefaultControl
+                  [label]="'Price m²/month'"
+                  [range]="{ min: rentLimits.ranges.priceSqmRange['min'], max: rentLimits.ranges.priceSqmRange['max'] }"
+                  [formControl]="searchRentForm.controls.priceSqm"
+                ></ei-input-range>
+              </div>
+              <div class="input-range price-sqm-range">
+                <ei-input-range
+                  ngDefaultControl
+                  [label]="'Property area, m²'"
+                  [range]="{ min: rentLimits.ranges.propertyAreaRange['min'], max: rentLimits.ranges.propertyAreaRange['max'] }"
+                  [formControl]="searchRentForm.controls.propertyArea"
+                ></ei-input-range>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
       </mat-tab>
       <mat-tab label="Sale">
-        <div class="tab-wrapper">
-          <div class="estate-type">
-            <ei-field-top-label
-              [label]="'Type'"
-              [focused]="rentTypeFocused"
-            ></ei-field-top-label>
-            <mat-form-field>
-              <mat-label>Type</mat-label>
-              <mat-select
-                multiple
-                [formControl]="searchSaleForm.controls.subcategory"
-                (focus)="onSaleTypeFocus()"
-                (blur)="onSaleTypeBlur()"
-              >
-                @for (category of saleLimits.categories; track $index) {
-                  <mat-optgroup [label]="category.category">
-                    @for (subcategory of category.subcategories; track $index) {
-                      <mat-option [value]="subcategory">{{ subcategory }}</mat-option>
+        <mat-card>
+          <mat-card-header>
+            <mat-card-title>Main parameters</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="tab-wrapper">
+              <div class="estate-type">
+                <ei-field-top-label
+                  [label]="'Type'"
+                  [focused]="saleTypeFocused"
+                ></ei-field-top-label>
+                <mat-form-field>
+                  <mat-label>Type</mat-label>
+                  <mat-select
+                    multiple
+                    [formControl]="searchSaleForm.controls.subcategory"
+                    (focus)="onSaleTypeFocus()"
+                    (blur)="onSaleTypeBlur()"
+                  >
+                    @for (category of saleLimits.categories; track $index) {
+                      <mat-optgroup [label]="category.category">
+                        @for (subcategory of category.subcategories; track $index) {
+                          <mat-option [value]="subcategory">{{ subcategory }}</mat-option>
+                        }
+                      </mat-optgroup>
                     }
-                  </mat-optgroup>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
-          <div class="bedrooms">
-            <ei-field-top-label
-              [label]="'Bedrooms'"
-            ></ei-field-top-label>
-            <mat-button-toggle-group
-              multiple
-              aria-label="Bedrooms"
-              [formControl]="searchSaleForm.controls.bedrooms"
-            >
-              @for (bedroomNumber of saleLimits.limits.bedrooms; track $index) {
-                @if (bedroomNumber <= 4) {
-                  <mat-button-toggle value="{{ bedroomNumber }}">{{ bedroomNumber }}</mat-button-toggle>
-                } @else if (bedroomNumber === 5) {
-                  <mat-button-toggle value="{{ bedroomNumber }}+">{{ bedroomNumber }}+</mat-button-toggle>
-                }
-              }
-            </mat-button-toggle-group>
-          </div>
-          <div class="bathrooms">
-            <ei-field-top-label
-              [label]="'Bathrooms'"
-            ></ei-field-top-label>
-            <mat-button-toggle-group
-              multiple
-              aria-label="Bathrooms"
-              [formControl]="searchSaleForm.controls.bathrooms"
-            >
-              @for (bathroomNumber of saleLimits.limits.bathrooms; track $index) {
-                @if (bathroomNumber <= 3) {
-                  <mat-button-toggle value="{{ bathroomNumber }}">{{ bathroomNumber }}</mat-button-toggle>
-                } @else if (bathroomNumber === 4) {
-                  <mat-button-toggle value="{{ bathroomNumber }}+">{{ bathroomNumber }}+</mat-button-toggle>
-                }
-              }
-            </mat-button-toggle-group>
-          </div>
-          <div class="city-districts">
-            <ei-city-district-selector
-              [maxDistrictItems]="maxDistrictItems"
-              [citiesDistrictsData]="saleLimits.cities"
-              [formControl]="searchSaleForm.controls.cityDistrict"
-            ></ei-city-district-selector>
-          </div>
-          <div class="input-range price-range">
-            <ei-input-range
-              ngDefaultControl
-              [label]="'Price'"
-              [range]="{ min: saleLimits.ranges.priceRange.min, max: saleLimits.ranges.priceRange.max }"
-              [formControl]="searchSaleForm.controls.price"
-            ></ei-input-range>
-          </div>
-          <div class="input-range price-sqm-range">
-            <ei-input-range
-              ngDefaultControl
-              [label]="'Price m²'"
-              [range]="{ min: saleLimits.ranges.priceSqmRange['min'], max: saleLimits.ranges.priceSqmRange['max'] }"
-              [formControl]="searchSaleForm.controls.priceSqm"
-            ></ei-input-range>
-          </div>
-          <div class="input-range price-sqm-range">
-            <ei-input-range
-              ngDefaultControl
-              [label]="'Property area, m²'"
-              [range]="{ min: saleLimits.ranges.propertyAreaRange['min'], max: saleLimits.ranges.propertyAreaRange['max'] }"
-              [formControl]="searchSaleForm.controls.propertyArea"
-            ></ei-input-range>
-          </div>
-        </div>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="bedrooms">
+                <ei-field-top-label
+                  [label]="'Bedrooms'"
+                ></ei-field-top-label>
+                <mat-button-toggle-group
+                  multiple
+                  aria-label="Bedrooms"
+                  [formControl]="searchSaleForm.controls.bedrooms"
+                >
+                  @for (bedroomNumber of saleLimits.limits.bedrooms; track $index) {
+                    @if (bedroomNumber <= 4) {
+                      <mat-button-toggle value="{{ bedroomNumber }}">{{ bedroomNumber }}</mat-button-toggle>
+                    } @else if (bedroomNumber === 5) {
+                      <mat-button-toggle value="{{ bedroomNumber }}+">{{ bedroomNumber }}+</mat-button-toggle>
+                    }
+                  }
+                </mat-button-toggle-group>
+              </div>
+              <div class="bathrooms">
+                <ei-field-top-label
+                  [label]="'Bathrooms'"
+                ></ei-field-top-label>
+                <mat-button-toggle-group
+                  multiple
+                  aria-label="Bathrooms"
+                  [formControl]="searchSaleForm.controls.bathrooms"
+                >
+                  @for (bathroomNumber of saleLimits.limits.bathrooms; track $index) {
+                    @if (bathroomNumber <= 3) {
+                      <mat-button-toggle value="{{ bathroomNumber }}">{{ bathroomNumber }}</mat-button-toggle>
+                    } @else if (bathroomNumber === 4) {
+                      <mat-button-toggle value="{{ bathroomNumber }}+">{{ bathroomNumber }}+</mat-button-toggle>
+                    }
+                  }
+                </mat-button-toggle-group>
+              </div>
+              <div class="city-districts">
+                <ei-city-district-selector
+                  [maxDistrictItems]="maxDistrictItems"
+                  [citiesDistrictsData]="saleLimits.cities"
+                  [formControl]="searchSaleForm.controls.cityDistrict"
+                ></ei-city-district-selector>
+              </div>
+              <div class="input-range price-range">
+                <ei-input-range
+                  ngDefaultControl
+                  [label]="'Price'"
+                  [range]="{ min: saleLimits.ranges.priceRange.min, max: saleLimits.ranges.priceRange.max }"
+                  [formControl]="searchSaleForm.controls.price"
+                ></ei-input-range>
+              </div>
+              <div class="input-range price-sqm-range">
+                <ei-input-range
+                  ngDefaultControl
+                  [label]="'Price m²'"
+                  [range]="{ min: saleLimits.ranges.priceSqmRange['min'], max: saleLimits.ranges.priceSqmRange['max'] }"
+                  [formControl]="searchSaleForm.controls.priceSqm"
+                ></ei-input-range>
+              </div>
+              <div class="input-range price-sqm-range">
+                <ei-input-range
+                  ngDefaultControl
+                  [label]="'Property area, m²'"
+                  [range]="{ min: saleLimits.ranges.propertyAreaRange['min'], max: saleLimits.ranges.propertyAreaRange['max'] }"
+                  [formControl]="searchSaleForm.controls.propertyArea"
+                ></ei-input-range>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
       </mat-tab>
     </mat-tab-group>
   </div>

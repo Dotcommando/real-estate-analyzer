@@ -3,6 +3,7 @@ import { Component, DestroyRef, Inject, inject, OnInit, PLATFORM_ID } from '@ang
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonToggle, MatButtonToggleGroup } from '@angular/material/button-toggle';
+import { MatCardModule } from '@angular/material/card';
 import { MatFormField, MatLabel, MatOptgroup, MatOption, MatSelect } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 
@@ -40,6 +41,7 @@ enum SearchTypeTab {
   selector: 'ei-search',
   standalone: true,
   imports: [
+    MatCardModule,
     MatTabsModule,
     InputRangeComponent,
     ReactiveFormsModule,
@@ -118,6 +120,7 @@ export class SearchComponent implements OnInit {
       .pipe(
         distinctUntilChanged(),
         tap((type) => {
+          console.log(type);
           this.activeTabIndex = SearchTypeTab[type];
         }),
         takeUntilDestroyed(this.destroyRef),
