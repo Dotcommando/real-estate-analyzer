@@ -1,6 +1,7 @@
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { isPlatformBrowser } from '@angular/common';
 import {
+  AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
@@ -10,7 +11,8 @@ import {
   forwardRef,
   Inject,
   inject,
-  Input, NgZone,
+  Input,
+  NgZone,
   OnInit,
   Output,
   PLATFORM_ID,
@@ -59,7 +61,7 @@ import { IDistrictOption, IOptionSet } from '../../types';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit {
+export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit, AfterViewInit {
   @Input() label = '';
   @Input() placeholder = 'Select...';
   @Input() maxSelectedItems?: number;
@@ -116,15 +118,20 @@ export class MultiAutocompleteComponent implements ControlValueAccessor, OnInit 
     this.focused$
       .pipe(
         tap((focused) => {
-          if (focused) {
-            this.inputInnerText = this.placeholder;
-          } else if (this.selectedItems.length) {
-            this.inputInnerText = 'Chosen: ' + this.selectedItems.length;
-          }
+          this.inputInnerText = focused
+            ? this.placeholder
+            : 'Chosen: ' + this.selectedItems.length;
         }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
+  }
+
+  public ngAfterViewInit(): void {
+    this.inputInnerText = this.selectedItems.length === 0
+      ? this.placeholder
+      : 'Chosen: ' + this.selectedItems.length;
+    this.cdr.detectChanges();
   }
 
   private filterOptions(options: IDistrictOption[], selectedItems: IDistrictOption[], userInput = ''): IDistrictOption[] {
