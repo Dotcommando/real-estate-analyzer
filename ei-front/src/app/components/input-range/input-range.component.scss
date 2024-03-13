@@ -1,6 +1,12 @@
 ::ng-deep {
-  .input-range-fields .mdc-text-field {
-    padding: 0 8px;
+  .input-range-fields {
+    .mdc-text-field {
+      padding: 0 8px;
+    }
+
+    .mat-mdc-form-field-hint-wrapper {
+      padding: 0;
+    }
   }
 }
 

@@ -11,7 +11,7 @@ import {
   Source,
   StandardSet,
 } from '../../../../bff/constants';
-import { ICityDistrict, IDistrictOption, Range } from '../../types';
+import { ICityDistrict, Range } from '../../types';
 
 
 export interface ISearchFilters {
@@ -26,35 +26,35 @@ export interface ISearchFilters {
   'property-area': Range<number> | null;
 
   // Special
-  'priceDeviations.city_avg_mean.monthly_total.medianDelta': Range<number> | null;
-  'priceDeviations.city_avg_mean.monthly_total.meanDelta': Range<number> | null;
-  'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm': Range<number> | null;
-  'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm': Range<number> | null;
+  'priceDeviations-city_avg_mean-monthly_total-medianDelta': Range<number> | null;
+  'priceDeviations-city_avg_mean-monthly_total-meanDelta': Range<number> | null;
+  'priceDeviations-city_avg_mean-monthly_total-medianDeltaSqm': Range<number> | null;
+  'priceDeviations-city_avg_mean-monthly_total-meanDeltaSqm': Range<number> | null;
 
-  'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta': Range<number> | null;
-  'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta': Range<number> | null;
-  'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm': Range<number> | null;
-  'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm': Range<number> | null;
+  'priceDeviations-city_avg_mean-monthly_intermediary-medianDelta': Range<number> | null;
+  'priceDeviations-city_avg_mean-monthly_intermediary-meanDelta': Range<number> | null;
+  'priceDeviations-city_avg_mean-monthly_intermediary-medianDeltaSqm': Range<number> | null;
+  'priceDeviations-city_avg_mean-monthly_intermediary-meanDeltaSqm': Range<number> | null;
 
-  'priceDeviations.city_avg_mean.daily_total.medianDelta': Range<number> | null;
-  'priceDeviations.city_avg_mean.daily_total.meanDelta': Range<number> | null;
-  'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm': Range<number> | null;
-  'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm': Range<number> | null;
+  'priceDeviations-city_avg_mean-daily_total-medianDelta': Range<number> | null;
+  'priceDeviations-city_avg_mean-daily_total-meanDelta': Range<number> | null;
+  'priceDeviations-city_avg_mean-daily_total-medianDeltaSqm': Range<number> | null;
+  'priceDeviations-city_avg_mean-daily_total-meanDeltaSqm': Range<number> | null;
 
-  'priceDeviations.district_avg_mean.monthly_total.medianDelta': Range<number> | null;
-  'priceDeviations.district_avg_mean.monthly_total.meanDelta': Range<number> | null;
-  'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm': Range<number> | null;
-  'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm': Range<number> | null;
+  'priceDeviations-district_avg_mean-monthly_total-medianDelta': Range<number> | null;
+  'priceDeviations-district_avg_mean-monthly_total-meanDelta': Range<number> | null;
+  'priceDeviations-district_avg_mean-monthly_total-medianDeltaSqm': Range<number> | null;
+  'priceDeviations-district_avg_mean-monthly_total-meanDeltaSqm': Range<number> | null;
 
-  'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta': Range<number> | null;
-  'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta': Range<number> | null;
-  'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm': Range<number> | null;
-  'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm': Range<number> | null;
+  'priceDeviations-district_avg_mean-monthly_intermediary-medianDelta': Range<number> | null;
+  'priceDeviations-district_avg_mean-monthly_intermediary-meanDelta': Range<number> | null;
+  'priceDeviations-district_avg_mean-monthly_intermediary-medianDeltaSqm': Range<number> | null;
+  'priceDeviations-district_avg_mean-monthly_intermediary-meanDeltaSqm': Range<number> | null;
 
-  'priceDeviations.district_avg_mean.daily_total.medianDelta': Range<number> | null;
-  'priceDeviations.district_avg_mean.daily_total.meanDelta': Range<number> | null;
-  'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm': Range<number> | null;
-  'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm': Range<number> | null;
+  'priceDeviations-district_avg_mean-daily_total-medianDelta': Range<number> | null;
+  'priceDeviations-district_avg_mean-daily_total-meanDelta': Range<number> | null;
+  'priceDeviations-district_avg_mean-daily_total-medianDeltaSqm': Range<number> | null;
+  'priceDeviations-district_avg_mean-daily_total-meanDeltaSqm': Range<number> | null;
 
   // Secondary
   source: Source[] | null;
@@ -123,30 +123,30 @@ export interface ISearchSorts {
   subcategory: -1 | 1 | null;
   activeDays: -1 | 1 | null;
   'price-sqm': -1 | 1 | null;
-  'priceDeviations.city_avg_mean.monthly_total.medianDelta': -1 | 1 | null;
-  'priceDeviations.city_avg_mean.monthly_total.meanDelta': -1 | 1 | null;
-  'priceDeviations.city_avg_mean.monthly_total.medianDeltaSqm': -1 | 1 | null;
-  'priceDeviations.city_avg_mean.monthly_total.meanDeltaSqm': -1 | 1 | null;
-  'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta': -1 | 1 | null;
-  'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta': -1 | 1 | null;
-  'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm': -1 | 1 | null;
-  'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm': -1 | 1 | null;
-  'priceDeviations.city_avg_mean.daily_total.medianDelta': -1 | 1 | null;
-  'priceDeviations.city_avg_mean.daily_total.meanDelta': -1 | 1 | null;
-  'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm': -1 | 1 | null;
-  'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm': -1 | 1 | null;
-  'priceDeviations.district_avg_mean.monthly_total.medianDelta': -1 | 1 | null;
-  'priceDeviations.district_avg_mean.monthly_total.meanDelta': -1 | 1 | null;
-  'priceDeviations.district_avg_mean.monthly_total.medianDeltaSqm': -1 | 1 | null;
-  'priceDeviations.district_avg_mean.monthly_total.meanDeltaSqm': -1 | 1 | null;
-  'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta': -1 | 1 | null;
-  'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta': -1 | 1 | null;
-  'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm': -1 | 1 | null;
-  'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm': -1 | 1 | null;
-  'priceDeviations.district_avg_mean.daily_total.medianDelta': -1 | 1 | null;
-  'priceDeviations.district_avg_mean.daily_total.meanDelta': -1 | 1 | null;
-  'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm': -1 | 1 | null;
-  'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm': -1 | 1 | null;
+  'priceDeviations-city_avg_mean-monthly_total-medianDelta': -1 | 1 | null;
+  'priceDeviations-city_avg_mean-monthly_total-meanDelta': -1 | 1 | null;
+  'priceDeviations-city_avg_mean-monthly_total-medianDeltaSqm': -1 | 1 | null;
+  'priceDeviations-city_avg_mean-monthly_total-meanDeltaSqm': -1 | 1 | null;
+  'priceDeviations-city_avg_mean-monthly_intermediary-medianDelta': -1 | 1 | null;
+  'priceDeviations-city_avg_mean-monthly_intermediary-meanDelta': -1 | 1 | null;
+  'priceDeviations-city_avg_mean-monthly_intermediary-medianDeltaSqm': -1 | 1 | null;
+  'priceDeviations-city_avg_mean-monthly_intermediary-meanDeltaSqm': -1 | 1 | null;
+  'priceDeviations-city_avg_mean-daily_total-medianDelta': -1 | 1 | null;
+  'priceDeviations-city_avg_mean-daily_total-meanDelta': -1 | 1 | null;
+  'priceDeviations-city_avg_mean-daily_total-medianDeltaSqm': -1 | 1 | null;
+  'priceDeviations-city_avg_mean-daily_total-meanDeltaSqm': -1 | 1 | null;
+  'priceDeviations-district_avg_mean-monthly_total-medianDelta': -1 | 1 | null;
+  'priceDeviations-district_avg_mean-monthly_total-meanDelta': -1 | 1 | null;
+  'priceDeviations-district_avg_mean-monthly_total-medianDeltaSqm': -1 | 1 | null;
+  'priceDeviations-district_avg_mean-monthly_total-meanDeltaSqm': -1 | 1 | null;
+  'priceDeviations-district_avg_mean-monthly_intermediary-medianDelta': -1 | 1 | null;
+  'priceDeviations-district_avg_mean-monthly_intermediary-meanDelta': -1 | 1 | null;
+  'priceDeviations-district_avg_mean-monthly_intermediary-medianDeltaSqm': -1 | 1 | null;
+  'priceDeviations-district_avg_mean-monthly_intermediary-meanDeltaSqm': -1 | 1 | null;
+  'priceDeviations-district_avg_mean-daily_total-medianDelta': -1 | 1 | null;
+  'priceDeviations-district_avg_mean-daily_total-meanDelta': -1 | 1 | null;
+  'priceDeviations-district_avg_mean-daily_total-medianDeltaSqm': -1 | 1 | null;
+  'priceDeviations-district_avg_mean-daily_total-meanDeltaSqm': -1 | 1 | null;
 }
 
 export interface ISearchState {
@@ -163,6 +163,26 @@ export interface ISearchForm {
   bedrooms: Range<number>;
   bathrooms: Range<number>;
   propertyArea: Range<number>;
+
+  'priceDeviations-district_avg_mean-daily_total-medianDelta': Partial<Range<number>>;
+  'priceDeviations-district_avg_mean-daily_total-meanDelta': Partial<Range<number>>;
+  'priceDeviations-district_avg_mean-daily_total-medianDeltaSqm': Partial<Range<number>>;
+  'priceDeviations-district_avg_mean-daily_total-meanDeltaSqm': Partial<Range<number>>;
+
+  'priceDeviations-district_avg_mean-monthly_intermediary-medianDelta': Range<number | null>;
+  'priceDeviations-district_avg_mean-monthly_intermediary-meanDelta': Range<number | null>;
+  'priceDeviations-district_avg_mean-monthly_intermediary-medianDeltaSqm': Range<number | null>;
+  'priceDeviations-district_avg_mean-monthly_intermediary-meanDeltaSqm': Range<number | null>;
+
+  'priceDeviations-city_avg_mean-daily_total-medianDelta': Range<number | null>;
+  'priceDeviations-city_avg_mean-daily_total-meanDelta': Range<number | null>;
+  'priceDeviations-city_avg_mean-daily_total-medianDeltaSqm': Range<number | null>;
+  'priceDeviations-city_avg_mean-daily_total-meanDeltaSqm': Range<number | null>;
+
+  'priceDeviations-city_avg_mean-monthly_intermediary-medianDelta': Range<number | null>;
+  'priceDeviations-city_avg_mean-monthly_intermediary-meanDelta': Range<number | null>;
+  'priceDeviations-city_avg_mean-monthly_intermediary-medianDeltaSqm': Range<number | null>;
+  'priceDeviations-city_avg_mean-monthly_intermediary-meanDeltaSqm': Range<number | null>;
 }
 
 export interface ISearchRentForm extends ISearchForm {

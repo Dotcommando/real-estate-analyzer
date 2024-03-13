@@ -14,7 +14,7 @@ import { Select, Store } from '@ngxs/store';
 import { debounce, distinctUntilChanged, interval, Observable, take, tap } from 'rxjs';
 
 import { LimitationsService } from './limitations.service';
-import { ISearchForm, ISearchState } from './search.model';
+import { ISearchFilters, ISearchForm, ISearchState } from './search.model';
 import {
   ChangeType,
   SearchRentState,
@@ -32,6 +32,7 @@ import { FieldTopLabelComponent } from '../../components/field-top-label/field-t
 import { InputRangeComponent } from '../../components/input-range/input-range.component';
 import { MultiAutocompleteComponent } from '../../components/multi-autocomplete/multi-autocomplete.component';
 import { mapSearchFormToState } from '../../mappers';
+import { Range } from '../../types';
 
 
 enum SearchTypeTab {
@@ -78,25 +79,25 @@ export class SearchComponent implements OnInit {
     bathrooms: new FormControl(),
     propertyArea: new FormControl(),
 
-    'priceDeviations.district_avg_mean.daily_total.medianDelta': new FormControl(),
-    'priceDeviations.district_avg_mean.daily_total.meanDelta': new FormControl(),
-    'priceDeviations.district_avg_mean.daily_total.medianDeltaSqm': new FormControl(),
-    'priceDeviations.district_avg_mean.daily_total.meanDeltaSqm': new FormControl(),
+    'priceDeviations-district_avg_mean-daily_total-medianDelta': new FormControl(),
+    'priceDeviations-district_avg_mean-daily_total-meanDelta': new FormControl(),
+    'priceDeviations-district_avg_mean-daily_total-medianDeltaSqm': new FormControl(),
+    'priceDeviations-district_avg_mean-daily_total-meanDeltaSqm': new FormControl(),
 
-    'priceDeviations.district_avg_mean.monthly_intermediary.medianDelta': new FormControl(),
-    'priceDeviations.district_avg_mean.monthly_intermediary.meanDelta': new FormControl(),
-    'priceDeviations.district_avg_mean.monthly_intermediary.medianDeltaSqm': new FormControl(),
-    'priceDeviations.district_avg_mean.monthly_intermediary.meanDeltaSqm': new FormControl(),
+    'priceDeviations-district_avg_mean-monthly_intermediary-medianDelta': new FormControl(),
+    'priceDeviations-district_avg_mean-monthly_intermediary-meanDelta': new FormControl(),
+    'priceDeviations-district_avg_mean-monthly_intermediary-medianDeltaSqm': new FormControl(),
+    'priceDeviations-district_avg_mean-monthly_intermediary-meanDeltaSqm': new FormControl(),
 
-    'priceDeviations.city_avg_mean.daily_total.medianDelta': new FormControl(),
-    'priceDeviations.city_avg_mean.daily_total.meanDelta': new FormControl(),
-    'priceDeviations.city_avg_mean.daily_total.medianDeltaSqm': new FormControl(),
-    'priceDeviations.city_avg_mean.daily_total.meanDeltaSqm': new FormControl(),
+    'priceDeviations-city_avg_mean-daily_total-medianDelta': new FormControl(),
+    'priceDeviations-city_avg_mean-daily_total-meanDelta': new FormControl(),
+    'priceDeviations-city_avg_mean-daily_total-medianDeltaSqm': new FormControl(),
+    'priceDeviations-city_avg_mean-daily_total-meanDeltaSqm': new FormControl(),
 
-    'priceDeviations.city_avg_mean.monthly_intermediary.medianDelta': new FormControl(),
-    'priceDeviations.city_avg_mean.monthly_intermediary.meanDelta': new FormControl(),
-    'priceDeviations.city_avg_mean.monthly_intermediary.medianDeltaSqm': new FormControl(),
-    'priceDeviations.city_avg_mean.monthly_intermediary.meanDeltaSqm': new FormControl(),
+    'priceDeviations-city_avg_mean-monthly_intermediary-medianDelta': new FormControl(),
+    'priceDeviations-city_avg_mean-monthly_intermediary-meanDelta': new FormControl(),
+    'priceDeviations-city_avg_mean-monthly_intermediary-medianDeltaSqm': new FormControl(),
+    'priceDeviations-city_avg_mean-monthly_intermediary-meanDeltaSqm': new FormControl(),
   });
 
   public searchSaleForm = new FormGroup({
@@ -108,6 +109,26 @@ export class SearchComponent implements OnInit {
     bedrooms: new FormControl(),
     bathrooms: new FormControl(),
     propertyArea: new FormControl(),
+
+    'priceDeviations-district_avg_mean-daily_total-medianDelta': new FormControl(),
+    'priceDeviations-district_avg_mean-daily_total-meanDelta': new FormControl(),
+    'priceDeviations-district_avg_mean-daily_total-medianDeltaSqm': new FormControl(),
+    'priceDeviations-district_avg_mean-daily_total-meanDeltaSqm': new FormControl(),
+
+    'priceDeviations-district_avg_mean-monthly_intermediary-medianDelta': new FormControl(),
+    'priceDeviations-district_avg_mean-monthly_intermediary-meanDelta': new FormControl(),
+    'priceDeviations-district_avg_mean-monthly_intermediary-medianDeltaSqm': new FormControl(),
+    'priceDeviations-district_avg_mean-monthly_intermediary-meanDeltaSqm': new FormControl(),
+
+    'priceDeviations-city_avg_mean-daily_total-medianDelta': new FormControl(),
+    'priceDeviations-city_avg_mean-daily_total-meanDelta': new FormControl(),
+    'priceDeviations-city_avg_mean-daily_total-medianDeltaSqm': new FormControl(),
+    'priceDeviations-city_avg_mean-daily_total-meanDeltaSqm': new FormControl(),
+
+    'priceDeviations-city_avg_mean-monthly_intermediary-medianDelta': new FormControl(),
+    'priceDeviations-city_avg_mean-monthly_intermediary-meanDelta': new FormControl(),
+    'priceDeviations-city_avg_mean-monthly_intermediary-medianDeltaSqm': new FormControl(),
+    'priceDeviations-city_avg_mean-monthly_intermediary-meanDeltaSqm': new FormControl(),
   });
 
   public rentLimits!: IRentLimits;
@@ -238,6 +259,23 @@ export class SearchComponent implements OnInit {
 
           if (Array.isArray(state.filters.subcategory)) {
             formValue.subcategory = state.filters.subcategory;
+          }
+
+          const priceDeviationsFieldNames: Array<keyof ISearchFilters> = (Object.keys(state.filters) as Array<keyof ISearchFilters>)
+            .filter((key: keyof ISearchFilters) => key.startsWith('priceDeviations'));
+
+          for (const fieldName of priceDeviationsFieldNames) {
+            if (state.filters[fieldName] !== null && typeof state.filters[fieldName] === 'object') {
+              formValue[fieldName] = {};
+
+              if ('min' in (state.filters[fieldName] as unknown as object) && (state.filters[fieldName] as unknown as Range<number>)['min'] !== null) {
+                formValue[fieldName].min = (state.filters[fieldName] as unknown as Range<number>).min;
+              }
+
+              if ('max' in (state.filters[fieldName] as unknown as object) && (state.filters[fieldName] as unknown as Range<number>)['max'] !== null) {
+                formValue[fieldName].max = (state.filters[fieldName] as unknown as Range<number>).max;
+              }
+            }
           }
 
           form.patchValue(formValue);

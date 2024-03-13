@@ -19,7 +19,7 @@ import { MatInputModule } from '@angular/material/input';
 
 import { distinctUntilChanged, map, startWith, tap } from 'rxjs';
 
-import { FormControlPipe } from '../../pipes';
+import { FormatNumberPipe, FormControlPipe } from '../../pipes';
 import { Range } from '../../types';
 import { FieldTopLabelComponent } from '../field-top-label/field-top-label.component';
 
@@ -32,6 +32,7 @@ import { FieldTopLabelComponent } from '../field-top-label/field-top-label.compo
     MatInputModule,
     FormControlPipe,
     FieldTopLabelComponent,
+    FormatNumberPipe,
   ],
   providers: [
     {
