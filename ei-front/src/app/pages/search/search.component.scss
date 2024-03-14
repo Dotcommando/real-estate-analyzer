@@ -1,13 +1,16 @@
+@use '@angular/material' as mat;
+@import '../../../styles.scss';
+@include mat.core();
+
 .search-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 .search-form {
   min-height: 400px;
   margin: 0 auto auto auto;
-  padding: 20px;
+  padding: 20px 20px calc(var(--footer-panel-height) + var(--vertical-panel-gap)) 20px;
 }
 
 .mat-mdc-tab-group {
@@ -17,7 +20,7 @@
 ::ng-deep .search-wrapper .mat-mdc-tab-body-content {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--vertical-panel-gap);
 }
 
 .filter-set-wrapper {
@@ -63,6 +66,24 @@
 
   & > * {
     flex: 1 1 0;
+  }
+}
+
+.search-button-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--footer-panel-height);
+  z-index: 2;
+}
+
+::ng-deep {
+  .search-button-area {
+    background-color: mat.get-color-from-palette($bluegrey-accent, 800);
   }
 }
 
