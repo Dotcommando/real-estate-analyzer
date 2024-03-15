@@ -134,7 +134,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-district_avg_mean-daily_total-medianDelta']"
                 ></ei-input-range>
               </div>
@@ -143,7 +143,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-district_avg_mean-daily_total-meanDelta']"
                 ></ei-input-range>
               </div>
@@ -152,7 +152,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-district_avg_mean-daily_total-medianDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -161,7 +161,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-district_avg_mean-daily_total-meanDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -192,7 +192,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-district_avg_mean-monthly_intermediary-medianDelta']"
                 ></ei-input-range>
               </div>
@@ -201,7 +201,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-district_avg_mean-monthly_intermediary-meanDelta']"
                 ></ei-input-range>
               </div>
@@ -210,7 +210,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-district_avg_mean-monthly_intermediary-medianDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -219,7 +219,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-district_avg_mean-monthly_intermediary-meanDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -250,7 +250,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-city_avg_mean-daily_total-medianDelta']"
                 ></ei-input-range>
               </div>
@@ -259,7 +259,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-city_avg_mean-daily_total-meanDelta']"
                 ></ei-input-range>
               </div>
@@ -268,7 +268,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-city_avg_mean-daily_total-medianDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -277,7 +277,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-city_avg_mean-daily_total-meanDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -308,7 +308,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-city_avg_mean-monthly_intermediary-medianDelta']"
                 ></ei-input-range>
               </div>
@@ -317,7 +317,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-city_avg_mean-monthly_intermediary-meanDelta']"
                 ></ei-input-range>
               </div>
@@ -326,7 +326,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-city_avg_mean-monthly_intermediary-medianDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -335,7 +335,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchRentForm.controls['priceDeviations-city_avg_mean-monthly_intermediary-meanDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -472,7 +472,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-district_avg_mean-daily_total-medianDelta']"
                 ></ei-input-range>
               </div>
@@ -481,7 +481,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-district_avg_mean-daily_total-meanDelta']"
                 ></ei-input-range>
               </div>
@@ -490,7 +490,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-district_avg_mean-daily_total-medianDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -499,7 +499,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-district_avg_mean-daily_total-meanDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -530,7 +530,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-district_avg_mean-monthly_intermediary-medianDelta']"
                 ></ei-input-range>
               </div>
@@ -539,7 +539,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-district_avg_mean-monthly_intermediary-meanDelta']"
                 ></ei-input-range>
               </div>
@@ -548,7 +548,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-district_avg_mean-monthly_intermediary-medianDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -557,7 +557,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-district_avg_mean-monthly_intermediary-meanDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -588,7 +588,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-city_avg_mean-daily_total-medianDelta']"
                 ></ei-input-range>
               </div>
@@ -597,7 +597,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-city_avg_mean-daily_total-meanDelta']"
                 ></ei-input-range>
               </div>
@@ -606,7 +606,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-city_avg_mean-daily_total-medianDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -615,7 +615,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-city_avg_mean-daily_total-meanDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -646,7 +646,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-city_avg_mean-monthly_intermediary-medianDelta']"
                 ></ei-input-range>
               </div>
@@ -655,7 +655,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean abs. price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-city_avg_mean-monthly_intermediary-meanDelta']"
                 ></ei-input-range>
               </div>
@@ -664,7 +664,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Median m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-city_avg_mean-monthly_intermediary-medianDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -673,7 +673,7 @@
                 <ei-input-range
                   ngDefaultControl
                   [label]="'Mean m² price, %'"
-                  [range]="{ min: 0, max: 600 }"
+                  [range]="{ min: 0, max: Infinity }"
                   [formControl]="searchSaleForm.controls['priceDeviations-city_avg_mean-monthly_intermediary-meanDeltaSqm']"
                 ></ei-input-range>
               </div>
@@ -688,7 +688,8 @@
 
     </mat-tab-group>
   </div>
-  <div class="search-button-area">
+  <div class="bottom-sticky-line">
+    <div class="bottom-sticky-line-background"></div>
     <button mat-raised-button color="primary">Search <mat-icon>search</mat-icon></button>
   </div>
 </div>

@@ -47,7 +47,25 @@ import { FieldTopLabelComponent } from '../field-top-label/field-top-label.compo
 })
 export class InputRangeComponent implements OnInit {
   @Input() label: string = '';
-  @Input() range!: Range<number>;
+
+  private _range = { min: Number.MIN_SAFE_INTEGER, max: Number.MAX_SAFE_INTEGER };
+  @Input()
+  set range(value: Range<number>) {
+    const min = this.isValidNumber(value?.min)
+      ? value.min as number
+      : Number.MIN_SAFE_INTEGER;
+    const max = this.isValidNumber(value?.max)
+      ? value.max as number
+      : Number.MAX_SAFE_INTEGER;
+
+    this._range = { min, max };
+  };
+  get range(): Range<number> {
+    return this._range;
+  }
+
+  protected readonly Infinity = Number.MAX_SAFE_INTEGER;
+  protected readonly MinusInfinity = Number.MIN_SAFE_INTEGER;
 
   public form: FormGroup = new FormGroup({
     min: new FormControl(),
@@ -143,5 +161,13 @@ export class InputRangeComponent implements OnInit {
     this.form.get('max')!.setValidators([ Validators.min(this.range.min as number), Validators.max(this.range.max as number) ]);
     this.form.get('min')!.updateValueAndValidity({ emitEvent: false });
     this.form.get('max')!.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private isValidNumber(value: unknown): boolean {
+    if (typeof value !== 'number') {
+      return false;
+    }
+
+    return !(isNaN(value) || value === Infinity || value === -Infinity);
   }
 }

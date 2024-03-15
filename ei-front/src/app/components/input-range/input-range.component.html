@@ -14,7 +14,7 @@
              (focus)="onFocus()"
              (blur)="onBlur()"
       >
-      <mat-hint class="min-value">Min: {{ range.min | formatNumber:'ru-RU' }}</mat-hint>
+      <mat-hint class="min-value">Min: {{ range.min !== MinusInfinity ? (range.min | formatNumber:'ru-RU') : '-' }}</mat-hint>
     </mat-form-field>
     <span class="delimiter">&mdash;</span>
     <mat-form-field appearance="fill" class="input-range-field">
@@ -25,7 +25,7 @@
              (focus)="onFocus()"
              (blur)="onBlur()"
       >
-      <mat-hint class="max-value">Max: {{ range.max | formatNumber:'ru-RU' }}</mat-hint>
+      <mat-hint class="max-value">Max: {{ range.max !== Infinity ? (range.max | formatNumber:'ru-RU') : '-' }}</mat-hint>
     </mat-form-field>
   </div>
 </div>

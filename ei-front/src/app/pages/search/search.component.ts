@@ -142,6 +142,8 @@ export class SearchComponent implements OnInit {
   public rentTypeFocused = false;
   public saleTypeFocused = false;
 
+  protected readonly Infinity = Infinity;
+
   private destroyRef: DestroyRef = inject(DestroyRef);
 
   constructor(
