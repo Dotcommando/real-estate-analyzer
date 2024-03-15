@@ -12,10 +12,10 @@ import { MatTabsModule } from '@angular/material/tabs';
 
 import { Select, Store } from '@ngxs/store';
 
-import { debounce, distinctUntilChanged, interval, Observable, take, tap } from 'rxjs';
+import { debounce, distinctUntilChanged, interval, map, Observable, take, tap } from 'rxjs';
 
 import { LimitationsService } from './limitations.service';
-import { ISearchFilters, ISearchForm, ISearchState } from './search.model';
+import { ISearchForm, ISearchState } from './search.model';
 import {
   ChangeType,
   SearchRentState,
@@ -32,8 +32,7 @@ import {
 import { FieldTopLabelComponent } from '../../components/field-top-label/field-top-label.component';
 import { InputRangeComponent } from '../../components/input-range/input-range.component';
 import { MultiAutocompleteComponent } from '../../components/multi-autocomplete/multi-autocomplete.component';
-import { mapSearchFormToState } from '../../mappers';
-import { Range } from '../../types';
+import { mapSearchFormToState, mapStateToSearchForm } from '../../mappers';
 
 
 enum SearchTypeTab {
@@ -199,91 +198,8 @@ export class SearchComponent implements OnInit {
     state$
       .pipe(
         take(1),
-        tap((state: ISearchState) => {
-          const formValue: any = {};
-
-          if (state.filters.city || state.filters.district) {
-            formValue.cityDistrict = {
-              city: state.filters.city ? state.filters.city : null,
-              districts: state.filters.district ? state.filters.district : [],
-            };
-          }
-
-          if (state.filters.price !== null) {
-            formValue.price = { min: null, max: null };
-
-            if (typeof state.filters.price?.min === 'number') {
-              formValue.price.min = state.filters.price.min;
-            }
-
-            if (typeof state.filters.price?.max === 'number') {
-              formValue.price.max = state.filters.price.max;
-            }
-          }
-
-          if (state.filters['price-sqm'] !== null) {
-            formValue.priceSqm = { min: null, max: null };
-
-            if (typeof state.filters['price-sqm']?.min === 'number') {
-              formValue.priceSqm.min = state.filters['price-sqm'].min;
-            }
-
-            if (typeof state.filters['price-sqm']?.max === 'number') {
-              formValue.priceSqm.max = state.filters['price-sqm'].max;
-            }
-          }
-
-          if (state.filters.bedrooms !== null) {
-            formValue.bedrooms = [];
-
-            if (Array.isArray(state.filters.bedrooms)) {
-              formValue.bedrooms = [ ...state.filters.bedrooms ];
-            }
-          }
-
-          if (state.filters.bathrooms !== null) {
-            formValue.bathrooms = [];
-
-            if (Array.isArray(state.filters.bathrooms)) {
-              formValue.bathrooms = [ ...state.filters.bathrooms ];
-            }
-          }
-
-          if (state.filters['property-area'] !== null) {
-            formValue.propertyArea = { min: null, max: null };
-
-            if (typeof state.filters['property-area']?.min === 'number') {
-              formValue.propertyArea.min = state.filters['property-area'].min;
-            }
-
-            if (typeof state.filters['property-area']?.max === 'number') {
-              formValue.propertyArea.max = state.filters['property-area'].max;
-            }
-          }
-
-          if (Array.isArray(state.filters.subcategory)) {
-            formValue.subcategory = state.filters.subcategory;
-          }
-
-          const priceDeviationsFieldNames: Array<keyof ISearchFilters> = (Object.keys(state.filters) as Array<keyof ISearchFilters>)
-            .filter((key: keyof ISearchFilters) => key.startsWith('priceDeviations'));
-
-          for (const fieldName of priceDeviationsFieldNames) {
-            if (state.filters[fieldName] !== null && typeof state.filters[fieldName] === 'object') {
-              formValue[fieldName] = {};
-
-              if ('min' in (state.filters[fieldName] as unknown as object) && (state.filters[fieldName] as unknown as Range<number>)['min'] !== null) {
-                formValue[fieldName].min = (state.filters[fieldName] as unknown as Range<number>).min;
-              }
-
-              if ('max' in (state.filters[fieldName] as unknown as object) && (state.filters[fieldName] as unknown as Range<number>)['max'] !== null) {
-                formValue[fieldName].max = (state.filters[fieldName] as unknown as Range<number>).max;
-              }
-            }
-          }
-
-          form.patchValue(formValue);
-        }),
+        map(mapStateToSearchForm),
+        tap((formValue: Partial<ISearchForm>) => form.patchValue(formValue)),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
