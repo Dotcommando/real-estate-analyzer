@@ -1,7 +1,15 @@
 import { isPlatformBrowser } from '@angular/common';
 import { Component, DestroyRef, Inject, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { MatButton } from '@angular/material/button';
 import { MatButtonToggle, MatButtonToggleGroup } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -33,6 +41,7 @@ import { FieldTopLabelComponent } from '../../components/field-top-label/field-t
 import { InputRangeComponent } from '../../components/input-range/input-range.component';
 import { MultiAutocompleteComponent } from '../../components/multi-autocomplete/multi-autocomplete.component';
 import { mapSearchFormToState, mapStateToSearchForm } from '../../mappers';
+import { Range } from '../../types';
 
 
 enum SearchTypeTab {
@@ -70,7 +79,9 @@ export class SearchComponent implements OnInit {
   @Select(SearchRentState) rentState$!: Observable<ISearchState>;
   @Select(SearchSaleState) saleState$!: Observable<ISearchState>;
 
-  public searchRentForm = new FormGroup({
+  public availableRange = { min: 0, max: Infinity };
+
+  public searchRentForm = this.fb.group({
     type: new FormControl(),
     cityDistrict: new FormControl(),
     subcategory: new FormControl(),
@@ -80,28 +91,28 @@ export class SearchComponent implements OnInit {
     bathrooms: new FormControl(),
     propertyArea: new FormControl(),
 
-    'priceDeviations-district_avg_mean-daily_total-medianDelta': new FormControl(),
-    'priceDeviations-district_avg_mean-daily_total-meanDelta': new FormControl(),
-    'priceDeviations-district_avg_mean-daily_total-medianDeltaSqm': new FormControl(),
-    'priceDeviations-district_avg_mean-daily_total-meanDeltaSqm': new FormControl(),
+    'priceDeviations-district_avg_mean-daily_total-medianDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-district_avg_mean-daily_total-meanDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-district_avg_mean-daily_total-medianDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-district_avg_mean-daily_total-meanDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
 
-    'priceDeviations-district_avg_mean-monthly_intermediary-medianDelta': new FormControl(),
-    'priceDeviations-district_avg_mean-monthly_intermediary-meanDelta': new FormControl(),
-    'priceDeviations-district_avg_mean-monthly_intermediary-medianDeltaSqm': new FormControl(),
-    'priceDeviations-district_avg_mean-monthly_intermediary-meanDeltaSqm': new FormControl(),
+    'priceDeviations-district_avg_mean-monthly_intermediary-medianDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-district_avg_mean-monthly_intermediary-meanDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-district_avg_mean-monthly_intermediary-medianDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-district_avg_mean-monthly_intermediary-meanDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
 
-    'priceDeviations-city_avg_mean-daily_total-medianDelta': new FormControl(),
-    'priceDeviations-city_avg_mean-daily_total-meanDelta': new FormControl(),
-    'priceDeviations-city_avg_mean-daily_total-medianDeltaSqm': new FormControl(),
-    'priceDeviations-city_avg_mean-daily_total-meanDeltaSqm': new FormControl(),
+    'priceDeviations-city_avg_mean-daily_total-medianDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-city_avg_mean-daily_total-meanDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-city_avg_mean-daily_total-medianDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-city_avg_mean-daily_total-meanDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
 
-    'priceDeviations-city_avg_mean-monthly_intermediary-medianDelta': new FormControl(),
-    'priceDeviations-city_avg_mean-monthly_intermediary-meanDelta': new FormControl(),
-    'priceDeviations-city_avg_mean-monthly_intermediary-medianDeltaSqm': new FormControl(),
-    'priceDeviations-city_avg_mean-monthly_intermediary-meanDeltaSqm': new FormControl(),
+    'priceDeviations-city_avg_mean-monthly_intermediary-medianDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-city_avg_mean-monthly_intermediary-meanDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-city_avg_mean-monthly_intermediary-medianDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-city_avg_mean-monthly_intermediary-meanDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
   });
 
-  public searchSaleForm = new FormGroup({
+  public searchSaleForm = this.fb.group({
     type: new FormControl(),
     cityDistrict: new FormControl(),
     subcategory: new FormControl(),
@@ -111,26 +122,27 @@ export class SearchComponent implements OnInit {
     bathrooms: new FormControl(),
     propertyArea: new FormControl(),
 
-    'priceDeviations-district_avg_mean-daily_total-medianDelta': new FormControl(),
-    'priceDeviations-district_avg_mean-daily_total-meanDelta': new FormControl(),
-    'priceDeviations-district_avg_mean-daily_total-medianDeltaSqm': new FormControl(),
-    'priceDeviations-district_avg_mean-daily_total-meanDeltaSqm': new FormControl(),
+    'priceDeviations-district_avg_mean-daily_total-medianDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-district_avg_mean-daily_total-meanDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-district_avg_mean-daily_total-medianDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-district_avg_mean-daily_total-meanDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
 
-    'priceDeviations-district_avg_mean-monthly_intermediary-medianDelta': new FormControl(),
-    'priceDeviations-district_avg_mean-monthly_intermediary-meanDelta': new FormControl(),
-    'priceDeviations-district_avg_mean-monthly_intermediary-medianDeltaSqm': new FormControl(),
-    'priceDeviations-district_avg_mean-monthly_intermediary-meanDeltaSqm': new FormControl(),
+    'priceDeviations-district_avg_mean-monthly_intermediary-medianDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-district_avg_mean-monthly_intermediary-meanDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-district_avg_mean-monthly_intermediary-medianDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-district_avg_mean-monthly_intermediary-meanDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
 
-    'priceDeviations-city_avg_mean-daily_total-medianDelta': new FormControl(),
-    'priceDeviations-city_avg_mean-daily_total-meanDelta': new FormControl(),
-    'priceDeviations-city_avg_mean-daily_total-medianDeltaSqm': new FormControl(),
-    'priceDeviations-city_avg_mean-daily_total-meanDeltaSqm': new FormControl(),
+    'priceDeviations-city_avg_mean-daily_total-medianDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-city_avg_mean-daily_total-meanDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-city_avg_mean-daily_total-medianDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-city_avg_mean-daily_total-meanDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
 
-    'priceDeviations-city_avg_mean-monthly_intermediary-medianDelta': new FormControl(),
-    'priceDeviations-city_avg_mean-monthly_intermediary-meanDelta': new FormControl(),
-    'priceDeviations-city_avg_mean-monthly_intermediary-medianDeltaSqm': new FormControl(),
-    'priceDeviations-city_avg_mean-monthly_intermediary-meanDeltaSqm': new FormControl(),
+    'priceDeviations-city_avg_mean-monthly_intermediary-medianDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-city_avg_mean-monthly_intermediary-meanDelta': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-city_avg_mean-monthly_intermediary-medianDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
+    'priceDeviations-city_avg_mean-monthly_intermediary-meanDeltaSqm': [ { min: null, max: null }, [ this.rangeValidator(this.availableRange) ] ],
   });
+  public currentSearchForm = this.searchRentForm;
 
   public rentLimits!: IRentLimits;
   public saleLimits!: ISaleLimits;
@@ -146,6 +158,7 @@ export class SearchComponent implements OnInit {
   private destroyRef: DestroyRef = inject(DestroyRef);
 
   constructor(
+    private fb: FormBuilder,
     private readonly store: Store,
     private readonly limitsService: LimitationsService,
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -170,12 +183,16 @@ export class SearchComponent implements OnInit {
         tap((type) => {
           console.log(type);
           this.activeTabIndex = SearchTypeTab[type];
+          this.currentSearchForm = type === 'sale'
+            ? this.searchSaleForm
+            : this.searchRentForm;
+          this.currentSearchForm.updateValueAndValidity();
         }),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
 
-    this.trackSearchForm$(this.searchRentForm.valueChanges)
+    this.trackSearchForm$(this.searchRentForm.valueChanges as Observable<Partial<ISearchForm>>)
       .pipe(
         tap((searchForm: Partial<ISearchForm>) => this.store.dispatch(
           new UpdateRentSearchState(mapSearchFormToState(searchForm)),
@@ -184,7 +201,7 @@ export class SearchComponent implements OnInit {
       )
       .subscribe();
 
-    this.trackSearchForm$(this.searchSaleForm.valueChanges)
+    this.trackSearchForm$(this.searchSaleForm.valueChanges as Observable<Partial<ISearchForm>>)
       .pipe(
         tap((searchForm: Partial<ISearchForm>) => this.store.dispatch(
           new UpdateSaleSearchState(mapSearchFormToState(searchForm)),
@@ -237,4 +254,31 @@ export class SearchComponent implements OnInit {
   public onSaleTypeBlur(): void {
     this.saleTypeFocused = false;
   }
+
+  private rangeValidator(range: Required<Range<number>>): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const min = group?.value?.min ?? null;
+      const max = group?.value?.max ?? null;
+
+      if (min === null && max === null) {
+        return null;
+      }
+
+      if (typeof min === 'number' && (max === null)) {
+        return min >= range.min && min <= range.max
+          ? null
+          : { rangeInvalid: true };
+      }
+
+      if (typeof max === 'number' && (min === null)) {
+        return max >= range.min && max <= range.max
+          ? null
+          : { rangeInvalid: true };
+      }
+
+      return min <= max && min >= range.min && max <= range.max
+        ? null
+        : { rangeInvalid: true };
+    };
+  };
 }

@@ -1,23 +1,29 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   DestroyRef,
   forwardRef,
+  Inject,
   inject,
   Input,
   OnInit,
+  PLATFORM_ID,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
+  AbstractControl,
+  FormBuilder,
   FormControl,
   FormGroup,
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
-  Validators,
+  ValidationErrors,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 
-import { distinctUntilChanged, map, startWith, tap } from 'rxjs';
+import { distinctUntilChanged, tap } from 'rxjs';
 
 import { FormatNumberPipe, FormControlPipe } from '../../pipes';
 import { Range } from '../../types';
@@ -58,16 +64,17 @@ export class InputRangeComponent implements OnInit {
       ? value.max as number
       : Number.MAX_SAFE_INTEGER;
 
-    this._range = { min, max };
+    this._range.min = min;
+    this._range.max = max;
   };
-  get range(): Range<number> {
+  get range(): Required<Range<number>> {
     return this._range;
   }
 
   protected readonly Infinity = Number.MAX_SAFE_INTEGER;
   protected readonly MinusInfinity = Number.MIN_SAFE_INTEGER;
 
-  public form: FormGroup = new FormGroup({
+  public form: FormGroup = this.fb.group({
     min: new FormControl(),
     max: new FormControl(),
   });
@@ -79,6 +86,13 @@ export class InputRangeComponent implements OnInit {
 
   public isFocused: boolean = false;
 
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder,
+    @Inject(PLATFORM_ID) private platformId: Object,
+  ) {
+  }
+
   public onFocus() {
     this.isFocused = true;
   }
@@ -89,24 +103,15 @@ export class InputRangeComponent implements OnInit {
 
   public writeValue(obj: any): void {
     if (obj) {
-      this.form.setValue(obj, { emitEvent: false });
+      this.form.setValue(obj, { emitEvent: true });
     }
   }
 
-  public registerOnChange(fn: any): void {
+  public registerOnChange(fn: (value: any) => void): void {
     this.onChange = fn;
-
-    this.form.valueChanges.pipe(
-      map(({ min, max }) => ({
-        ...(min !== null && { min }),
-        ...(max !== null && { max }),
-      })),
-      distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(fn);
   }
 
-  public registerOnTouched(fn: any): void {
+  public registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
 
@@ -114,53 +119,18 @@ export class InputRangeComponent implements OnInit {
     isDisabled ? this.form.disable() : this.form.enable();
   }
 
+  public validate(control: AbstractControl): ValidationErrors | null {
+    return null;
+  }
+
   public ngOnInit(): void {
-    this.form.get('min')!.valueChanges
+    this.form.valueChanges
       .pipe(
-        startWith(this.form.get('min')!.value),
-        distinctUntilChanged(),
-        tap((min: number) => this.updateMaxValidator(min)),
+        distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+        tap((value: Required<Range<number>>) => this.onChange(value)),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
-
-    this.form.get('max')!.valueChanges
-      .pipe(
-        startWith(this.form.get('max')!.value),
-        distinctUntilChanged(),
-        tap((max: number) => this.updateMinValidator(max)),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe();
-
-    this.setInitialValuesAndValidators();
-  }
-
-  private updateMaxValidator(min: number | null): void {
-    const maxControl = this.form.get('max')!;
-
-    maxControl.setValidators([
-      Validators.max(this.range.max as number),
-      Validators.min((min as number) ?? this.range.min),
-    ]);
-    maxControl.updateValueAndValidity();
-  }
-
-  private updateMinValidator(max: number | null): void {
-    const minControl = this.form.get('min')!;
-
-    minControl.setValidators([
-      Validators.min(this.range.min as number),
-      Validators.max((max as number) ?? this.range.max),
-    ]);
-    minControl.updateValueAndValidity();
-  }
-
-  private setInitialValuesAndValidators(): void {
-    this.form.get('min')!.setValidators([ Validators.min(this.range.min as number), Validators.max(this.range.max as number) ]);
-    this.form.get('max')!.setValidators([ Validators.min(this.range.min as number), Validators.max(this.range.max as number) ]);
-    this.form.get('min')!.updateValueAndValidity({ emitEvent: false });
-    this.form.get('max')!.updateValueAndValidity({ emitEvent: false });
   }
 
   private isValidNumber(value: unknown): boolean {
