@@ -12,7 +12,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 
 import { Select, Store } from '@ngxs/store';
 
-import { debounce, distinctUntilChanged, interval, map, Observable, take, tap } from 'rxjs';
+import { combineLatest, debounce, distinctUntilChanged, interval, map, Observable, take, tap } from 'rxjs';
 
 import { LimitationsService } from './limitations.service';
 import { ISearchForm, ISearchState } from './search.model';
@@ -131,6 +131,7 @@ export class SearchComponent implements OnInit {
     'priceDeviations-city_avg_mean-monthly_intermediary-medianDeltaSqm': new FormControl(),
     'priceDeviations-city_avg_mean-monthly_intermediary-meanDeltaSqm': new FormControl(),
   });
+  public currentSearchForm = this.searchRentForm;
 
   public rentLimits!: IRentLimits;
   public saleLimits!: ISaleLimits;
@@ -170,6 +171,10 @@ export class SearchComponent implements OnInit {
         tap((type) => {
           console.log(type);
           this.activeTabIndex = SearchTypeTab[type];
+          this.currentSearchForm = type === 'sale'
+            ? this.searchSaleForm
+            : this.searchRentForm;
+          this.currentSearchForm.updateValueAndValidity();
         }),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -192,6 +197,20 @@ export class SearchComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
+
+    // this.searchRentForm.statusChanges
+    //   .pipe(
+    //     tap((status) => console.log('Rent Form', status)),
+    //     takeUntilDestroyed(this.destroyRef),
+    //   )
+    //   .subscribe();
+    //
+    // this.searchSaleForm.statusChanges
+    //   .pipe(
+    //     tap((status) => console.log('Rent Form', status)),
+    //     takeUntilDestroyed(this.destroyRef),
+    //   )
+    //   .subscribe();
   }
 
   private restoreFormState(state$: Observable<ISearchState>, form: FormGroup): void {

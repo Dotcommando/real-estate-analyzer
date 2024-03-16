@@ -1,23 +1,30 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   DestroyRef,
   forwardRef,
+  Inject,
   inject,
   Input,
   OnInit,
+  PLATFORM_ID,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
+  AbstractControl,
+  FormBuilder,
   FormControl,
   FormGroup,
+  NG_VALIDATORS,
   NG_VALUE_ACCESSOR,
   ReactiveFormsModule,
-  Validators,
+  ValidationErrors,
 } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 
-import { distinctUntilChanged, map, startWith, tap } from 'rxjs';
+import { distinctUntilChanged, map, tap } from 'rxjs';
 
 import { FormatNumberPipe, FormControlPipe } from '../../pipes';
 import { Range } from '../../types';
@@ -40,6 +47,11 @@ import { FieldTopLabelComponent } from '../field-top-label/field-top-label.compo
       useExisting: forwardRef(() => InputRangeComponent),
       multi: true,
     },
+    {
+      provide: NG_VALIDATORS,
+      useExisting: forwardRef(() => InputRangeComponent),
+      multi: true,
+    },
   ],
   templateUrl: './input-range.component.html',
   styleUrl: './input-range.component.scss',
@@ -58,19 +70,47 @@ export class InputRangeComponent implements OnInit {
       ? value.max as number
       : Number.MAX_SAFE_INTEGER;
 
-    this._range = { min, max };
+    this._range.min = min;
+    this._range.max = max;
   };
-  get range(): Range<number> {
+  get range(): Required<Range<number>> {
     return this._range;
   }
 
   protected readonly Infinity = Number.MAX_SAFE_INTEGER;
   protected readonly MinusInfinity = Number.MIN_SAFE_INTEGER;
 
-  public form: FormGroup = new FormGroup({
+  private rangeValidator(range: Required<Range<number>>) {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const min = group.get('min')?.value;
+      const max = group.get('max')?.value;
+
+      if (min === null && max === null) {
+        return null;
+      }
+
+      if (typeof min === 'number' && (max === null)) {
+        return min >= range.min && min <= range.max
+          ? null
+          : { rangeInvalid: true };
+      }
+
+      if (typeof max === 'number' && (min === null)) {
+        return max >= range.min && max <= range.max
+          ? null
+          : { rangeInvalid: true };
+      }
+
+      return min <= max && min >= range.min && max <= range.max
+        ? null
+        : { rangeInvalid: true };
+    };
+  };
+
+  public form: FormGroup = this.fb.group({
     min: new FormControl(),
     max: new FormControl(),
-  });
+  }, { validators: this.rangeValidator(this._range) });
 
   private destroyRef: DestroyRef = inject(DestroyRef);
 
@@ -78,6 +118,14 @@ export class InputRangeComponent implements OnInit {
   onTouched: any = () => {};
 
   public isFocused: boolean = false;
+
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder,
+    @Inject(PLATFORM_ID) private platformId: Object,
+  ) {
+    this.rangeValidator = this.rangeValidator.bind(this);
+  }
 
   public onFocus() {
     this.isFocused = true;
@@ -93,20 +141,39 @@ export class InputRangeComponent implements OnInit {
     }
   }
 
-  public registerOnChange(fn: any): void {
-    this.onChange = fn;
+  // public registerOnChange(fn: (value: any) => void): void {
+  //   this.onChange = fn;
+  //
+  //   this.form.valueChanges
+  //     .pipe(
+  //       distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
+  //       tap((value) => {
+  //         if (isPlatformBrowser(this.platformId)) {
+  //           console.log(`Internal value, min ${value.min}, max ${value.max}`);
+  //           console.log(`Internal errors, ${this.form.errors ? JSON.stringify(this.form.errors).replace(/\n/g, '') : 'no errors'}`);
+  //         }
+  //       }),
+  //       takeUntilDestroyed(this.destroyRef),
+  //     )
+  //     .subscribe(fn);
+  // }
+
+  public registerOnChange(fn: (value: any) => void): void {
+    this.onChange = (value: any) => {
+      fn(value);
+
+      // this.form.updateValueAndValidity();
+    };
 
     this.form.valueChanges.pipe(
-      map(({ min, max }) => ({
-        ...(min !== null && { min }),
-        ...(max !== null && { max }),
-      })),
       distinctUntilChanged((prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)),
       takeUntilDestroyed(this.destroyRef),
-    ).subscribe(fn);
+    ).subscribe(value => {
+      this.onChange(value);
+    });
   }
 
-  public registerOnTouched(fn: any): void {
+  public registerOnTouched(fn: () => void): void {
     this.onTouched = fn;
   }
 
@@ -114,53 +181,24 @@ export class InputRangeComponent implements OnInit {
     isDisabled ? this.form.disable() : this.form.enable();
   }
 
+  public validate(control: AbstractControl): ValidationErrors | null {
+    return this.rangeValidator(this._range)(control);
+  }
+
   public ngOnInit(): void {
-    this.form.get('min')!.valueChanges
+    this.form.statusChanges
       .pipe(
-        startWith(this.form.get('min')!.value),
-        distinctUntilChanged(),
-        tap((min: number) => this.updateMaxValidator(min)),
-        takeUntilDestroyed(this.destroyRef),
+        tap(() => this.onChange(this.form.value)),
+        tap((status) => {
+          if (isPlatformBrowser(this.platformId)) {
+            this.cdr.markForCheck();
+            // console.log('');
+            // console.log('');
+            // console.log('status', status);
+          }
+        }),
       )
       .subscribe();
-
-    this.form.get('max')!.valueChanges
-      .pipe(
-        startWith(this.form.get('max')!.value),
-        distinctUntilChanged(),
-        tap((max: number) => this.updateMinValidator(max)),
-        takeUntilDestroyed(this.destroyRef),
-      )
-      .subscribe();
-
-    this.setInitialValuesAndValidators();
-  }
-
-  private updateMaxValidator(min: number | null): void {
-    const maxControl = this.form.get('max')!;
-
-    maxControl.setValidators([
-      Validators.max(this.range.max as number),
-      Validators.min((min as number) ?? this.range.min),
-    ]);
-    maxControl.updateValueAndValidity();
-  }
-
-  private updateMinValidator(max: number | null): void {
-    const minControl = this.form.get('min')!;
-
-    minControl.setValidators([
-      Validators.min(this.range.min as number),
-      Validators.max((max as number) ?? this.range.max),
-    ]);
-    minControl.updateValueAndValidity();
-  }
-
-  private setInitialValuesAndValidators(): void {
-    this.form.get('min')!.setValidators([ Validators.min(this.range.min as number), Validators.max(this.range.max as number) ]);
-    this.form.get('max')!.setValidators([ Validators.min(this.range.min as number), Validators.max(this.range.max as number) ]);
-    this.form.get('min')!.updateValueAndValidity({ emitEvent: false });
-    this.form.get('max')!.updateValueAndValidity({ emitEvent: false });
   }
 
   private isValidNumber(value: unknown): boolean {
