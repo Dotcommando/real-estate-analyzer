@@ -21,6 +21,8 @@ const arrayFieldTypes: Record<string, any> = {
   'url': String,
   'ad_id': String,
   'online-viewing': OnlineViewing,
+  'bedrooms': String,
+  'bathrooms': String,
   'source': Source,
   'city': String,
   'district': String,

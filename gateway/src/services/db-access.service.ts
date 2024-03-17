@@ -50,6 +50,10 @@ import {
 } from '../types';
 
 
+const specialFields = [ 'priceDeviations', 'bedrooms', 'bathrooms' ];
+const simpleTypes = [ 'boolean', 'number', 'string' ];
+const rangeFields = [ ...RANGE_FIELDS, ...NESTED_RANGE_FIELDS ];
+
 @Injectable()
 export class DbAccessService {
   constructor(
@@ -284,7 +288,7 @@ export class DbAccessService {
     exceptions: string[],
   ): { [key: string]: unknown } {
     if (!(field in filter)) {
-      return filter as { [key: string]: unknown };
+      return {} as { [key: string]: unknown };
     }
 
     const result = {};
@@ -353,7 +357,6 @@ export class DbAccessService {
   ): PipelineStage[] {
     const $match = { $and: []};
     const dateFields = [ 'publish_date', 'ad_last_updated', 'updated_at' ];
-    const rangeFields = [ ...RANGE_FIELDS, ...NESTED_RANGE_FIELDS ];
     const nestedConditions = this.processNestedFields(filter, 'priceDeviations', [ '$lte', '$lt', '$eq', '$gt', '$gte' ]);
 
     // persistPipeline(nestedConditions);
@@ -362,28 +365,61 @@ export class DbAccessService {
       $match.$and.push({ [key]: value });
     });
 
+    const processArrayField = (field: string, values: string[]) => {
+      if (values.length === 0) return;
+
+      const validValues = values.filter((val: string) => /\d{1,2}\+?/.test(val));
+      let directMatches = validValues.filter((val: string) => !val.endsWith('+'))
+        .map((val: string) => parseInt(val))
+        .filter((val: number) => !isNaN(val) && val >= 0);
+      const gteValues = validValues.filter((val: string) => val.endsWith('+'))
+        .map((val: string) => parseInt(val.replace(/\+/g, '')))
+        .filter((val: number) => !isNaN(val) && val >= 0);
+
+      const minGteValue = Math.min(...gteValues);
+
+      directMatches = directMatches.filter((val: number) => val < minGteValue);
+
+      if (directMatches.length > 0) {
+        $match.$and.push({ [field]: { $in: directMatches }});
+      }
+
+      if (gteValues.length > 0) {
+        $match.$and.push({ [field]: { $gte: minGteValue }});
+      }
+    };
+
+    [ 'bedrooms', 'bathrooms' ].forEach((field: string) => {
+      if (filter[field]) {
+        processArrayField(field, filter[field]);
+      }
+    });
+
     for (const key in filter) {
-      if (key !== 'priceDeviations') {
-        if (rangeFields.includes(key) && filter[key]) {
-          const rangeConditions = {};
+      if (specialFields.includes(key)) {
+        continue;
+      }
 
-          for (const rangeKey in filter[key]) {
-            const value = filter[key][rangeKey];
+      if (rangeFields.includes(key) && filter[key]) {
+        const rangeConditions = {};
 
-            if (!value) continue;
+        for (const rangeKey in filter[key]) {
+          const value = filter[key][rangeKey];
 
-            const mongoRangeKey = `$${rangeKey.replace(/\$/g, '')}`;
+          if (!value) continue;
 
-            rangeConditions[mongoRangeKey] = dateFields.includes(key) ? new Date(value) : value;
-          }
-          if (Object.keys(rangeConditions).length > 0) {
-            $match.$and.push({ [key]: rangeConditions });
-          }
-        } else if (Array.isArray(filter[key])) {
-          $match.$and.push({ [key]: { $in: filter[key] }});
-        } else {
-          $match.$and.push({ [key]: filter[key] });
+          const mongoRangeKey = `$${rangeKey.replace(/\$/g, '')}`;
+
+          rangeConditions[mongoRangeKey] = dateFields.includes(key) ? new Date(value) : value;
         }
+
+        if (Object.keys(rangeConditions).length > 0) {
+          $match.$and.push({ [key]: rangeConditions });
+        }
+      } else if (Array.isArray(filter[key])) {
+        $match.$and.push({ [key]: { $in: filter[key] }});
+      } else if (simpleTypes.includes(typeof filter[key])) {
+        $match.$and.push({ [key]: filter[key] });
       }
     }
 

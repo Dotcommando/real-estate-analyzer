@@ -45,8 +45,8 @@ export interface IGetRentResidentialQuery {
   'parking-places'?: AG_MayBeRange<number>;
   'property-area'?: AG_MayBeRange<number>;
   furnishing?: AG_MayBeArray<Furnishing>;
-  bedrooms?: AG_MayBeRange<number>;
-  bathrooms?: AG_MayBeRange<number>;
+  bedrooms?: AG_MayBeArray<string>;
+  bathrooms?: AG_MayBeArray<string>;
   'air-conditioning'?: AG_MayBeArray<AirConditioning>;
   pets?: AG_MayBeArray<Pets>;
   alarm?: AG_MayBeArray<StandardSet>;

@@ -3,8 +3,6 @@ export const RANGE_FIELDS = [
   'price',
   'parking-places',
   'property-area',
-  'bedrooms',
-  'bathrooms',
   'ad_last_updated',
   'updated_at',
   'plot-area',
