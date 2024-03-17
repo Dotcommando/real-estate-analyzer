@@ -37,11 +37,11 @@ function getRangeField(field: string, value: any, object: Partial<Range<any>>): 
   }
 
   if (/\[\$gte\]$/.test(field)) {
-    object.max = valueAsNumber;
+    object.min = valueAsNumber;
   }
 
   if (/\[\$gt\]$/.test(field)) {
-    object.max = valueAsNumber;
+    object.min = valueAsNumber;
   }
 
   if (/\[\$eq\]$/.test(field)) {
@@ -50,11 +50,11 @@ function getRangeField(field: string, value: any, object: Partial<Range<any>>): 
   }
 
   if (/\[\$lt\]$/.test(field)) {
-    object.min = valueAsNumber;
+    object.max = valueAsNumber;
   }
 
   if (/\[\$lte\]$/.test(field)) {
-    object.min = valueAsNumber;
+    object.max = valueAsNumber;
   }
 
   return object;

@@ -6,6 +6,8 @@ import { Store } from '@ngxs/store';
 
 import { map, tap } from 'rxjs';
 
+import { ISearchState } from '../../components/search-form/search.model';
+import { UpdateRentSearchState, UpdateSaleSearchState } from '../../components/search-form/search.store';
 import { SearchFormComponent } from '../../components/search-form/search-form.component';
 import { SearchResultsComponent } from '../../components/search-results/search-results.component';
 import { deserializeToSearchState } from '../../mappers';
@@ -33,12 +35,17 @@ export class SerpComponent implements OnInit {
     this.route.queryParamMap
       .pipe(
         map(deserializeToSearchState),
-        tap((data) => {
+        tap((searchState: ISearchState) => {
           if (isPlatformBrowser(this.platformId)) {
             console.log('');
             console.log('Deserialized');
-            console.log(data);
+            console.log(searchState);
           }
+
+          this.store.dispatch(searchState.filters.type === 'rent'
+            ? new UpdateRentSearchState(searchState)
+            : new UpdateSaleSearchState(searchState),
+          );
         }),
       )
       .subscribe();
