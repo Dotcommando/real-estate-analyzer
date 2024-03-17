@@ -1,3 +1,4 @@
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -10,6 +11,7 @@ import { NgxsModule } from '@ngxs/store';
 
 import { routes } from './app.routes';
 import { SearchRentState, SearchSaleState, SearchTypeState } from './components/search-form/search.store';
+import { SearchResultsState } from './components/search-results/search-results.store';
 
 import { environment } from '../environments/environment';
 
@@ -19,9 +21,10 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideClientHydration(),
     provideAnimationsAsync(),
+    provideHttpClient(withFetch()),
     importProvidersFrom(
       NgxsModule.forRoot(
-        [ SearchTypeState, SearchRentState, SearchSaleState ],
+        [ SearchTypeState, SearchRentState, SearchSaleState, SearchResultsState ],
         {
           developmentMode: !environment.production,
           selectorOptions: {
@@ -31,7 +34,7 @@ export const appConfig: ApplicationConfig = {
         },
       ),
       NgxsStoragePluginModule.forRoot({
-        key: [ 'searchType', 'searchRent', 'searchSale' ],
+        key: [ 'searchType', 'searchRent', 'searchSale', 'searchResults' ],
         storage: StorageOption.LocalStorage,
       }),
       NgxsReduxDevtoolsPluginModule.forRoot(),

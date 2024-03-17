@@ -7,17 +7,17 @@ import { ISearchState } from './search.model';
 
 
 export class ChangeType {
-  static readonly type = '[Search Type] Change';
+  static readonly type = '[Search Form] Change Type';
   constructor(public searchType: 'rent' | 'sale') {}
 }
 
 export class UpdateRentSearchState {
-  static readonly type = '[Search Rent] Update Rent State';
+  static readonly type = '[Search Form] Update Rent State';
   constructor(public searchRentUpdate: Partial<ISearchState>) {}
 }
 
 export class UpdateSaleSearchState {
-  static readonly type = '[Search Sale] Update Sale State';
+  static readonly type = '[Search Form] Update Sale State';
   constructor(public searchSaleUpdate: Partial<ISearchState>) {}
 }
 
