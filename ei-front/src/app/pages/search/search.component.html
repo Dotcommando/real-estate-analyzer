@@ -694,6 +694,7 @@
       mat-raised-button
       color="primary"
       [disabled]="!currentSearchForm.valid"
+      (click)="onSearchClick()"
     >
       Search <mat-icon>search</mat-icon>
     </button>

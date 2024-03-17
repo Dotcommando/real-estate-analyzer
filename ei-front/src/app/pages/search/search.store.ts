@@ -27,6 +27,11 @@ export class UpdateSaleSearchState {
 })
 @Injectable()
 export class SearchRentState {
+  @Selector()
+  public static getRentState(state: ISearchState): ISearchState {
+    return state;
+  }
+
   @Action(UpdateRentSearchState)
   public updateSearch(ctx: StateContext<ISearchState>, action: UpdateRentSearchState): void {
     const state = ctx.getState();
@@ -51,6 +56,11 @@ export class SearchRentState {
 })
 @Injectable()
 export class SearchSaleState {
+  @Selector()
+  public static getSaleState(state: ISearchState): ISearchState {
+    return state;
+  }
+
   @Action(UpdateSaleSearchState)
   public updateSearch(ctx: StateContext<ISearchState>, action: UpdateSaleSearchState): void {
     const state = ctx.getState();

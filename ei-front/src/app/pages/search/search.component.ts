@@ -17,10 +17,11 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormField, MatLabel, MatOptgroup, MatOption, MatSelect } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
+import { Router } from '@angular/router';
 
 import { Select, Store } from '@ngxs/store';
 
-import { debounce, distinctUntilChanged, interval, map, Observable, take, tap } from 'rxjs';
+import { debounce, distinctUntilChanged, interval, map, Observable, switchMap, take, tap } from 'rxjs';
 
 import { LimitationsService } from './limitations.service';
 import { ISearchForm, ISearchState } from './search.model';
@@ -40,7 +41,7 @@ import {
 import { FieldTopLabelComponent } from '../../components/field-top-label/field-top-label.component';
 import { InputRangeComponent } from '../../components/input-range/input-range.component';
 import { MultiAutocompleteComponent } from '../../components/multi-autocomplete/multi-autocomplete.component';
-import { mapSearchFormToState, mapStateToSearchForm } from '../../mappers';
+import { mapSearchFormToState, mapStateToSearchForm, serializeToSearchQuery } from '../../mappers';
 import { Range } from '../../types';
 
 
@@ -155,7 +156,14 @@ export class SearchComponent implements OnInit {
 
   protected readonly Infinity = Infinity;
 
+  private router: Router = inject(Router);
   private destroyRef: DestroyRef = inject(DestroyRef);
+
+  private activeFormState$: Observable<ISearchState> = this.type$
+    .pipe(
+      switchMap((type: 'rent' | 'sale'): Observable<ISearchState> => type === 'sale' ? this.saleState$ : this.rentState$),
+      takeUntilDestroyed(this.destroyRef),
+    );
 
   constructor(
     private fb: FormBuilder,
@@ -181,7 +189,6 @@ export class SearchComponent implements OnInit {
       .pipe(
         distinctUntilChanged(),
         tap((type) => {
-          console.log(type);
           this.activeTabIndex = SearchTypeTab[type];
           this.currentSearchForm = type === 'sale'
             ? this.searchSaleForm
@@ -281,4 +288,14 @@ export class SearchComponent implements OnInit {
         : { rangeInvalid: true };
     };
   };
+
+  public onSearchClick(): void {
+    this.activeFormState$
+      .pipe(
+        take(1),
+        map(serializeToSearchQuery),
+        tap((queryString: string) => this.router.navigateByUrl(`/search-results${queryString}`)),
+      )
+      .subscribe();
+  }
 }
