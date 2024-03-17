@@ -1,4 +1,4 @@
-import { ISearchFilters, ISearchSorts, ISearchState } from '../pages/search/search.model';
+import { ISearchFilters, ISearchSorts, ISearchState } from '../components/search-form/search.model';
 
 
 const simpleTypes = [ 'string', 'number', 'boolean' ];
@@ -12,6 +12,10 @@ export function serializeToSearchQuery(searchState: ISearchState): string {
   let resultQuery = `?type=${filters.type}`;
 
   for (const key of filterFields) {
+    if (key === 'type') {
+      continue;
+    }
+
     const value = filters[key];
     const fieldName = key.startsWith('priceDeviations')
       ? key.replace(/-/g, '.')

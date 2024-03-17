@@ -1,0 +1,105 @@
+@use '@angular/material' as mat;
+@import '../../../styles.scss';
+@include mat.core();
+
+.search-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.search-form {
+  min-height: 400px;
+  margin: 0 auto auto auto;
+  padding: 20px 20px calc(var(--footer-panel-height) + var(--vertical-panel-gap)) 20px;
+}
+
+.mat-mdc-tab-group {
+  max-width: 99.99%;
+}
+
+::ng-deep .search-wrapper .mat-mdc-tab-body-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vertical-panel-gap);
+}
+
+.filter-set-wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+  gap: 18px;
+
+  & > * {
+    flex: 1 1 0;
+  }
+
+  .bedrooms,
+  .bathrooms {
+    flex: 0 0 0;
+  }
+}
+
+.main-filters .input-range {
+  max-width: 180px;
+}
+
+.median-mean-ranges-accordion {
+  .input-range {
+    max-width: 380px;
+  }
+
+  .mat-expansion-panel-header-description {
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .filter-set-wrapper {
+    justify-content: center;
+  }
+}
+
+.estate-type {
+  display: flex;
+  flex-direction: column;
+  max-width: 220px;
+  max-height: 98px;
+
+  & > * {
+    flex: 1 1 0;
+  }
+}
+
+.bottom-sticky-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--footer-panel-height);
+  z-index: 2;
+}
+
+.bottom-sticky-line-background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+::ng-deep {
+  .bottom-sticky-line-background {
+    // background-color: mat.get-color-from-palette($bluegrey-accent, 800);
+    background-color: rgba(55, 71, 79, 0.6);
+  }
+}
+
+@media (min-width: 1920px) {
+  .search-form {
+    width: 1880px;
+  }
+}

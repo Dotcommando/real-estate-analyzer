@@ -1,4 +1,4 @@
-import { ISearchForm, ISearchState } from '../pages/search/search.model';
+import { ISearchForm, ISearchState } from '../components/search-form/search.model';
 import { IDistrictOption, Range } from '../types';
 
 

@@ -103,7 +103,10 @@ export class InputRangeComponent implements OnInit {
 
   public writeValue(obj: any): void {
     if (obj) {
-      this.form.setValue(obj, { emitEvent: true });
+      this.form.setValue({
+        min: obj?.min ? obj.min : null,
+        max: obj?.max ? obj.max : null,
+      }, { emitEvent: true });
     }
   }
 

@@ -9,7 +9,7 @@ import { StorageOption } from '@ngxs/storage-plugin/src/symbols';
 import { NgxsModule } from '@ngxs/store';
 
 import { routes } from './app.routes';
-import { SearchRentState, SearchSaleState, SearchTypeState } from './pages/search/search.store';
+import { SearchRentState, SearchSaleState, SearchTypeState } from './components/search-form/search.store';
 
 import { environment } from '../environments/environment';
 
