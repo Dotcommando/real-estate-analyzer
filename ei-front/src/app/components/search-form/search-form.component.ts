@@ -199,8 +199,9 @@ export class SearchFormComponent implements OnInit {
 
     this.trackSearchForm$(this.searchRentForm.valueChanges as Observable<Partial<ISearchForm>>)
       .pipe(
-        tap((searchForm: Partial<ISearchForm>) => this.store.dispatch(
-          new UpdateRentSearchState(mapSearchFormToState(searchForm)),
+        map(mapSearchFormToState),
+        tap((searchForm: Partial<ISearchState>) => this.store.dispatch(
+          new UpdateRentSearchState(searchForm),
         )),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -208,8 +209,9 @@ export class SearchFormComponent implements OnInit {
 
     this.trackSearchForm$(this.searchSaleForm.valueChanges as Observable<Partial<ISearchForm>>)
       .pipe(
-        tap((searchForm: Partial<ISearchForm>) => this.store.dispatch(
-          new UpdateSaleSearchState(mapSearchFormToState(searchForm)),
+        map(mapSearchFormToState),
+        tap((searchForm: Partial<ISearchState>) => this.store.dispatch(
+          new UpdateSaleSearchState(searchForm),
         )),
         takeUntilDestroyed(this.destroyRef),
       )

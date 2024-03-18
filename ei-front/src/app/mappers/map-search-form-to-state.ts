@@ -27,7 +27,7 @@ export function mapSearchFormToState(data: Partial<ISearchForm>): Partial<ISearc
         ...(data.cityDistrict?.districts && {
           district: data?.cityDistrict?.districts
             .filter(Boolean)
-            .map((district: IDistrictOption) => district.value) ?? [],
+            .map((district: IDistrictOption | string) => typeof district === 'string' ? district : district.value) ?? [],
         }),
         ...(data.cityDistrict?.city !== undefined && { city: data.cityDistrict.city }),
       }),
