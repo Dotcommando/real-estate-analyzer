@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { Action, State, StateContext } from '@ngxs/store';
+import { Action, Selector, State, StateContext } from '@ngxs/store';
 
 import { SEARCH_RESULTS_STATE_DEFAULT } from './search-results.defaults';
 import { ISearchResultsState, ISearchResultsStoryNote } from './search-results.model';
@@ -34,6 +34,26 @@ export class SaveSearchQueryToStory {
 })
 @Injectable()
 export class SearchResultsState {
+  @Selector()
+  static results(state: ISearchResultsState): IRentResidentialId[] | ISaleResidentialId[] | null {
+    return state.result;
+  }
+
+  @Selector()
+  static totalResults(state: ISearchResultsState): number {
+    return state.total;
+  }
+
+  @Selector()
+  static searchStatus(state: ISearchResultsState): 'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED' {
+    return state.status;
+  }
+
+  @Selector()
+  static searchStory(state: ISearchResultsState): ISearchResultsStoryNote[] {
+    return state.story;
+  }
+
   @Action(FetchSearchResults)
   public fetchSearchResults(ctx: StateContext<ISearchResultsState>, action: FetchSearchResults) {
     ctx.patchState({ status: 'PENDING' });

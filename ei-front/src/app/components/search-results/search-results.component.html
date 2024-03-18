@@ -1,3 +1,9 @@
 <div class="search-results">
-
+  @if (ads$ | async) {
+    @for (ad of ads$ | async; track ad._id) {
+      <app-search-result-card
+        [adData]="ad"
+      ></app-search-result-card>
+    }
+  }
 </div>

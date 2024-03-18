@@ -1,0 +1,46 @@
+<mat-card class="search-result-card">
+  <mat-card-header>
+    <mat-card-title>{{ adData.title }}</mat-card-title>
+    <mat-card-subtitle>{{ adData.city }} @if(adData.district) { {{ adData.district }} } - {{ adData.price }} {{ adData.currency }}</mat-card-subtitle>
+  </mat-card-header>
+  <img mat-card-image src="placeholder-image-url" alt="Property">
+  <mat-card-content>
+    <p>{{ adData.description | slice:0:100 }}...</p>
+    <p>@if (adData['property-area']) { Area: {{ adData['property-area'] }} {{ adData['property-area-unit'] }} } - Price per m²: {{ adData['price-sqm'] }} EUR</p>
+    <p>Bedrooms: {{ adData.bedrooms }} - Bathrooms: {{ adData.bathrooms }}</p>
+    <p>Source: {{ adData.source }}</p>
+    @if (adData['air-conditioning']) {
+      <span>Air-conditioning: {{ adData['air-conditioning'] }}</span>
+    }
+    @if (adData['alarm']) {
+      <span>Alarm: {{ adData['alarm'] }}</span>
+    }
+    @if (adData['attic']) {
+      <span>Attic: {{ adData['attic'] }}</span>
+    }
+    @if (adData['balcony']) {
+      <span>Balcony: {{ adData['balcony'] }}</span>
+    }
+    @if (adData['elevator']) {
+      <span>Elevator: {{ adData['elevator'] }}</span>
+    }
+    @if (adData['fireplace']) {
+      <span>Fireplace: {{ adData['fireplace'] }}</span>
+    }
+    @if (adData['garden']) {
+      <span>Garden: {{ adData['garden'] }}</span>
+    }
+    @if (adData['playroom']) {
+      <span>Playroom: {{ adData['playroom'] }}</span>
+    }
+    @if (adData['pool']) {
+      <span>Pool: {{ adData['pool'] }}</span>
+    }
+    @if (adData['storage']) {
+      <span>Storage: {{ adData['storage'] }}</span>
+    }
+  </mat-card-content>
+  <mat-card-actions>
+    <a mat-button [href]="adData.url" target="_blank">View More</a>
+  </mat-card-actions>
+</mat-card>
