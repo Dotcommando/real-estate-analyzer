@@ -1,5 +1,15 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Component, DestroyRef, Inject, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  DestroyRef,
+  Inject,
+  inject,
+  NgZone,
+  OnInit,
+  PLATFORM_ID,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   AbstractControl,
@@ -73,7 +83,7 @@ enum SearchTypeTab {
   templateUrl: './search-form.component.html',
   styleUrl: './search-form.component.scss',
 })
-export class SearchFormComponent implements OnInit {
+export class SearchFormComponent implements OnInit, AfterViewInit {
   @Select(SearchTypeState.searchType) type$!: Observable<'rent' | 'sale'>;
   @Select(SearchRentState) rentState$!: Observable<ISearchState>;
   @Select(SearchSaleState) saleState$!: Observable<ISearchState>;
@@ -154,6 +164,7 @@ export class SearchFormComponent implements OnInit {
 
   protected readonly Infinity = Infinity;
 
+  private currentType: 'rent' | 'sale' = 'rent';
   private router: Router = inject(Router);
   private destroyRef: DestroyRef = inject(DestroyRef);
 
@@ -165,7 +176,9 @@ export class SearchFormComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
+    private zone: NgZone,
     private readonly store: Store,
+    private cdr: ChangeDetectorRef,
     private readonly limitsService: LimitationsService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {
@@ -192,6 +205,7 @@ export class SearchFormComponent implements OnInit {
             ? this.searchSaleForm
             : this.searchRentForm;
           this.currentSearchForm.updateValueAndValidity();
+          this.currentType = type;
         }),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -216,6 +230,32 @@ export class SearchFormComponent implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
+  }
+
+  public ngAfterViewInit(): void {
+    if (isPlatformBrowser(this.platformId) && this.currentType === 'sale') {
+      const currentTab = this.currentType;
+
+      if (currentTab === 'sale') {
+        this.zone.runOutsideAngular(() => {
+          setTimeout(() => {
+            this.zone.run(() => {
+              this.switchToRentAndBackToSale();
+            });
+          }, 0);
+        });
+      }
+    }
+  }
+
+  private switchToRentAndBackToSale(): void {
+    this.onTabIndexChange(SearchTypeTab.rent);
+
+    this.zone.runOutsideAngular(() => {
+      setTimeout(() => {
+        this.onTabIndexChange(SearchTypeTab.sale);
+      }, 10);
+    });
   }
 
   private restoreFormState(state$: Observable<ISearchState>, form: FormGroup): void {
