@@ -1,11 +1,22 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  OnInit,
+  PLATFORM_ID, ViewChild,
+} from '@angular/core';
+import { MatButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 import { ActivatedRoute } from '@angular/router';
 
 import { Store } from '@ngxs/store';
 
 import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
 
+import { BottomControlPanelComponent } from '../../components/bottom-control-panel/bottom-control-panel.component';
 import { ISearchState } from '../../components/search-form/search.model';
 import { UpdateRentSearchState, UpdateSaleSearchState } from '../../components/search-form/search.store';
 import { SearchFormComponent } from '../../components/search-form/search-form.component';
@@ -26,15 +37,22 @@ import { IRentResidentialId, IResponse, ISaleResidentialId } from '../../types';
   imports: [
     SearchFormComponent,
     SearchResultsComponent,
+    BottomControlPanelComponent,
+    MatButton,
+    MatIcon,
   ],
   templateUrl: './serp.component.html',
   styleUrl: './serp.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SerpComponent implements OnInit {
+export class SerpComponent implements OnInit, AfterViewInit {
+  @ViewChild(SearchFormComponent) searchFormComponent!: SearchFormComponent;
+
   constructor(
     private readonly store: Store,
-    private readonly searchService: SearchService,
+    private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
+    private readonly searchService: SearchService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {
   }
@@ -71,6 +89,10 @@ export class SerpComponent implements OnInit {
       .subscribe();
   }
 
+  public ngAfterViewInit(): void {
+    this.cdr.detectChanges();
+  }
+
   public performSearch(queryString: string): Observable<IResponse<{
     result: IRentResidentialId[] | ISaleResidentialId[];
     total: number;
@@ -90,5 +112,13 @@ export class SerpComponent implements OnInit {
           return of(error);
         }),
       );
+  }
+
+  public onSearchButtonClick(): void {
+    this.searchFormComponent.onSearchClick();
+  }
+
+  public get isSearchDisabled(): boolean {
+    return !this.searchFormComponent?.isFormValid;
   }
 }

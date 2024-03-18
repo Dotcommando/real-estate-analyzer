@@ -1,0 +1,28 @@
+.bottom-sticky-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: var(--footer-panel-height);
+  z-index: 2;
+}
+
+.bottom-sticky-line-background {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+::ng-deep {
+  .bottom-sticky-line-background {
+    // background-color: mat.get-color-from-palette($bluegrey-accent, 800);
+    background-color: rgba(55, 71, 79, 0.6);
+  }
+}

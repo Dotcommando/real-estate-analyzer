@@ -338,4 +338,8 @@ export class SearchFormComponent implements OnInit, AfterViewInit {
       )
       .subscribe();
   }
+
+  public get isFormValid(): boolean {
+    return this.currentSearchForm.valid;
+  }
 }
