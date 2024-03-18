@@ -365,33 +365,33 @@ export class DbAccessService {
       $match.$and.push({ [key]: value });
     });
 
-    const processArrayField = (field: string, values: string[]) => {
-      if (values.length === 0) return;
+    const addOrConditionsForField = (field: string, values: string[]) => {
+      const conditions = [];
 
-      const validValues = values.filter((val: string) => /\d{1,2}\+?/.test(val));
-      let directMatches = validValues.filter((val: string) => !val.endsWith('+'))
-        .map((val: string) => parseInt(val))
-        .filter((val: number) => !isNaN(val) && val >= 0);
-      const gteValues = validValues.filter((val: string) => val.endsWith('+'))
-        .map((val: string) => parseInt(val.replace(/\+/g, '')))
-        .filter((val: number) => !isNaN(val) && val >= 0);
+      values
+        .filter((val => /\d{1,2}\+?/.test(val)))
+        .forEach((value: string) => {
+          if (value.endsWith('+')) {
+            const number = parseInt(value.slice(0, -1), 10);
 
-      const minGteValue = Math.min(...gteValues);
+            conditions.push({ [field]: { $gte: number }});
+          } else {
+            const number = parseInt(value, 10);
 
-      directMatches = directMatches.filter((val: number) => val < minGteValue);
+            if (!isNaN(number)) {
+              conditions.push({ [field]: number });
+            }
+          }
+        });
 
-      if (directMatches.length > 0) {
-        $match.$and.push({ [field]: { $in: directMatches }});
-      }
-
-      if (gteValues.length > 0) {
-        $match.$and.push({ [field]: { $gte: minGteValue }});
+      if (conditions.length > 0) {
+        $match.$and.push({ $or: conditions });
       }
     };
 
-    [ 'bedrooms', 'bathrooms' ].forEach((field: string) => {
+    [ 'bedrooms', 'bathrooms' ].forEach(field => {
       if (filter[field]) {
-        processArrayField(field, filter[field]);
+        addOrConditionsForField(field, filter[field]);
       }
     });
 

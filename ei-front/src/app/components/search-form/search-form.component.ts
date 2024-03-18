@@ -335,6 +335,7 @@ export class SearchFormComponent implements OnInit, AfterViewInit {
         take(1),
         map(serializeToSearchQuery),
         tap((queryString: string) => this.router.navigateByUrl(`/search-results${queryString}`)),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
   }

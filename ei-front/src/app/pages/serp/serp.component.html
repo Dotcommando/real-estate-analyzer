@@ -1,14 +1,12 @@
-<ng-container>
-  <ei-search-form></ei-search-form>
-  <ei-search-results></ei-search-results>
-  <ei-bottom-control-panel>
-    <button
-      mat-raised-button
-      color="primary"
-      (click)="onSearchButtonClick()"
-      [disabled]="isSearchDisabled"
-    >
-      Search <mat-icon>search</mat-icon>
-    </button>
-  </ei-bottom-control-panel>
-</ng-container>
+<ei-search-form></ei-search-form>
+<ei-search-results></ei-search-results>
+<ei-bottom-control-panel>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="onSearchButtonClick()"
+    [disabled]="isSearchDisabled"
+  >
+    Search <mat-icon>search</mat-icon>
+  </button>
+</ei-bottom-control-panel>
