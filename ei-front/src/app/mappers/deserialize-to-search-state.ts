@@ -9,6 +9,7 @@ import {
   rangesFields,
   regularFields,
 } from '../components/search-form/search.model';
+import { PAGINATION_MAX_LIMIT } from '../constants';
 import { Range } from '../types';
 
 
@@ -109,8 +110,13 @@ export function deserializeToSearchState(paramMap: ParamMap): ISearchState {
     }
   }
 
+  const offset = queryParams['offset'] ? parseInt(queryParams['offset']) : 0;
+  const limit = queryParams['limit'] ? parseInt(queryParams['limit']) : PAGINATION_MAX_LIMIT;
+
   return {
     filters,
     sorts,
+    offset: isNaN(offset) ? 0 : offset,
+    limit: isNaN(limit) ? PAGINATION_MAX_LIMIT : limit,
   } as ISearchState;
 }

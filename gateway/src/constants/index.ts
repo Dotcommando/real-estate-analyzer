@@ -16,6 +16,7 @@ export * from './minimal-start-date.const';
 export * from './mode.enum';
 export * from './no-statistics-data-reason.enum';
 export * from './online-viewing.enum';
+export * from './pagination.const';
 export * from './parking.enum';
 export * from './pets.enum';
 export * from './pool-type.enum';

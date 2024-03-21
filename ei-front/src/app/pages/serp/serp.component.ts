@@ -62,6 +62,13 @@ export class SerpComponent implements OnInit, AfterViewInit {
     this.route.queryParamMap
       .pipe(
         map(deserializeToSearchState),
+        tap((data) => {
+          if (isPlatformBrowser(this.platformId)) {
+            console.log('');
+            console.log('search state:');
+            console.log(data);
+          }
+        }),
         tap((searchState: ISearchState) => {
           if (isPlatformBrowser(this.platformId)) {
             console.log('');

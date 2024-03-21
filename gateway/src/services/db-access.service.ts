@@ -14,6 +14,7 @@ import {
   EMPTY_SEARCH_RESULT,
   NESTED_RANGE_FIELDS,
   NoStatisticsDataReason,
+  PAGINATION_MAX_LIMIT,
   RANGE_FIELDS,
 } from '../constants';
 import {
@@ -353,7 +354,7 @@ export class DbAccessService {
     filter: IGetRentResidentialQuery | IGetSaleResidentialQuery,
     sort: IGetRentResidentialSort | IGetSaleResidentialSort,
     offset: number = 0,
-    limit: number = 25,
+    limit: number = PAGINATION_MAX_LIMIT,
   ): PipelineStage[] {
     const $match = { $and: []};
     const dateFields = [ 'publish_date', 'ad_last_updated', 'updated_at' ];
@@ -454,7 +455,7 @@ export class DbAccessService {
     filter: IGetRentResidentialQuery,
     sort: IGetRentResidentialSort,
     offset: number = 0,
-    limit: number = 25,
+    limit: number = PAGINATION_MAX_LIMIT,
   ): Promise<{ data: IRentResidentialId[]; total: number }> {
     // persistPipeline(this.getResidentialPipelineBuilder(filter, sort, offset, limit));
 
@@ -473,7 +474,7 @@ export class DbAccessService {
     filter: IGetSaleResidentialQuery,
     sort: IGetSaleResidentialSort,
     offset: number = 0,
-    limit: number = 25,
+    limit: number = PAGINATION_MAX_LIMIT,
   ): Promise<{ data: ISaleResidentialId[]; total: number }> {
     // persistPipeline(this.getResidentialPipelineBuilder(filter, sort, offset, limit));
 

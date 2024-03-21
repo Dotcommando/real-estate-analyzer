@@ -5,6 +5,8 @@ import { Action, Selector, State, StateContext } from '@ngxs/store';
 import { SEARCH_RENT_STATE_DEFAULT, SEARCH_SALE_STATE_DEFAULT } from './search.defaults';
 import { ISearchState } from './search.model';
 
+import { PAGINATION_MAX_LIMIT } from '../../constants';
+
 
 export class ChangeType {
   static readonly type = '[Search Form] Change Type';
@@ -46,6 +48,12 @@ export class SearchRentState {
         ...state.sorts,
         ...action.searchRentUpdate.sorts,
       },
+      offset: typeof action.searchRentUpdate.offset === 'number'
+        ? action.searchRentUpdate.offset
+        : 0,
+      limit: typeof action.searchRentUpdate.limit === 'number'
+        ? Math.min(action.searchRentUpdate.limit, PAGINATION_MAX_LIMIT)
+        : PAGINATION_MAX_LIMIT,
     });
   }
 }
@@ -75,6 +83,12 @@ export class SearchSaleState {
         ...state.sorts,
         ...action.searchSaleUpdate.sorts,
       },
+      offset: typeof action.searchSaleUpdate.offset === 'number'
+        ? action.searchSaleUpdate.offset
+        : 0,
+      limit: typeof action.searchSaleUpdate.limit === 'number'
+        ? Math.min(action.searchSaleUpdate.limit, PAGINATION_MAX_LIMIT)
+        : PAGINATION_MAX_LIMIT,
     });
   }
 }

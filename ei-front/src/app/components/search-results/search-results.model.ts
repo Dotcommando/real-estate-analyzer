@@ -7,6 +7,9 @@ export interface ISearchResultsStoryNote {
   date: number;
   result: IRentResidentialId[] | ISaleResidentialId[];
   formState: ISearchState;
+  offset: number;
+  limit: number;
+  timestamp: number;
 }
 
 export interface ISearchResultsState {
@@ -14,4 +17,7 @@ export interface ISearchResultsState {
   result: IRentResidentialId[] | ISaleResidentialId[] | null;
   total: number;
   status: 'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED';
+  offset: number;
+  limit: number;
+  timestamp?: number;
 }

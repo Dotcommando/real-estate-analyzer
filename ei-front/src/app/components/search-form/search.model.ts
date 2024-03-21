@@ -296,6 +296,8 @@ export const allSortFields: Array<keyof ISearchSorts> = [
 export interface ISearchState {
   filters: Partial<ISearchFilters>;
   sorts: Partial<ISearchSorts>;
+  offset?: number;
+  limit?: number;
 }
 
 export interface ISearchForm {

@@ -7,6 +7,7 @@ export * from './energy-efficiency.enum';
 export * from './furnishing.enum';
 export * from './no-statistics-data-reason.enum';
 export * from './online-viewing.enum';
+export * from './pagination.const';
 export * from './parking.enum';
 export * from './pets.enum';
 export * from './pool-type.enum';
