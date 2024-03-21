@@ -4,7 +4,7 @@ import { cache, CacheType } from 'cache-decorator';
 
 import { DbAccessService } from './db-access.service';
 
-import { LOGGER } from '../constants';
+import { LOGGER, PAGINATION_MAX_LIMIT } from '../constants';
 import { SearchQueryDto } from '../dto';
 import {
   mapToGetRentResidentialQueryMapper,
@@ -210,9 +210,11 @@ export class AppService {
   }>> {
     const mappedQuery: IGetRentResidentialQuery = mapToGetRentResidentialQueryMapper(query);
     const mapperSort: IGetRentResidentialSort = mapToGetRentResidentialSortMapper(query, { price: 1 });
+    const offset = Math.max(query.offset, 0);
+    const limit = Math.min(query.limit, PAGINATION_MAX_LIMIT);
     const result = query.type === 'rent'
-      ? await this.dbAccessService.getRentResidential(mappedQuery, mapperSort)
-      : await this.dbAccessService.getSaleResidential(mappedQuery, mapperSort);
+      ? await this.dbAccessService.getRentResidential(mappedQuery, mapperSort, offset, limit)
+      : await this.dbAccessService.getSaleResidential(mappedQuery, mapperSort, offset, limit);
 
     return {
       status: HttpStatus.OK,

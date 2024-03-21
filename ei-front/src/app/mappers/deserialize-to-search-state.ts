@@ -116,7 +116,7 @@ export function deserializeToSearchState(paramMap: ParamMap): ISearchState {
   return {
     filters,
     sorts,
-    offset: isNaN(offset) ? 0 : offset,
-    limit: isNaN(limit) ? PAGINATION_MAX_LIMIT : limit,
+    offset: isNaN(offset) ? 0 : Math.max(offset, 0),
+    limit: isNaN(limit) ? PAGINATION_MAX_LIMIT : Math.max(limit, 0),
   } as ISearchState;
 }

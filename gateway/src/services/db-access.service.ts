@@ -51,7 +51,7 @@ import {
 } from '../types';
 
 
-const specialFields = [ 'priceDeviations', 'bedrooms', 'bathrooms' ];
+const specialFields = [ 'priceDeviations', 'bedrooms', 'bathrooms', 'offset', 'limit' ];
 const simpleTypes = [ 'boolean', 'number', 'string' ];
 const rangeFields = [ ...RANGE_FIELDS, ...NESTED_RANGE_FIELDS ];
 

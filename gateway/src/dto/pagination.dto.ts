@@ -14,5 +14,5 @@ export class PaginationDto {
   @IsInt({ message: 'Limit must be an integer' })
   @Min(1, { message: 'Limit must be greater than 0' })
   @Max(PAGINATION_MAX_LIMIT, { message: `Limit must be less than ${PAGINATION_MAX_LIMIT}` })
-  readonly limit: number = 10;
+  readonly limit: number = PAGINATION_MAX_LIMIT;
 }
