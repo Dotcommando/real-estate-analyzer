@@ -1,4 +1,4 @@
-import { isPlatformBrowser } from '@angular/common';
+import { AsyncPipe, isPlatformBrowser } from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -11,9 +11,10 @@ import {
 } from '@angular/core';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { ActivatedRoute } from '@angular/router';
 
-import { Store } from '@ngxs/store';
+import { Select, Store } from '@ngxs/store';
 
 import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
 
@@ -26,7 +27,7 @@ import { SearchResultsComponent } from '../../components/search-results/search-r
 import {
   FetchSearchResults,
   FetchSearchResultsFail,
-  FetchSearchResultsSuccess,
+  FetchSearchResultsSuccess, SearchResultsState,
 } from '../../components/search-results/search-results.store';
 import { deserializeToSearchState, serializeToSearchQuery } from '../../mappers';
 import { IRentResidentialId, IResponse, ISaleResidentialId } from '../../types';
@@ -36,11 +37,13 @@ import { IRentResidentialId, IResponse, ISaleResidentialId } from '../../types';
   selector: 'ei-serp',
   standalone: true,
   imports: [
+    MatPaginatorModule,
     SearchFormComponent,
     SearchResultsComponent,
     BottomControlPanelComponent,
     MatButton,
     MatIcon,
+    AsyncPipe,
   ],
   templateUrl: './serp.component.html',
   styleUrl: './serp.component.scss',
@@ -48,6 +51,12 @@ import { IRentResidentialId, IResponse, ISaleResidentialId } from '../../types';
 })
 export class SerpComponent implements OnInit, AfterViewInit {
   @ViewChild(SearchFormComponent) searchFormComponent!: SearchFormComponent;
+  @Select(SearchResultsState.searchStatus) searchStatus!: Observable<'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED'>;
+  @Select(SearchResultsState.totalResults) totalResults!: Observable<number>;
+  @Select(SearchResultsState.offset) offset!: Observable<number>;
+
+  public pageSize = 20;
+  public pageIndex = 1;
 
   constructor(
     private readonly store: Store,
@@ -128,5 +137,10 @@ export class SerpComponent implements OnInit, AfterViewInit {
 
   public get isSearchDisabled(): boolean {
     return !this.searchFormComponent?.isFormValid;
+  }
+
+  public handlePageEvent(e: PageEvent): void {
+    this.pageSize = e.pageSize;
+    this.pageIndex = e.pageIndex;
   }
 }

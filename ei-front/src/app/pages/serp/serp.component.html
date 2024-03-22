@@ -1,6 +1,15 @@
 <ei-search-form></ei-search-form>
 <ei-search-results></ei-search-results>
 <ei-bottom-control-panel>
+  <mat-paginator
+    class="ei-paginator"
+    (page)="handlePageEvent($event)"
+    [length]="totalResults | async"
+    [pageSize]="pageSize"
+    [disabled]="(searchStatus | async) === 'PENDING'"
+    [pageIndex]="pageIndex"
+    aria-label="Select page"
+  ></mat-paginator>
   <button
     mat-raised-button
     color="primary"

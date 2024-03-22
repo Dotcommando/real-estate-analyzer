@@ -54,6 +54,11 @@ export class SearchResultsState {
     return state.story;
   }
 
+  @Selector()
+  static offset(state: ISearchResultsState): number {
+    return state.offset;
+  }
+
   @Action(FetchSearchResults)
   public fetchSearchResults(ctx: StateContext<ISearchResultsState>, action: FetchSearchResults) {
     ctx.patchState({ status: 'PENDING' });
