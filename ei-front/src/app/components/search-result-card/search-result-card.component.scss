@@ -1,0 +1,48 @@
+.card-content {
+}
+
+.card-image {
+  float: left;
+  max-width: 350px;
+  max-height: 200px;
+  margin: 0 20px 12px 0;
+}
+
+.text-content {
+  flex: 1 1 0;
+}
+
+.clear {
+  clear: both;
+}
+
+.paired-fields {
+  & > span {
+    display: inline-block;
+    margin: 0 12px 0 0;
+  }
+
+  .key {
+    margin-right: 8px;
+  }
+}
+
+.additional {
+  display: inline-flex;
+  justify-content: space-between;
+  width: 100%;
+
+  & > span {
+    font-size: 14px;
+    line-height: 16px;
+    margin: 0 0 14px 0;
+  }
+
+  .key {
+    margin-right: 8px;
+  }
+
+  .value {
+    text-transform: lowercase;
+  }
+}

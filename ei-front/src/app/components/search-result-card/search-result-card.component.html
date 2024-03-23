@@ -1,46 +1,66 @@
 <mat-card class="search-result-card">
   <mat-card-header>
     <mat-card-title>{{ orderNumber }}. {{ adData.title }}</mat-card-title>
-    <mat-card-subtitle>{{ adData.city }} @if(adData.district) { {{ adData.district }} } - {{ adData.price }} {{ adData.currency }}</mat-card-subtitle>
+    <mat-card-subtitle>{{ adData.city }} @if(adData.district) { {{ adData.district }} } &mdash; {{ adData.price }} {{ adData.currency }}</mat-card-subtitle>
   </mat-card-header>
-  <img mat-card-image src="placeholder-image-url" alt="Property">
-  <mat-card-content>
-    <p>{{ adData.description | slice:0:100 }}...</p>
-    <p>@if (adData['property-area']) { Area: {{ adData['property-area'] }} {{ adData['property-area-unit'] }} } - Price per m²: {{ adData['price-sqm'] }} EUR</p>
-    <p>Bedrooms: {{ adData.bedrooms }} - Bathrooms: {{ adData.bathrooms }}</p>
-    <p>Source: {{ adData.source }}</p>
-    @if (adData['air-conditioning']) {
-      <span>Air-conditioning: {{ adData['air-conditioning'] }}</span>
-    }
-    @if (adData['alarm']) {
-      <span>Alarm: {{ adData['alarm'] }}</span>
-    }
-    @if (adData['attic']) {
-      <span>Attic: {{ adData['attic'] }}</span>
-    }
-    @if (adData['balcony']) {
-      <span>Balcony: {{ adData['balcony'] }}</span>
-    }
-    @if (adData['elevator']) {
-      <span>Elevator: {{ adData['elevator'] }}</span>
-    }
-    @if (adData['fireplace']) {
-      <span>Fireplace: {{ adData['fireplace'] }}</span>
-    }
-    @if (adData['garden']) {
-      <span>Garden: {{ adData['garden'] }}</span>
-    }
-    @if (adData['playroom']) {
-      <span>Playroom: {{ adData['playroom'] }}</span>
-    }
-    @if (adData['pool']) {
-      <span>Pool: {{ adData['pool'] }}</span>
-    }
-    @if (adData['storage']) {
-      <span>Storage: {{ adData['storage'] }}</span>
-    }
+  <mat-card-content class="card-content">
+    <img class="card-image" mat-card-image src="/assets/300x200.svg" alt="Property">
+    <div class="text-content">
+      <p>Source: {{ adData.source }}</p>
+      <p>{{ adData.description | slice:0:400 }}...</p>
+      <p class="paired-fields property-cost">
+        @if (adData['property-area']) {
+          <span class="property-area"><span class="key">Area:</span> <span class="value">{{ adData['property-area'] }} {{ adData['property-area-unit'] }}</span></span>
+        }
+        @if (adData['price-sqm']) {
+          <span class="price-sqm"><span class="key">Price per m²:</span> <span class="value">{{ adData['price-sqm'] }} {{ adData['currency'] }}</span></span>
+        }
+      </p>
+      <p class="paired-fields bedrooms-bathrooms">
+        @if (adData.bedrooms > -1) {
+          <span class="bedrooms"><span class="key">Bedrooms:</span> <span class="value">{{ adData.bedrooms }}</span></span>
+        }
+        @if (adData.bathrooms > -1) {
+          <span class="bathrooms"><span class="key">Bathrooms:</span> <span class="value">{{ adData.bathrooms }}</span></span>
+        }
+      </p>
+      <div class="additional">
+        @if (adData['air-conditioning']) {
+          <span class="air-conditioning"><span class="key">Air-conditioning:</span> <span class="value">{{ adData['air-conditioning'] }}</span></span>
+        }
+        @if (adData['alarm']) {
+          <span class="alarm"><span class="key">Alarm:</span> <span class="value">{{ adData['alarm'] }}</span></span>
+        }
+        @if (adData['attic']) {
+          <span class="attic"><span class="key">Attic:</span> <span class="value">{{ adData['attic'] }}</span></span>
+        }
+        @if (adData['balcony']) {
+          <span class="balcony"><span class="key">Balcony:</span> <span class="value">{{ adData['balcony'] }}</span></span>
+        }
+        @if (adData['elevator']) {
+          <span class="elevator"><span class="key">Elevator:</span> <span class="value">{{ adData['elevator'] }}</span></span>
+        }
+        @if (adData['fireplace']) {
+          <span class="fireplace"><span class="key">Fireplace:</span> <span class="value">{{ adData['fireplace'] }}</span></span>
+        }
+        @if (adData['garden']) {
+          <span class="garden"><span class="key">Garden:</span> <span class="value">{{ adData['garden'] }}</span></span>
+        }
+        @if (adData['playroom']) {
+          <span class="playroom"><span class="key">Playroom:</span> <span class="value">{{ adData['playroom'] }}</span></span>
+        }
+        @if (adData['pool']) {
+          <span class="pool"><span class="key">Pool:</span> <span class="value">{{ adData['pool'] }}</span></span>
+        }
+        @if (adData['storage']) {
+          <span class="storage"><span class="key">Storage:</span> <span class="value">{{ adData['storage'] }}</span></span>
+        }
+      </div>
+    </div>
+    <div class="clear"></div>
+    <mat-divider></mat-divider>
   </mat-card-content>
-  <mat-card-actions>
-    <a mat-button [href]="adData.url" target="_blank">View More</a>
+  <mat-card-actions align="end">
+    <a mat-raised-button color="accent" [href]="adData.url" target="_blank">View More</a>
   </mat-card-actions>
 </mat-card>
