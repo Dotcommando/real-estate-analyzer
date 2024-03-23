@@ -1,18 +1,13 @@
+import { environment } from '../../environments/environment';
 import { ISearchFilters, ISearchSorts, ISearchState } from '../components/search-form/search.model';
 import { PAGINATION_MAX_LIMIT } from '../constants';
 
 
 const simpleTypes = [ 'string', 'number', 'boolean' ];
 
-export function serializeToSearchQuery(searchState: ISearchState): string {
+export function serializeToSearchQuery(searchState: ISearchState, offset = 0, limit = environment.pageSize): string {
   const filters: Partial<ISearchFilters> = searchState.filters;
   const sorts: Partial<ISearchSorts> = searchState.sorts;
-  const offset = typeof searchState.offset === 'number'
-    ? searchState.offset
-    : 0;
-  const limit = typeof searchState.limit === 'number'
-    ? Math.min(searchState.limit, PAGINATION_MAX_LIMIT)
-    : PAGINATION_MAX_LIMIT;
   const filterFields: Array<keyof ISearchFilters> = Object.keys(filters) as Array<keyof ISearchFilters>;
   const sortFields: Array<keyof ISearchSorts> = Object.keys(sorts) as Array<keyof ISearchSorts>;
 
@@ -56,7 +51,7 @@ export function serializeToSearchQuery(searchState: ISearchState): string {
     }
   }
 
-  resultQuery += `&offset=${offset}&limit=${limit}`;
+  resultQuery += `&offset=${offset >= 0 ? offset : 0}&limit=${limit > 0 ? Math.min(limit, PAGINATION_MAX_LIMIT) : environment.pageSize}`;
 
   return resultQuery;
 }

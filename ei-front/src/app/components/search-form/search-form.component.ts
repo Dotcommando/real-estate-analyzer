@@ -330,6 +330,8 @@ export class SearchFormComponent implements OnInit, AfterViewInit {
   };
 
   public onSearchClick(): void {
+    this.currentSearchForm.markAsPristine();
+    this.currentSearchForm.markAsUntouched();
     this.activeFormState$
       .pipe(
         take(1),

@@ -4,20 +4,22 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  DestroyRef,
   Inject,
   inject,
   OnInit,
   PLATFORM_ID,
   ViewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 
 import { Select, Store } from '@ngxs/store';
 
-import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
+import { catchError, combineLatest, distinctUntilChanged, map, Observable, of, switchMap, tap } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { BottomControlPanelComponent } from '../../components/bottom-control-panel/bottom-control-panel.component';
@@ -65,6 +67,7 @@ export class SerpComponent implements OnInit, AfterViewInit {
   public origin = environment.origin;
 
   private router: Router = inject(Router);
+  private destroyRef: DestroyRef = inject(DestroyRef);
 
   constructor(
     private readonly store: Store,
@@ -78,15 +81,8 @@ export class SerpComponent implements OnInit, AfterViewInit {
   public ngOnInit(): void {
     this.route.queryParamMap
       .pipe(
-        map(deserializeToSearchState),
-        tap((data) => {
-          if (isPlatformBrowser(this.platformId)) {
-            console.log('');
-            console.log('search state:');
-            console.log(data);
-          }
-        }),
-        tap((searchState: ISearchState) => {
+        map((paramMap: ParamMap): [ ParamMap, ISearchState ] => [ paramMap, deserializeToSearchState(paramMap) ]),
+        tap(([ paramMap, searchState ]: [ ParamMap, ISearchState ]) => {
           if (isPlatformBrowser(this.platformId)) {
             console.log('');
             console.log('Deserialized');
@@ -98,8 +94,18 @@ export class SerpComponent implements OnInit, AfterViewInit {
             : new UpdateSaleSearchState(searchState),
           );
         }),
-        map(serializeToSearchQuery),
-        tap((queryString: string) => {
+        switchMap(([ paramMap, searchState ]: [ ParamMap, ISearchState ]): Observable<[ ParamMap, ISearchState, string ]> => combineLatest([
+          this.offset,
+          this.limit,
+        ])
+          .pipe(
+            map(([ offset, limit ]: [ number, number ]): [ ParamMap, ISearchState, string ] => {
+              return [ paramMap, searchState, serializeToSearchQuery(searchState, offset, limit) ];
+            }),
+          ),
+        ),
+        distinctUntilChanged(([ , , oldQueryString ], [ , , currQueryString ]) => oldQueryString === currQueryString),
+        tap(([ , , queryString ]: [ ParamMap, ISearchState, string ]) => {
           if (isPlatformBrowser(this.platformId)) {
             if (queryString !== window.location.search) {
               const targetUrl = '/search-results' + queryString;
@@ -114,7 +120,7 @@ export class SerpComponent implements OnInit, AfterViewInit {
             }
           }
         }),
-        switchMap((queryString: string) => this.performSearch(queryString)
+        switchMap(([ , , queryString ]: [ ParamMap, ISearchState, string ]) => this.performSearch(queryString)
           .pipe(
             tap((response) => {
               if (isPlatformBrowser(this.platformId)) {
@@ -125,6 +131,7 @@ export class SerpComponent implements OnInit, AfterViewInit {
             }),
           ),
         ),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
   }
@@ -159,11 +166,13 @@ export class SerpComponent implements OnInit, AfterViewInit {
   }
 
   public get isSearchDisabled(): boolean {
-    return !this.searchFormComponent?.isFormValid;
+    return this.searchFormComponent?.currentSearchForm.pristine || !this.searchFormComponent?.isFormValid;
   }
 
   public handlePageEvent(e: PageEvent): void {
-    this.store.dispatch(new ChangeOffsetLimit({ limit: e.pageSize }));
-    this.pageIndex = e.pageIndex;
+    const offset = e.pageIndex * e.pageSize;
+    const limit = e.pageSize;
+
+    this.store.dispatch(new ChangeOffsetLimit({ offset, limit }));
   }
 }
