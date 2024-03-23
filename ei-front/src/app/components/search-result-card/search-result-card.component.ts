@@ -20,4 +20,5 @@ import { IRentResidentialId, ISaleResidentialId } from '../../types';
 })
 export class SearchResultCardComponent {
   @Input() adData!: IRentResidentialId | ISaleResidentialId;
+  @Input() orderNumber!: number;
 }

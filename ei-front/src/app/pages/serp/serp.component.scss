@@ -1,3 +1,7 @@
+.serp-page {
+  padding: 0 0 calc(var(--footer-panel-height) + var(--vertical-panel-gap)) 0;
+}
+
 .ei-paginator {
   z-index: 3;
 }

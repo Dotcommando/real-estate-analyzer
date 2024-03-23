@@ -32,6 +32,9 @@ export class SearchResultsComponent implements OnInit {
   @Select(SearchResultsState.totalResults)
   public total$!: Observable<number>;
 
+  @Select(SearchResultsState.offset)
+  public offset$!: Observable<number>;
+
   private destroyRef: DestroyRef = inject(DestroyRef);
 
   public ngOnInit(): void {
