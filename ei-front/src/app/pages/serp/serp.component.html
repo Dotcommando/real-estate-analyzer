@@ -3,9 +3,11 @@
 <ei-bottom-control-panel>
   <mat-paginator
     class="ei-paginator"
+    showFirstLastButtons="true"
     (page)="handlePageEvent($event)"
     [length]="totalResults | async"
-    [pageSize]="pageSize"
+    [pageSize]="limit | async"
+    [pageSizeOptions]="pageSizeOptions"
     [disabled]="(searchStatus | async) === 'PENDING'"
     [pageIndex]="pageIndex"
     aria-label="Select page"

@@ -5,6 +5,7 @@ import {
   ChangeDetectorRef,
   Component,
   Inject,
+  inject,
   OnInit,
   PLATFORM_ID,
   ViewChild,
@@ -12,12 +13,13 @@ import {
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Select, Store } from '@ngxs/store';
 
 import { catchError, map, Observable, of, switchMap, tap } from 'rxjs';
 
+import { environment } from '../../../environments/environment';
 import { BottomControlPanelComponent } from '../../components/bottom-control-panel/bottom-control-panel.component';
 import { ISearchState } from '../../components/search-form/search.model';
 import { UpdateRentSearchState, UpdateSaleSearchState } from '../../components/search-form/search.store';
@@ -25,9 +27,11 @@ import { SearchFormComponent } from '../../components/search-form/search-form.co
 import { SearchService } from '../../components/search-results/search.service';
 import { SearchResultsComponent } from '../../components/search-results/search-results.component';
 import {
+  ChangeOffsetLimit,
   FetchSearchResults,
   FetchSearchResultsFail,
-  FetchSearchResultsSuccess, SearchResultsState,
+  FetchSearchResultsSuccess,
+  SearchResultsState,
 } from '../../components/search-results/search-results.store';
 import { deserializeToSearchState, serializeToSearchQuery } from '../../mappers';
 import { IRentResidentialId, IResponse, ISaleResidentialId } from '../../types';
@@ -54,9 +58,13 @@ export class SerpComponent implements OnInit, AfterViewInit {
   @Select(SearchResultsState.searchStatus) searchStatus!: Observable<'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED'>;
   @Select(SearchResultsState.totalResults) totalResults!: Observable<number>;
   @Select(SearchResultsState.offset) offset!: Observable<number>;
+  @Select(SearchResultsState.limit) limit!: Observable<number>;
 
-  public pageSize = 20;
-  public pageIndex = 1;
+  public pageIndex = 0;
+  public pageSizeOptions = [ 10, 15, 20, 25 ];
+  public origin = environment.origin;
+
+  private router: Router = inject(Router);
 
   constructor(
     private readonly store: Store,
@@ -91,6 +99,21 @@ export class SerpComponent implements OnInit, AfterViewInit {
           );
         }),
         map(serializeToSearchQuery),
+        tap((queryString: string) => {
+          if (isPlatformBrowser(this.platformId)) {
+            if (queryString !== window.location.search) {
+              const targetUrl = '/search-results' + queryString;
+
+              console.log('');
+              console.warn('Processed query string does not match with the original.');
+              console.warn('Original:  ', window.location.search);
+              console.warn('Processed: ', queryString);
+              console.warn('Redirected to ', targetUrl);
+
+              this.router.navigateByUrl(targetUrl);
+            }
+          }
+        }),
         switchMap((queryString: string) => this.performSearch(queryString)
           .pipe(
             tap((response) => {
@@ -140,7 +163,7 @@ export class SerpComponent implements OnInit, AfterViewInit {
   }
 
   public handlePageEvent(e: PageEvent): void {
-    this.pageSize = e.pageSize;
+    this.store.dispatch(new ChangeOffsetLimit({ limit: e.pageSize }));
     this.pageIndex = e.pageIndex;
   }
 }

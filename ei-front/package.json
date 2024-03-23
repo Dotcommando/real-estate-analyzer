@@ -8,7 +8,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "build:dev": "ng build --configuration=development",
+    "build:dev": "ng build --verbose --configuration=development",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:ei-front": "node dist/ei-front/server/server.mjs"

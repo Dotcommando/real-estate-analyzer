@@ -2,6 +2,8 @@ import cloneDeep from 'lodash.clonedeep';
 
 import { ISearchState } from './search.model';
 
+import { environment } from '../../../environments/environment';
+
 
 export const SEARCH_STATE_DEFAULT: ISearchState = {
   filters: {
@@ -146,6 +148,8 @@ export const SEARCH_RENT_STATE_DEFAULT: ISearchState = {
   sorts: {
     ...cloneDeep(SEARCH_STATE_DEFAULT.sorts),
   },
+  offset: 0,
+  limit: environment.pageSize,
 };
 
 export const SEARCH_SALE_STATE_DEFAULT: ISearchState = {
@@ -156,4 +160,6 @@ export const SEARCH_SALE_STATE_DEFAULT: ISearchState = {
   sorts: {
     ...cloneDeep(SEARCH_STATE_DEFAULT.sorts),
   },
+  offset: 0,
+  limit: environment.pageSize,
 };

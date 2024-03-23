@@ -28,6 +28,11 @@ export class SaveSearchQueryToStory {
   constructor(public payload: ISearchResultsStoryNote) {}
 }
 
+export class ChangeOffsetLimit {
+  static readonly type = '[Search] Change Limit/Offset';
+  constructor(public payload: Partial<Pick<ISearchResultsState, 'offset' | 'limit'>>) {}
+}
+
 @State<ISearchResultsState>({
   name: 'searchResults',
   defaults: SEARCH_RESULTS_STATE_DEFAULT,
@@ -59,6 +64,11 @@ export class SearchResultsState {
     return state.offset;
   }
 
+  @Selector()
+  static limit(state: ISearchResultsState): number {
+    return state.limit;
+  }
+
   @Action(FetchSearchResults)
   public fetchSearchResults(ctx: StateContext<ISearchResultsState>, action: FetchSearchResults) {
     ctx.patchState({ status: 'PENDING' });
@@ -84,6 +94,20 @@ export class SearchResultsState {
 
     ctx.patchState({
       story: [ ...state.story, action.payload ],
+    });
+  }
+
+  @Action(ChangeOffsetLimit)
+  public changeOffsetLimit(ctx: StateContext<ISearchResultsState>, action: ChangeOffsetLimit) {
+    const state = ctx.getState();
+
+    ctx.patchState({
+      offset: typeof action.payload.offset === 'number' && action.payload.offset >= 0
+        ? action.payload.offset
+        : state.offset,
+      limit: typeof action.payload.limit === 'number' && action.payload.limit > 0
+        ? action.payload.limit
+        : state.limit,
     });
   }
 }

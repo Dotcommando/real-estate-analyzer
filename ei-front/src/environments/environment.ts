@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
   origin: 'http://www.estateindex.io',
-  maxSearchStoryLength: 25,
+  maxPageSize: 25,
+  pageSize: 10,
 };

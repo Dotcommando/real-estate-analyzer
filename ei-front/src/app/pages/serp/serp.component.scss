@@ -1,0 +1,7 @@
+.ei-paginator {
+  z-index: 3;
+}
+
+::ng-deep .ei-paginator.mat-mdc-paginator {
+  background-color: transparent;
+}
