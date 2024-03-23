@@ -1,5 +1,5 @@
 <mat-card class="search-result-card">
-  <mat-card-header>
+  <mat-card-header class="card-header">
     <mat-card-title>{{ orderNumber }}. {{ adData.title }}</mat-card-title>
     <mat-card-subtitle>{{ adData.city }} @if(adData.district) { {{ adData.district }} } &mdash; {{ adData.price }} {{ adData.currency }}</mat-card-subtitle>
   </mat-card-header>
@@ -8,22 +8,45 @@
     <div class="text-content">
       <p>Source: {{ adData.source }}</p>
       <p>{{ adData.description | slice:0:400 }}...</p>
-      <p class="paired-fields property-cost">
+      <div class="primary-info">
+        @if (adData['price']) {
+          <span class="price">
+            <mat-chip>
+              <span class="key">Price:</span>
+              <span class="value">{{ adData['price'] }} {{ adData['currency'] }}</span>
+            </mat-chip>
+          </span>
+        }
         @if (adData['property-area']) {
-          <span class="property-area"><span class="key">Area:</span> <span class="value">{{ adData['property-area'] }} {{ adData['property-area-unit'] }}</span></span>
+          <span class="property-area">
+            <mat-chip>
+              <span class="key">Area:</span>
+              <span class="value">{{ adData['property-area'] }} {{ adData['property-area-unit'] }}</span>
+            </mat-chip>
+          </span>
         }
         @if (adData['price-sqm']) {
-          <span class="price-sqm"><span class="key">Price per m²:</span> <span class="value">{{ adData['price-sqm'] }} {{ adData['currency'] }}</span></span>
+          <span class="price-sqm">
+            <mat-chip>
+              <span class="value">{{ adData['price-sqm'] }} {{ adData['currency'] }}/{{ adData['property-area-unit'] }}</span>
+            </mat-chip>
+          </span>
         }
-      </p>
-      <p class="paired-fields bedrooms-bathrooms">
         @if (adData.bedrooms > -1) {
-          <span class="bedrooms"><span class="key">Bedrooms:</span> <span class="value">{{ adData.bedrooms }}</span></span>
+          <span class="bedrooms">
+            <mat-chip>
+              <span class="key">Bedrooms:</span> <span class="value">{{ adData.bedrooms }}</span>
+            </mat-chip>
+          </span>
         }
         @if (adData.bathrooms > -1) {
-          <span class="bathrooms"><span class="key">Bathrooms:</span> <span class="value">{{ adData.bathrooms }}</span></span>
+          <span class="bathrooms">
+            <mat-chip>
+              <span class="key">Bathrooms:</span> <span class="value">{{ adData.bathrooms }}</span>
+            </mat-chip>
+          </span>
         }
-      </p>
+      </div>
       <div class="additional">
         @if (adData['air-conditioning']) {
           <span class="air-conditioning"><span class="key">Air-conditioning:</span> <span class="value">{{ adData['air-conditioning'] }}</span></span>

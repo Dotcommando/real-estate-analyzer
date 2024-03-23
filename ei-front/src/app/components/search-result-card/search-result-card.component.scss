@@ -1,3 +1,7 @@
+.card-header {
+  padding: 16px 16px 20px 16px;
+}
+
 .card-content {
 }
 
@@ -9,18 +13,23 @@
 }
 
 .text-content {
-  flex: 1 1 0;
+}
+
+.primary-info {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 20px;
 }
 
 .clear {
   clear: both;
 }
 
-.paired-fields {
-  & > span {
-    display: inline-block;
-    margin: 0 12px 0 0;
-  }
+.primary-info {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
 
   .key {
     margin-right: 8px;
