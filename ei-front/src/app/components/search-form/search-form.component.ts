@@ -51,6 +51,7 @@ import { CityDistrictSelectorComponent } from '../city-district-selector/city-di
 import { FieldTopLabelComponent } from '../field-top-label/field-top-label.component';
 import { InputRangeComponent } from '../input-range/input-range.component';
 import { MultiAutocompleteComponent } from '../multi-autocomplete/multi-autocomplete.component';
+import { ChangeOffsetLimit } from '../search-results/search-results.store';
 
 
 enum SearchTypeTab {
@@ -336,6 +337,7 @@ export class SearchFormComponent implements OnInit, AfterViewInit {
       .pipe(
         take(1),
         map(serializeToSearchQuery),
+        tap(() => this.store.dispatch(new ChangeOffsetLimit({ offset: 0 }))),
         tap((queryString: string) => this.router.navigateByUrl(`/search-results${queryString}`)),
         takeUntilDestroyed(this.destroyRef),
       )

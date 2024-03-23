@@ -1,5 +1,7 @@
 <ei-search-form></ei-search-form>
-<ei-search-results></ei-search-results>
+<ei-search-results
+  (dataLoaded)="scrollToResults()"
+></ei-search-results>
 <ei-bottom-control-panel>
   <mat-paginator
     class="ei-paginator"

@@ -1,9 +1,10 @@
 import { AsyncPipe } from '@angular/common';
-import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, EventEmitter, inject, OnInit, Output } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-import { Select, Store } from '@ngxs/store';
+import { Select } from '@ngxs/store';
 
-import { Observable, tap } from 'rxjs';
+import { debounce, interval, Observable, tap } from 'rxjs';
 
 import { SearchResultsState } from './search-results.store';
 
@@ -20,25 +21,25 @@ import { SearchResultCardComponent } from '../search-result-card/search-result-c
   ],
   templateUrl: './search-results.component.html',
   styleUrl: './search-results.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SearchResultsComponent implements OnInit {
+  @Output() dataLoaded = new EventEmitter<void>();
+
   @Select(SearchResultsState.results)
   public ads$!: Observable<IRentResidentialId[] | ISaleResidentialId[] | null>;
 
-  private destroyRef: DestroyRef = inject(DestroyRef);
+  @Select(SearchResultsState.totalResults)
+  public total$!: Observable<number>;
 
-  constructor(
-    private readonly store: Store,
-  ) {
-  }
+  private destroyRef: DestroyRef = inject(DestroyRef);
 
   public ngOnInit(): void {
     this.ads$
       .pipe(
-        tap((data) => {
-          console.log('RESULT');
-          console.log(data);
-        }),
+        debounce(() => interval(50)),
+        tap(() => this.dataLoaded.next()),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
   }

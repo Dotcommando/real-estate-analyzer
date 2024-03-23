@@ -1,4 +1,5 @@
-<div class="search-results">
+<div class="search-results" id="search-results">
+  <h1>{{ (total$ | async) !== 0 ? 'Found results: ' + (total$ | async) : 'No results were found for your request :(' }}</h1>
   @if (ads$ | async) {
     @for (ad of ads$ | async; track ad._id) {
       <app-search-result-card

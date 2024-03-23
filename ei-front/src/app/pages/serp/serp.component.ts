@@ -99,6 +99,9 @@ export class SerpComponent implements OnInit, AfterViewInit {
           this.limit,
         ])
           .pipe(
+            tap(([ offset, limit ]: [ number, number ]) => {
+              this.pageIndex = Math.floor(offset / limit);
+            }),
             map(([ offset, limit ]: [ number, number ]): [ ParamMap, ISearchState, string ] => {
               return [ paramMap, searchState, serializeToSearchQuery(searchState, offset, limit) ];
             }),
@@ -138,6 +141,12 @@ export class SerpComponent implements OnInit, AfterViewInit {
 
   public ngAfterViewInit(): void {
     this.cdr.detectChanges();
+  }
+
+  public scrollToResults(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      document.getElementById('search-results')?.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   public performSearch(queryString: string): Observable<IResponse<{
