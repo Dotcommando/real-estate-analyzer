@@ -1,9 +1,9 @@
 <div class="app-container">
-  <mat-toolbar color="primary">
+  <mat-toolbar color="primary" class="top-toolbar">
     <button mat-icon-button aria-label="Estate Index Menu">
       <mat-icon>menu</mat-icon>
     </button>
-    <span class="site-name">Estate Index</span>
+    <a routerLink="/" class="site-name">Estate Index</a>
     <span class="spacer"></span>
 
     <button mat-icon-button (click)="toggleTheme()" [attr.aria-label]="(currentTheme$ | async) === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'">

@@ -1,4 +1,7 @@
 .serp-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   padding: 0 0 calc(var(--footer-panel-height) + var(--vertical-panel-gap)) 0;
 }
 

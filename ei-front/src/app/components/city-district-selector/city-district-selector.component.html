@@ -1,19 +1,11 @@
-<form [formGroup]="form">
+<form [formGroup]="form" class="city-district-form">
   <div class="city-districts-wrapper">
-    <div class="city-district-label-row">
+    <div class="select-input city-input">
       <ei-field-top-label
         class="city"
         [label]="cityFieldLabel"
         [focused]="cityFocused"
       ></ei-field-top-label>
-
-      <ei-field-top-label
-        class="district"
-        [label]="districtFieldLabel"
-        [focused]="districtFocused"
-      ></ei-field-top-label>
-    </div>
-    <div class="city-district-input-row">
       <mat-form-field appearance="fill" class="city">
         <mat-label>{{ cityFieldLabel }}</mat-label>
         <mat-select formControlName="city" (focus)="onCityFocus()" (blur)="onCityBlur()">
@@ -22,7 +14,14 @@
           }
         </mat-select>
       </mat-form-field>
+    </div>
 
+    <div class="select-input district-input">
+      <ei-field-top-label
+        class="district"
+        [label]="districtFieldLabel"
+        [focused]="districtFocused"
+      ></ei-field-top-label>
       <ei-multi-autocomplete
         class="districts"
         formControlName="districts"

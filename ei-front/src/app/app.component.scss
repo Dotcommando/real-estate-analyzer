@@ -12,3 +12,10 @@
 .spacer {
   flex: 1 1 auto;
 }
+
+.top-toolbar a {
+  &:link { color: #fff; }
+  &:visited { color: #fff; }
+  &:hover { color: #fff; }
+  &:active { color: #fff; }
+}

@@ -1,33 +1,44 @@
-.city-districts-wrapper {
+.city-district-form {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  justify-content: stretch;
 }
 
-.city-district-label-row {
+.city-districts-wrapper {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: stretch;
-  gap: 18px;
   flex: 1 1 0;
 }
 
-.city-district-input-row {
+.select-input {
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: stretch;
-  gap: 18px;
-  flex: 1 1 0;
+  flex-direction: column;
+  flex: 1 0 0;
 
   & > * {
-    flex: 1 1 0;
+    flex: 1 0 0;
   }
 }
 
-@media (min-width: 960px) {
-  .city {
+.city-input {
+  align-self: stretch;
+}
+
+@media (min-width: 568px) {
+  .city-districts-wrapper {
+    flex-direction: row;
+    gap: 20px;
+  }
+
+  .city-input {
+    max-width: 180px;
+    align-self: flex-start;
+  }
+}
+
+@media (min-width: 1024px) {
+  .city-input {
     max-width: 140px;
   }
 }
