@@ -1,4 +1,4 @@
-import { SlicePipe } from '@angular/common';
+import { NgClass, SlicePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { MatAnchor } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -17,6 +17,7 @@ import { IRentResidentialId, ISaleResidentialId } from '../../types';
     MatAnchor,
     SlicePipe,
     MatDivider,
+    NgClass,
   ],
   templateUrl: './search-result-card.component.html',
   styleUrl: './search-result-card.component.scss',

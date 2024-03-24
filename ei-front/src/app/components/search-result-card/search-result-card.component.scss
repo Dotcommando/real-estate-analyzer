@@ -3,13 +3,15 @@
 }
 
 .card-content {
+  display: flex;
+  flex-direction: column;
 }
 
 .card-image {
-  float: left;
-  max-width: 350px;
-  max-height: 200px;
-  margin: 0 20px 12px 0;
+  display: flex;
+  max-width: 280px;
+  max-height: 190px;
+  margin: 0 auto 24px auto;
 }
 
 .text-content {
@@ -18,18 +20,10 @@
 .primary-info {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 20px;
-}
-
-.clear {
-  clear: both;
-}
-
-.primary-info {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
+  align-items: center;
+  margin-bottom: 20px;
 
   .key {
     margin-right: 8px;
@@ -37,14 +31,15 @@
 }
 
 .additional {
-  display: inline-flex;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   justify-content: space-between;
-  width: 100%;
+  gap: 16px;
 
   & > span {
     font-size: 14px;
     line-height: 16px;
-    margin: 0 0 14px 0;
   }
 
   .key {
@@ -53,5 +48,58 @@
 
   .value {
     text-transform: lowercase;
+  }
+
+  &:not(:empty) {
+    margin-bottom: 16px;
+  }
+}
+
+.energy-efficiency .value {
+  text-transform: uppercase;
+}
+
+.option-not-included {
+  display: none;
+}
+
+@media (min-width: 568px) {
+  .card-image {
+    max-width: 150px;
+    max-height: 100px;
+    margin: 0 20px 20px 0;
+    float: left;
+  }
+
+  .card-content {
+    display: block;
+  }
+
+  ::ng-deep .card-content .mat-divider {
+    clear: both;
+  }
+}
+
+@media (min-width: 768px) {
+  .card-image {
+    max-width: 200px;
+    max-height: 140px;
+  }
+}
+
+@media (min-width: 810px) {
+  .option-not-included {
+    display: flex;
+  }
+
+  .card-image {
+    max-width: 300px;
+    max-height: 200px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .additional {
+    justify-content: flex-start;
   }
 }

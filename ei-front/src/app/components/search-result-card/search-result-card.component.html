@@ -8,79 +8,147 @@
     <div class="text-content">
       <p>Source: {{ adData.source }}</p>
       <p>{{ adData.description | slice:0:400 }}...</p>
-      <div class="primary-info">
-        @if (adData['price']) {
-          <span class="price">
-            <mat-chip>
-              <span class="key">Price:</span>
-              <span class="value">{{ adData['price'] }} {{ adData['currency'] }}</span>
-            </mat-chip>
-          </span>
-        }
-        @if (adData['property-area']) {
-          <span class="property-area">
-            <mat-chip>
-              <span class="key">Area:</span>
-              <span class="value">{{ adData['property-area'] }} {{ adData['property-area-unit'] }}</span>
-            </mat-chip>
-          </span>
-        }
-        @if (adData['price-sqm']) {
-          <span class="price-sqm">
-            <mat-chip>
-              <span class="value">{{ adData['price-sqm'] }} {{ adData['currency'] }}/{{ adData['property-area-unit'] }}</span>
-            </mat-chip>
-          </span>
-        }
-        @if (adData.bedrooms > -1) {
-          <span class="bedrooms">
-            <mat-chip>
-              <span class="key">Bedrooms:</span> <span class="value">{{ adData.bedrooms }}</span>
-            </mat-chip>
-          </span>
-        }
-        @if (adData.bathrooms > -1) {
-          <span class="bathrooms">
-            <mat-chip>
-              <span class="key">Bathrooms:</span> <span class="value">{{ adData.bathrooms }}</span>
-            </mat-chip>
-          </span>
-        }
-      </div>
-      <div class="additional">
-        @if (adData['air-conditioning']) {
-          <span class="air-conditioning"><span class="key">Air-conditioning:</span> <span class="value">{{ adData['air-conditioning'] }}</span></span>
-        }
-        @if (adData['alarm']) {
-          <span class="alarm"><span class="key">Alarm:</span> <span class="value">{{ adData['alarm'] }}</span></span>
-        }
-        @if (adData['attic']) {
-          <span class="attic"><span class="key">Attic:</span> <span class="value">{{ adData['attic'] }}</span></span>
-        }
-        @if (adData['balcony']) {
-          <span class="balcony"><span class="key">Balcony:</span> <span class="value">{{ adData['balcony'] }}</span></span>
-        }
-        @if (adData['elevator']) {
-          <span class="elevator"><span class="key">Elevator:</span> <span class="value">{{ adData['elevator'] }}</span></span>
-        }
-        @if (adData['fireplace']) {
-          <span class="fireplace"><span class="key">Fireplace:</span> <span class="value">{{ adData['fireplace'] }}</span></span>
-        }
-        @if (adData['garden']) {
-          <span class="garden"><span class="key">Garden:</span> <span class="value">{{ adData['garden'] }}</span></span>
-        }
-        @if (adData['playroom']) {
-          <span class="playroom"><span class="key">Playroom:</span> <span class="value">{{ adData['playroom'] }}</span></span>
-        }
-        @if (adData['pool']) {
-          <span class="pool"><span class="key">Pool:</span> <span class="value">{{ adData['pool'] }}</span></span>
-        }
-        @if (adData['storage']) {
-          <span class="storage"><span class="key">Storage:</span> <span class="value">{{ adData['storage'] }}</span></span>
-        }
-      </div>
     </div>
-    <div class="clear"></div>
+    <div class="primary-info">
+      @if (adData['price']) {
+        <span class="price">
+          <mat-chip>
+            <span class="key">Price:</span>
+            <span class="value">{{ adData['price'] }} {{ adData['currency'] }}</span>
+          </mat-chip>
+        </span>
+      }
+      @if (adData['property-area']) {
+        <span class="property-area">
+          <mat-chip>
+            <span class="key">Area:</span>
+            <span class="value">{{ adData['property-area'] }} {{ adData['property-area-unit'] }}</span>
+          </mat-chip>
+        </span>
+      }
+      @if (adData['price-sqm']) {
+        <span class="price-sqm">
+          <mat-chip>
+            <span class="value">{{ adData['price-sqm'] }} {{ adData['currency'] }}/{{ adData['property-area-unit'] }}</span>
+          </mat-chip>
+        </span>
+      }
+      @if (adData.bedrooms > -1) {
+        <span class="bedrooms">
+          <mat-chip>
+            <span class="key">Bedrooms:</span> <span class="value">{{ adData.bedrooms }}</span>
+          </mat-chip>
+        </span>
+      }
+      @if (adData.bathrooms > -1) {
+        <span class="bathrooms">
+          <mat-chip>
+            <span class="key">Bathrooms:</span> <span class="value">{{ adData.bathrooms }}</span>
+          </mat-chip>
+        </span>
+      }
+    </div>
+    <div class="additional">
+      @if (adData['air-conditioning']) {
+        <span
+          class="air-conditioning additional-item"
+          [ngClass]="{
+            'option-included': [ 'Full, all rooms', 'Partly' ].includes(adData['air-conditioning']),
+            'option-not-included': adData['air-conditioning'] === 'No'
+          }"
+        ><span class="key">Air-conditioning:</span> <span class="value">{{ adData['air-conditioning'] }}</span></span>
+      }
+      @if (adData['alarm']) {
+        <span
+          class="alarm additional-item"
+          [ngClass]="{
+            'option-included': adData['alarm'] === 'Yes',
+            'option-not-included': adData['alarm'] !== 'Yes'
+          }"
+        ><span class="key">Alarm:</span> <span class="value">{{ adData['alarm'] }}</span></span>
+      }
+      @if (adData['attic']) {
+        <span
+          class="attic additional-item"
+          [ngClass]="{
+            'option-included': adData['attic'] === 'Yes',
+            'option-not-included': adData['attic'] !== 'Yes'
+          }"
+        ><span class="key">Attic:</span> <span class="value">{{ adData['attic'] }}</span></span>
+      }
+      @if (adData['balcony']) {
+        <span
+          class="balcony additional-item"
+          [ngClass]="{
+            'option-included': adData['balcony'] === 'Yes',
+            'option-not-included': adData['balcony'] !== 'Yes'
+          }"
+        ><span class="key">Balcony:</span> <span class="value">{{ adData['balcony'] }}</span></span>
+      }
+      @if (adData['elevator']) {
+        <span
+          class="elevator additional-item"
+          [ngClass]="{
+            'option-included': adData['elevator'] === 'Yes',
+            'option-not-included': adData['elevator'] !== 'Yes'
+          }"
+        ><span class="key">Elevator:</span> <span class="value">{{ adData['elevator'] }}</span></span>
+      }
+      @if (adData['fireplace']) {
+        <span
+          class="fireplace additional-item"
+          [ngClass]="{
+            'option-included': adData['fireplace'] === 'Yes',
+            'option-not-included': adData['fireplace'] !== 'Yes'
+          }"
+        ><span class="key">Fireplace:</span> <span class="value">{{ adData['fireplace'] }}</span></span>
+      }
+      @if (adData['garden']) {
+        <span
+          class="garden additional-item"
+          [ngClass]="{
+            'option-included': adData['garden'] === 'Yes',
+            'option-not-included': adData['garden'] !== 'Yes'
+          }"
+        ><span class="key">Garden:</span> <span class="value">{{ adData['garden'] }}</span></span>
+      }
+      @if (adData['playroom']) {
+        <span
+          class="playroom additional-item"
+          [ngClass]="{
+            'option-included': adData['playroom'] === 'Yes',
+            'option-not-included': adData['playroom'] !== 'Yes'
+          }"
+        ><span class="key">Playroom:</span> <span class="value">{{ adData['playroom'] }}</span></span>
+      }
+      @if (adData['pool']) {
+        <span
+          class="pool additional-item"
+          [ngClass]="{
+            'option-included': [ 'Yes', 'Private', 'Shared' ].includes(adData['pool']),
+            'option-not-included': [ 'N/A', 'No' ].includes(adData['pool'])
+          }"
+        ><span class="key">Pool:</span> <span class="value">{{ adData['pool'] }}</span></span>
+      }
+      @if (adData['storage']) {
+        <span
+          class="storage additional-item"
+          [ngClass]="{
+            'option-included': adData['storage'] === 'Yes',
+            'option-not-included': adData['storage'] !== 'Yes'
+          }"
+        ><span class="key">Storage:</span> <span class="value">{{ adData['storage'] }}</span></span>
+      }
+      @if (adData['energy-efficiency']) {
+        <span
+          class="energy-efficiency additional-item"
+          [ngClass]="{
+            'option-included': adData['energy-efficiency'] !== 'N/A',
+            'option-not-included': adData['energy-efficiency'] === 'N/A'
+          }"
+        ><span class="key">Energy efficiency:</span> <span class="value">{{ adData['energy-efficiency'] }}</span></span>
+      }
+    </div>
     <mat-divider></mat-divider>
   </mat-card-content>
   <mat-card-actions align="end">
