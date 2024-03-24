@@ -73,17 +73,31 @@
     height: var(--footer-panel-height);
   }
 
-  ::ng-deep .mat-mdc-paginator-container .mat-mdc-paginator-range-label {
-    height: auto;
-    display: flex;
-    top: auto;
-    left: auto;
-    position: static;
-    transform: unset;
-    margin: auto;
-    padding: 0;
-    backdrop-filter: unset;
-    -webkit-backdrop-filter: unset;
+  ::ng-deep {
+    .mat-mdc-paginator-container .mat-mdc-paginator-range-label {
+      height: auto;
+      display: flex;
+      top: auto;
+      left: auto;
+      position: static;
+      transform: unset;
+      margin: auto;
+      padding: 0;
+      backdrop-filter: unset;
+      -webkit-backdrop-filter: unset;
+    }
+
+    .dark-theme {
+      .mat-mdc-paginator-range-label {
+        background-color: transparent;
+      }
+    }
+
+    .light-theme {
+      .mat-mdc-paginator-range-label {
+        background-color: transparent;
+      }
+    }
   }
 }
 

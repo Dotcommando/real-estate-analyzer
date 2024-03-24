@@ -128,6 +128,32 @@
   .bathrooms {
     min-width: 166px;
   }
+
+  .filter-set-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+    gap: 18px;
+
+    & > * {
+      flex: 1 1 0;
+    }
+  }
+
+  .median-mean-ranges-accordion {
+    .input-range {
+      max-width: 380px;
+    }
+
+    .mat-expansion-panel-header-description {
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .filter-set-wrapper {
+      justify-content: center;
+    }
+  }
 }
 
 @media (min-width: 1024px) {
@@ -189,39 +215,8 @@
     padding: 0 0 4px 0;
   }
 
-  .filter-set-wrapper {
-    display: flex;
-    flex-direction: row;
-    justify-content: stretch;
-    gap: 18px;
-
-    & > * {
-      flex: 1 1 0;
-    }
-
-    .bedrooms,
-    .bathrooms {
-      flex: 0 0 0;
-    }
-  }
-
   .main-filters .input-range {
     max-width: 380px;
-  }
-
-  .median-mean-ranges-accordion {
-    .input-range {
-      max-width: 380px;
-    }
-
-    .mat-expansion-panel-header-description {
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .filter-set-wrapper {
-      justify-content: center;
-    }
   }
 
   .estate-type {
