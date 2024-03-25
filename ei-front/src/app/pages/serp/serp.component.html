@@ -24,4 +24,15 @@
       Search <mat-icon>search</mat-icon>
     </button>
   </ei-bottom-control-panel>
+
+  @if ((searchStatus | async) === 'PENDING') {
+    <div class="loading">
+      <mat-progress-spinner
+        class="progress-spinner"
+        color="primary"
+        mode="indeterminate"
+      >
+      </mat-progress-spinner>
+    </div>
+  }
 </div>

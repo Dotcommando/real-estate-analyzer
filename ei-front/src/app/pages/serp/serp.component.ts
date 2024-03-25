@@ -15,6 +15,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 
 import { Select, Store } from '@ngxs/store';
@@ -50,6 +51,7 @@ import { IRentResidentialId, IResponse, ISaleResidentialId } from '../../types';
     MatButton,
     MatIcon,
     AsyncPipe,
+    MatProgressSpinner,
   ],
   templateUrl: './serp.component.html',
   styleUrl: './serp.component.scss',
