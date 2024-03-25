@@ -1,0 +1,14 @@
+<div class="error" matSnackBarLabel>
+  @if (data.status) {
+    <h3 class="error-status">Status code: {{ data.status }}</h3>
+  }
+  <span class="error-message">{{ data.message | slice:0:127 }}...</span>
+</div>
+<div class="actions" matSnackBarActions>
+  <button
+    color="warn"
+    mat-raised-button
+    matSnackBarAction
+    (click)="snackBarRef.dismissWithAction()"
+  >Close</button>
+</div>

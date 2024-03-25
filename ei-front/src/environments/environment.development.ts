@@ -3,4 +3,5 @@ export const environment = {
   origin: 'http://localhost:4000',
   maxPageSize: 25,
   pageSize: 10,
+  mainRequestTimeoutMs: 3000,
 };

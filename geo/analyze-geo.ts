@@ -77,7 +77,17 @@ async function analyzeGeoData() {
       .sort((a, b) => b[1] - a[1])
       .reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
 
-    const cityFileName = path.join(__dirname, `${city}.json`);
+    const cityFileName = path.join(__dirname, `${city} - frequency.json`);
+
+    fs.writeFileSync(cityFileName, JSON.stringify(sortedDistricts, null, 2), 'utf8');
+  }
+
+  for (const city in cityData) {
+    const sortedDistricts = Object.keys(cityData[city])
+      .filter((district) => district !== 'undefined')
+      .sort();
+
+    const cityFileName = path.join(__dirname, `${city} - district arrays.json`);
 
     fs.writeFileSync(cityFileName, JSON.stringify(sortedDistricts, null, 2), 'utf8');
   }

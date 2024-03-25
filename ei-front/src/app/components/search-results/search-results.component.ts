@@ -29,6 +29,9 @@ export class SearchResultsComponent implements OnInit {
   @Select(SearchResultsState.results)
   public ads$!: Observable<IRentResidentialId[] | ISaleResidentialId[] | null>;
 
+  @Select(SearchResultsState.searchStatus)
+  public searchStatus$!: Observable<'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED'>;
+
   @Select(SearchResultsState.totalResults)
   public total$!: Observable<number>;
 

@@ -1,4 +1,5 @@
 import { AsyncPipe, isPlatformBrowser } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
@@ -16,14 +17,26 @@ import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 
 import { Select, Store } from '@ngxs/store';
 
-import { catchError, combineLatest, distinctUntilChanged, map, Observable, of, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  Observable,
+  of,
+  switchMap,
+  tap,
+  timeout,
+} from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import { BottomControlPanelComponent } from '../../components/bottom-control-panel/bottom-control-panel.component';
+import { ErrorSnackBarComponent } from '../../components/error-snack-bar/error-snack-bar.component';
 import { ISearchState } from '../../components/search-form/search.model';
 import { UpdateRentSearchState, UpdateSaleSearchState } from '../../components/search-form/search.store';
 import { SearchFormComponent } from '../../components/search-form/search-form.component';
@@ -68,6 +81,7 @@ export class SerpComponent implements OnInit, AfterViewInit {
   public pageSizeOptions = [ 10, 15, 20, 25 ];
   public origin = environment.origin;
 
+  private errorSnackBarDurationInSeconds = 15;
   private router: Router = inject(Router);
   private destroyRef: DestroyRef = inject(DestroyRef);
 
@@ -75,6 +89,7 @@ export class SerpComponent implements OnInit, AfterViewInit {
     private readonly store: Store,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
+    private snackBar: MatSnackBar,
     private readonly searchService: SearchService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {
@@ -84,18 +99,10 @@ export class SerpComponent implements OnInit, AfterViewInit {
     this.route.queryParamMap
       .pipe(
         map((paramMap: ParamMap): [ ParamMap, ISearchState ] => [ paramMap, deserializeToSearchState(paramMap) ]),
-        tap(([ paramMap, searchState ]: [ ParamMap, ISearchState ]) => {
-          if (isPlatformBrowser(this.platformId)) {
-            console.log('');
-            console.log('Deserialized');
-            console.log(searchState);
-          }
-
-          this.store.dispatch(searchState.filters.type === 'rent'
-            ? new UpdateRentSearchState(searchState)
-            : new UpdateSaleSearchState(searchState),
-          );
-        }),
+        tap(([ paramMap, searchState ]: [ ParamMap, ISearchState ]) => this.store.dispatch(searchState.filters.type === 'rent'
+          ? new UpdateRentSearchState(searchState)
+          : new UpdateSaleSearchState(searchState),
+        )),
         switchMap(([ paramMap, searchState ]: [ ParamMap, ISearchState ]): Observable<[ ParamMap, ISearchState, string ]> => combineLatest([
           this.offset,
           this.limit,
@@ -125,17 +132,7 @@ export class SerpComponent implements OnInit, AfterViewInit {
             }
           }
         }),
-        switchMap(([ , , queryString ]: [ ParamMap, ISearchState, string ]) => this.performSearch(queryString)
-          .pipe(
-            tap((response) => {
-              if (isPlatformBrowser(this.platformId)) {
-                console.log('');
-                console.log('Response');
-                console.log(response);
-              }
-            }),
-          ),
-        ),
+        switchMap(([ , , queryString ]: [ ParamMap, ISearchState, string ]) => this.performSearch(queryString)),
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe();
@@ -157,15 +154,24 @@ export class SerpComponent implements OnInit, AfterViewInit {
   }>> {
     return this.store.dispatch(new FetchSearchResults({ query: queryString }))
       .pipe(
-        switchMap(() => this.searchService.search(queryString)),
+        switchMap(() => this.searchService.search(queryString)
+          .pipe(
+            timeout(environment.mainRequestTimeoutMs),
+          ),
+        ),
         tap((response) => {
           this.store.dispatch(new FetchSearchResultsSuccess({
             result: response.data?.result ?? [],
             total: response.data?.total ?? 0,
           }));
         }),
-        catchError(error => {
-          this.store.dispatch(new FetchSearchResultsFail(error));
+        catchError((error) => {
+          if (isPlatformBrowser(this.platformId)) {
+            this.store.dispatch(new FetchSearchResultsFail(error));
+            this.openErrorSnackBar(error);
+            this.searchFormComponent.currentSearchForm.markAsDirty();
+            this.searchFormComponent.currentSearchForm.markAsTouched();
+          }
 
           return of(error);
         }),
@@ -185,5 +191,16 @@ export class SerpComponent implements OnInit, AfterViewInit {
     const limit = e.pageSize;
 
     this.store.dispatch(new ChangeOffsetLimit({ offset, limit }));
+  }
+
+  public openErrorSnackBar(error: HttpErrorResponse): void {
+    this.snackBar
+      .openFromComponent(ErrorSnackBarComponent, {
+        duration: this.errorSnackBarDurationInSeconds * 1000,
+        data: {
+          ...(error.status && { status: error.status }),
+          message: error.message,
+        },
+      });
   }
 }
