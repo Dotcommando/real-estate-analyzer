@@ -51,7 +51,7 @@ import { CityDistrictSelectorComponent } from '../city-district-selector/city-di
 import { FieldTopLabelComponent } from '../field-top-label/field-top-label.component';
 import { InputRangeComponent } from '../input-range/input-range.component';
 import { MultiAutocompleteComponent } from '../multi-autocomplete/multi-autocomplete.component';
-import { ChangeOffsetLimit } from '../search-results/search-results.store';
+import { ChangeOffsetLimit, SearchResultsState } from '../search-results/search-results.store';
 
 
 enum SearchTypeTab {
@@ -88,6 +88,7 @@ export class SearchFormComponent implements OnInit, AfterViewInit {
   @Select(SearchTypeState.searchType) type$!: Observable<'rent' | 'sale'>;
   @Select(SearchRentState) rentState$!: Observable<ISearchState>;
   @Select(SearchSaleState) saleState$!: Observable<ISearchState>;
+  @Select(SearchResultsState.limit) limit$!: Observable<number>;
 
   public availableRange = { min: 0, max: Infinity };
 
@@ -165,6 +166,7 @@ export class SearchFormComponent implements OnInit, AfterViewInit {
 
   protected readonly Infinity = Infinity;
 
+  private limit = 10;
   private currentType: 'rent' | 'sale' = 'rent';
   private router: Router = inject(Router);
   private destroyRef: DestroyRef = inject(DestroyRef);
@@ -196,6 +198,13 @@ export class SearchFormComponent implements OnInit, AfterViewInit {
 
     this.restoreFormState(this.rentState$, this.searchRentForm);
     this.restoreFormState(this.saleState$, this.searchSaleForm);
+
+    this.limit$
+      .pipe(
+        tap((limit: number) => this.limit = limit),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
 
     this.type$
       .pipe(
@@ -336,7 +345,7 @@ export class SearchFormComponent implements OnInit, AfterViewInit {
     this.activeFormState$
       .pipe(
         take(1),
-        map(serializeToSearchQuery),
+        map((data: ISearchState) => serializeToSearchQuery(data, 0, this.limit)),
         tap(() => this.store.dispatch(new ChangeOffsetLimit({ offset: 0 }))),
         tap((queryString: string) => this.router.navigateByUrl(`/search-results${queryString}`)),
         takeUntilDestroyed(this.destroyRef),
