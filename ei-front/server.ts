@@ -54,7 +54,7 @@ export function app(): express.Express {
     maxAge: '1y',
   }));
 
-  server.get([ '/', '/search-results' ], async (req: Req, res: Res, next: Next): Promise<void> => {
+  server.get([ '/', '/search-results', '/cookie-consent' ], async (req: Req, res: Res, next: Next): Promise<void> => {
     const { protocol, originalUrl, baseUrl, headers } = req;
     const themePreferred: 'dark' | 'light' = getTheme(req);
     const [ rentLimits, saleLimits ] = await fetchLimits(rentLimitsUrl, saleLimitsUrl, INTERNAL_REQUEST_TIMEOUT_MS);

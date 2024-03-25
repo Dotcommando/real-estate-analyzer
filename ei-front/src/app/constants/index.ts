@@ -3,6 +3,7 @@ export * from './analysis-period.enum';
 export * from './analysis-type.enum';
 export * from './categories.enum';
 export * from './condition.enum';
+export * from './cookie.enum';
 export * from './energy-efficiency.enum';
 export * from './furnishing.enum';
 export * from './no-statistics-data-reason.enum';
