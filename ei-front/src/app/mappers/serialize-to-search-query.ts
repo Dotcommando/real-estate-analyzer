@@ -4,6 +4,8 @@ import { PAGINATION_MAX_LIMIT } from '../constants';
 
 
 const simpleTypes = [ 'string', 'number', 'boolean' ];
+const $gte = encodeURIComponent('[') + '$gte' + encodeURIComponent(']');
+const $lte = encodeURIComponent('[') + '$lte' + encodeURIComponent(']');
 
 export function serializeToSearchQuery(searchState: ISearchState, offset = 0, limit = environment.pageSize): string {
   const filters: Partial<ISearchFilters> = searchState.filters;
@@ -20,7 +22,7 @@ export function serializeToSearchQuery(searchState: ISearchState, offset = 0, li
 
     const value = filters[key];
     const fieldName = key.startsWith('priceDeviations')
-      ? key.replace(/-/g, '.')
+      ? encodeURIComponent(key.replace(/-/g, '.'))
       : key;
 
     if (Array.isArray(value)) {
@@ -29,11 +31,11 @@ export function serializeToSearchQuery(searchState: ISearchState, offset = 0, li
       }
     } else if (value !== null && typeof value === 'object' && ('min' in value || 'max' in value)) {
       if ('min' in value && value['min'] !== null) {
-        resultQuery += `&${fieldName}[$gte]=${value['min']}`;
+        resultQuery += `&${fieldName}${$gte}=${value['min']}`;
       }
 
       if ('max' in value && value['max'] !== null) {
-        resultQuery += `&${fieldName}[$lte]=${value['max']}`;
+        resultQuery += `&${fieldName}${$lte}=${value['max']}`;
       }
     } else if (simpleTypes.includes(typeof value)) {
       resultQuery += `&${fieldName}=${encodeURIComponent(String(value))}`;
@@ -47,7 +49,7 @@ export function serializeToSearchQuery(searchState: ISearchState, offset = 0, li
       : key;
 
     if (value === 1 || value === -1) {
-      resultQuery += `&s_${fieldName}=${value}`;
+      resultQuery += `&s_${encodeURIComponent(fieldName)}=${value}`;
     }
   }
 
