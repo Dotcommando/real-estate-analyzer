@@ -34,24 +34,25 @@ import { Select, Store } from '@ngxs/store';
 import { debounce, distinctUntilChanged, interval, map, Observable, switchMap, take, tap } from 'rxjs';
 
 import { LimitationsService } from './limitations.service';
-import { ISearchForm, ISearchState } from './search.model';
+
+import { IRentLimits, ISaleLimits } from '../../../../bff/types';
+import { mapSearchFormToState, mapStateToSearchForm, serializeToSearchQuery } from '../../mappers';
 import {
   ChangeType,
+  ISearchForm,
+  ISearchState,
   SearchRentState,
   SearchSaleState,
   SearchTypeState,
   UpdateRentSearchState,
   UpdateSaleSearchState,
-} from './search.store';
-
-import { IRentLimits, ISaleLimits } from '../../../../bff/types';
-import { mapSearchFormToState, mapStateToSearchForm, serializeToSearchQuery } from '../../mappers';
+} from '../../store/search-form';
+import { ChangeOffsetLimit, SearchResultsState } from '../../store/search-results';
 import { Range } from '../../types';
 import { CityDistrictSelectorComponent } from '../city-district-selector/city-district-selector.component';
 import { FieldTopLabelComponent } from '../field-top-label/field-top-label.component';
 import { InputRangeComponent } from '../input-range/input-range.component';
 import { MultiAutocompleteComponent } from '../multi-autocomplete/multi-autocomplete.component';
-import { ChangeOffsetLimit, SearchResultsState } from '../search-results/search-results.store';
 
 
 enum SearchTypeTab {

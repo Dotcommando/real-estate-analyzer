@@ -37,19 +37,18 @@ import {
 import { environment } from '../../../environments/environment';
 import { BottomControlPanelComponent } from '../../components/bottom-control-panel/bottom-control-panel.component';
 import { ErrorSnackBarComponent } from '../../components/error-snack-bar/error-snack-bar.component';
-import { ISearchState } from '../../components/search-form/search.model';
-import { UpdateRentSearchState, UpdateSaleSearchState } from '../../components/search-form/search.store';
 import { SearchFormComponent } from '../../components/search-form/search-form.component';
 import { SearchService } from '../../components/search-results/search.service';
 import { SearchResultsComponent } from '../../components/search-results/search-results.component';
+import { deserializeToSearchState, serializeToSearchQuery } from '../../mappers';
+import { ISearchState, UpdateRentSearchState, UpdateSaleSearchState } from '../../store/search-form';
 import {
   ChangeOffsetLimit,
   FetchSearchResults,
   FetchSearchResultsFail,
   FetchSearchResultsSuccess,
   SearchResultsState,
-} from '../../components/search-results/search-results.store';
-import { deserializeToSearchState, serializeToSearchQuery } from '../../mappers';
+} from '../../store/search-results';
 import { IRentResidentialId, IResponse, ISaleResidentialId } from '../../types';
 
 

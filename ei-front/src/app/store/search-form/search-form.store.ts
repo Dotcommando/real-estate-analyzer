@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 
 import { Action, Selector, State, StateContext } from '@ngxs/store';
 
-import { SEARCH_RENT_STATE_DEFAULT, SEARCH_SALE_STATE_DEFAULT } from './search.defaults';
-import { ISearchState } from './search.model';
+import { SEARCH_RENT_STATE_DEFAULT, SEARCH_SALE_STATE_DEFAULT } from './search-form.defaults';
+import { ISearchState } from './search-form.model';
 
 
 export class ChangeType {

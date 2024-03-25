@@ -1,5 +1,6 @@
 import { ParamMap } from '@angular/router';
 
+import { PAGINATION_MAX_LIMIT } from '../constants';
 import {
   allSortFields,
   arrayFields,
@@ -8,8 +9,7 @@ import {
   ISearchState,
   rangesFields,
   regularFields,
-} from '../components/search-form/search.model';
-import { PAGINATION_MAX_LIMIT } from '../constants';
+} from '../store/search-form';
 import { Range } from '../types';
 
 

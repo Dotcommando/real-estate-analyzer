@@ -1,6 +1,6 @@
 import { environment } from '../../environments/environment';
-import { ISearchFilters, ISearchSorts, ISearchState } from '../components/search-form/search.model';
 import { PAGINATION_MAX_LIMIT } from '../constants';
+import { ISearchFilters, ISearchSorts, ISearchState } from '../store/search-form';
 
 
 const simpleTypes = [ 'string', 'number', 'boolean' ];

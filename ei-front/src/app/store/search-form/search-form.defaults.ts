@@ -1,6 +1,6 @@
 import cloneDeep from 'lodash.clonedeep';
 
-import { ISearchState } from './search.model';
+import { ISearchState } from './search-form.model';
 
 
 export const SEARCH_STATE_DEFAULT: ISearchState = {

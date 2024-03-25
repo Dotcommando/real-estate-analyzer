@@ -1,5 +1,5 @@
 import { IRentResidentialId, ISaleResidentialId } from '../../types';
-import { ISearchState } from '../search-form/search.model';
+import { ISearchState } from '../search-form/search-form.model';
 
 
 export interface ISearchResultsStoryNote {

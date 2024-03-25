@@ -7,7 +7,7 @@
     <img class="card-image" mat-card-image src="/assets/300x200.svg" alt="Property">
     <div class="text-content">
       <p>Source: {{ adData.source }}</p>
-      <p>{{ adData.description | slice:0:400 }}...</p>
+      <p>{{ adData.description | slice:0:400 }} @if (adData.description.length > 400) { ... }</p>
     </div>
     <div class="primary-info">
       @if (adData['price']) {

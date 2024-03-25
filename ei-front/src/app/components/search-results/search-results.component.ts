@@ -6,8 +6,7 @@ import { Select } from '@ngxs/store';
 
 import { debounce, interval, Observable, tap } from 'rxjs';
 
-import { SearchResultsState } from './search-results.store';
-
+import { SearchResultsState } from '../../store/search-results';
 import { IRentResidentialId, ISaleResidentialId } from '../../types';
 import { SearchResultCardComponent } from '../search-result-card/search-result-card.component';
 
