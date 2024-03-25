@@ -9,7 +9,7 @@ import { CookieConsentService } from '../../services';
 
 
 @Component({
-  selector: 'app-cookie-consent',
+  selector: 'ei-cookie-consent',
   standalone: true,
   imports: [
     MatCard,

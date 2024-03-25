@@ -3,6 +3,7 @@ import { MatButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 
 import { BottomControlPanelComponent } from '../../components/bottom-control-panel/bottom-control-panel.component';
+import { CookieConsentDialogComponent } from '../../components/cookie-consent-dialog/cookie-consent-dialog.component';
 import { SearchFormComponent } from '../../components/search-form/search-form.component';
 
 
@@ -10,6 +11,7 @@ import { SearchFormComponent } from '../../components/search-form/search-form.co
   selector: 'ei-search',
   standalone: true,
   imports: [
+    CookieConsentDialogComponent,
     SearchFormComponent,
     MatButton,
     MatIcon,

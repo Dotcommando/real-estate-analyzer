@@ -36,6 +36,7 @@ import {
 
 import { environment } from '../../../environments/environment';
 import { BottomControlPanelComponent } from '../../components/bottom-control-panel/bottom-control-panel.component';
+import { CookieConsentDialogComponent } from '../../components/cookie-consent-dialog/cookie-consent-dialog.component';
 import { ErrorSnackBarComponent } from '../../components/error-snack-bar/error-snack-bar.component';
 import { SearchFormComponent } from '../../components/search-form/search-form.component';
 import { SearchService } from '../../components/search-results/search.service';
@@ -56,6 +57,7 @@ import { IRentResidentialId, IResponse, ISaleResidentialId } from '../../types';
   selector: 'ei-serp',
   standalone: true,
   imports: [
+    CookieConsentDialogComponent,
     MatPaginatorModule,
     SearchFormComponent,
     SearchResultsComponent,
