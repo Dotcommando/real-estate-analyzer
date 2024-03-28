@@ -1,6 +1,9 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query, UseGuards } from '@nestjs/common';
 
-import { AdsDto, DistrictsDto, SearchQueryDto, StatsDto } from './dto';
+import { configDotenv } from 'dotenv';
+
+import { AdsDto, CreateInvitationDto, DeleteInvitationDto, DistrictsDto, SearchQueryDto, StatsDto } from './dto';
+import { EnvironmentGuard, InvitationGuard } from './guards';
 import { queryAdsToAds, queryGetDistricts, queryStatsToStats } from './mappers';
 import { AppService } from './services';
 import {
@@ -16,6 +19,8 @@ import {
 } from './types';
 import { IAdsResult } from './types';
 
+
+configDotenv();
 
 @Controller()
 export class AppController {
@@ -60,6 +65,7 @@ export class AppController {
     return this.appService.getSaleLimits();
   }
 
+  @UseGuards(InvitationGuard)
   @Get('/search')
   public async getSearchResults(
     @Query() query: SearchQueryDto,
@@ -68,5 +74,21 @@ export class AppController {
     total: number;
   }>> {
     return this.appService.getSearchResults(query);
+  }
+
+  @UseGuards(new EnvironmentGuard(process.env.MODE as 'dev' | 'prod', 'dev'))
+  @Post('/invitation')
+  async createInvitation(
+    @Body() createInvitationDto: CreateInvitationDto,
+  ): Promise<IResponse<{ created: boolean; token: string }>> {
+    return this.appService.createInvitation(createInvitationDto.rawToken, createInvitationDto.description);
+  }
+
+  @UseGuards(new EnvironmentGuard(process.env.MODE as 'dev' | 'prod', 'dev'))
+  @Delete('/invitation')
+  async deleteInvitation(
+    @Body() deleteInvitationDto: DeleteInvitationDto,
+  ): Promise<IResponse<{ deleted: boolean; token: string }>> {
+    return this.appService.deleteInvitation(deleteInvitationDto.rawToken);
   }
 }

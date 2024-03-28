@@ -1,8 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
+import { createHash } from 'crypto';
 import { Model, PipelineStage } from 'mongoose';
-import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc, ISaleHousesDoc } from 'src/schemas';
+import {
+  IInvitationModel,
+  IRentApartmentsFlatsDoc,
+  IRentHousesDoc,
+  ISaleApartmentsFlatsDoc,
+  ISaleHousesDoc,
+} from 'src/schemas';
 import { IGetDistrictsResult } from 'src/types/get-districts.interface';
 import { getLastDate, persistPipeline } from 'src/utils';
 
@@ -42,6 +49,7 @@ import {
   IGetRentResidentialSort,
   IGetSaleResidentialQuery,
   IGetSaleResidentialSort,
+  IInvitationDoc,
   IRentLimits,
   IRentResidential,
   IRentResidentialId,
@@ -72,6 +80,7 @@ export class DbAccessService {
     @InjectModel('RentHouses') private readonly rentHousesModel: Model<IRentHousesDoc>,
     @InjectModel('RentResidentials') private readonly rentResidentialsModel: Model<IRentResidential>,
     @InjectModel('SaleResidentials') private readonly saleResidentialsModel: Model<ISaleResidential>,
+    @InjectModel('Invitations') private readonly invitationsModel: IInvitationModel,
   ) {
   }
 
@@ -521,5 +530,40 @@ export class DbAccessService {
     }
 
     return data;
+  }
+
+  private generateToken(data: string): string {
+    return createHash('sha256').update(data).digest('hex');
+  }
+
+  async createInvitation(rawToken: string, description: string): Promise<{ created: boolean; token: string; error?: Error }> {
+    const token = this.generateToken(rawToken);
+    const invitation = new this.invitationsModel({
+      token,
+      description,
+    });
+
+    await invitation.save();
+
+    return {
+      created: true,
+      token: rawToken,
+    };
+  }
+
+  async validateInvitation(rawToken: string): Promise<boolean> {
+    const invitation: IInvitationDoc | null = await this.invitationsModel.findByValidToken(rawToken);
+
+    return Boolean(invitation);
+  }
+
+  async deleteInvitation(rawToken: string): Promise<{ deleted: boolean; token: string }> {
+    const token = this.generateToken(rawToken);
+    const deletionResult = await this.invitationsModel.deleteOne({ token });
+
+    return {
+      deleted: deletionResult.deletedCount === 1,
+      token: rawToken,
+    };
   }
 }

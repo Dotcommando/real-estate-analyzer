@@ -14,6 +14,7 @@ export * from './get-districts.interface';
 export * from './get-districts-params.interface';
 export * from './get-residential-query.interface';
 export * from './get-residential-sort.interface';
+export * from './invitation.interface';
 export * from './price-deviation.interface';
 export * from './price-deviations.interface';
 export * from './real-estate.interface';

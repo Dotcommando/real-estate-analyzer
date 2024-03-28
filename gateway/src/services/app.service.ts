@@ -224,4 +224,60 @@ export class AppService {
       },
     };
   }
+
+  public async createInvitation(rawToken: string, description: string): Promise<IResponse<{ created: boolean; token: string }>> {
+    try {
+      const alreadyExist: boolean = await this.dbAccessService.validateInvitation(rawToken);
+
+      if (alreadyExist) {
+        return {
+          status: HttpStatus.CONFLICT,
+          data: {
+            created: false,
+            token: rawToken,
+          },
+          errors: [ `Token '${rawToken}' already exists` ],
+        };
+      }
+
+      const tokenCreationResponse: { created: boolean; token: string } = await this.dbAccessService.createInvitation(rawToken, description);
+
+      return {
+        status: HttpStatus.CREATED,
+        data: {
+          created: tokenCreationResponse.created,
+          token: tokenCreationResponse.token,
+        },
+      };
+    } catch (e) {
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        data: {
+          created: false,
+          token: rawToken,
+        },
+        errors: [ e.message ],
+      };
+    }
+  }
+
+  public async deleteInvitation(rawToken: string): Promise<IResponse<{ deleted: boolean; token: string }>> {
+    try {
+      const removalResponse = await this.dbAccessService.deleteInvitation(rawToken);
+
+      return {
+        status: HttpStatus.ACCEPTED,
+        data: removalResponse,
+      };
+    } catch (e) {
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        data: {
+          deleted: false,
+          token: rawToken,
+        },
+        errors: [ e.message ],
+      };
+    }
+  }
 }

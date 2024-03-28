@@ -7,6 +7,7 @@ import { LOGGER } from './constants';
 import {
   AnalysisCityStatsSchema,
   AnalysisDistrictStatsSchema,
+  InvitationsSchema,
   RentApartmentsFlatsSchema,
   RentHousesSchema,
   RentResidentialSchema,
@@ -101,6 +102,11 @@ import {
         name: 'SaleResidentials',
         useFactory: () => SaleResidentialSchema,
         collection: 'sr_saleresidentials',
+      },
+      {
+        name: 'Invitations',
+        useFactory: () => InvitationsSchema,
+        collection: 'invitations',
       },
     ]),
   ],
