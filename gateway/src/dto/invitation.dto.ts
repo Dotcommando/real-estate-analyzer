@@ -15,3 +15,9 @@ export class DeleteInvitationDto {
   @Length(1, 128)
   rawToken: string;
 }
+
+export class ValidateInvitationDto {
+  @IsString()
+  @Length(1, 128)
+  rawToken: string;
+}

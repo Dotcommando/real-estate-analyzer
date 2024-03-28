@@ -32,6 +32,7 @@ import {
   switchMap,
   tap,
   timeout,
+  withLatestFrom,
 } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -42,6 +43,7 @@ import { SearchFormComponent } from '../../components/search-form/search-form.co
 import { SearchService } from '../../components/search-results/search.service';
 import { SearchResultsComponent } from '../../components/search-results/search-results.component';
 import { deserializeToSearchState, serializeToSearchQuery } from '../../mappers';
+import { InvitationState } from '../../store/invitation';
 import { ISearchState, UpdateRentSearchState, UpdateSaleSearchState } from '../../store/search-form';
 import {
   ChangeOffsetLimit,
@@ -73,10 +75,11 @@ import { IRentResidentialId, IResponse, ISaleResidentialId } from '../../types';
 })
 export class SerpComponent implements OnInit, AfterViewInit {
   @ViewChild(SearchFormComponent) searchFormComponent!: SearchFormComponent;
-  @Select(SearchResultsState.searchStatus) searchStatus!: Observable<'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED'>;
-  @Select(SearchResultsState.totalResults) totalResults!: Observable<number>;
-  @Select(SearchResultsState.offset) offset!: Observable<number>;
-  @Select(SearchResultsState.limit) limit!: Observable<number>;
+  @Select(SearchResultsState.searchStatus) searchStatus$!: Observable<'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED'>;
+  @Select(SearchResultsState.totalResults) totalResults$!: Observable<number>;
+  @Select(SearchResultsState.offset) offset$!: Observable<number>;
+  @Select(SearchResultsState.limit) limit$!: Observable<number>;
+  @Select(InvitationState.invitationToken) invitationToken$!: Observable<string | null>;
 
   public pageIndex = 0;
   public pageSizeOptions = [ 10, 15, 20, 25 ];
@@ -105,8 +108,8 @@ export class SerpComponent implements OnInit, AfterViewInit {
           : new UpdateSaleSearchState(searchState),
         )),
         switchMap(([ paramMap, searchState ]: [ ParamMap, ISearchState ]): Observable<[ ParamMap, ISearchState, string ]> => combineLatest([
-          this.offset,
-          this.limit,
+          this.offset$,
+          this.limit$,
         ])
           .pipe(
             tap(([ offset, limit ]: [ number, number ]) => {
@@ -155,7 +158,11 @@ export class SerpComponent implements OnInit, AfterViewInit {
   }>> {
     return this.store.dispatch(new FetchSearchResults({ query: queryString }))
       .pipe(
-        switchMap(() => this.searchService.search(queryString)
+        withLatestFrom(this.invitationToken$),
+        map((fromState: [ any, string | null ]): { [header: string]: string | string[] } => ({
+          'Invitation-Token': fromState?.[1] ?? '',
+        })),
+        switchMap((headers: { [header: string]: string | string[] }) => this.searchService.search(queryString, headers)
           .pipe(
             timeout(environment.mainRequestTimeoutMs),
           ),

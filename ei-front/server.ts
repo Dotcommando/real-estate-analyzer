@@ -54,7 +54,7 @@ export function app(): express.Express {
     maxAge: '1y',
   }));
 
-  server.get([ '/', '/search-results', '/cookie-consent' ], async (req: Req, res: Res, next: Next): Promise<void> => {
+  server.get('*', async (req: Req, res: Res, next: Next): Promise<void> => {
     const { protocol, originalUrl, baseUrl, headers } = req;
     const themePreferred: 'dark' | 'light' = getTheme(req);
     const [ rentLimits, saleLimits ] = await fetchLimits(rentLimitsUrl, saleLimitsUrl, INTERNAL_REQUEST_TIMEOUT_MS);
@@ -82,31 +82,6 @@ export function app(): express.Express {
         modifiedHtml = injectScript(modifiedHtml, 'saleLimits', saleLimits);
         res.send(modifiedHtml);
       })
-      .catch((err) => next(err));
-  });
-
-  server.get('*', async (req: Req, res: Res, next: Next): Promise<void> => {
-    const { protocol, originalUrl, baseUrl, headers } = req;
-    const themePreferred: 'dark' | 'light' = getTheme(req);
-
-    commonEngine
-      .render({
-        bootstrap,
-        documentFilePath: indexHtml,
-        url: `${protocol}://${headers.host}${originalUrl}`,
-        publicPath: browserDistFolder,
-        providers: [
-          {
-            provide: APP_BASE_HREF,
-            useValue: baseUrl,
-          },
-          {
-            provide: APP_THEME,
-            useValue: themePreferred,
-          },
-        ],
-      })
-      .then((html) => res.send(html))
       .catch((err) => next(err));
   });
 

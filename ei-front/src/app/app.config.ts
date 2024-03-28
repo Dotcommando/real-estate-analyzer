@@ -10,6 +10,7 @@ import { StorageOption } from '@ngxs/storage-plugin/src/symbols';
 import { NgxsModule } from '@ngxs/store';
 
 import { routes } from './app.routes';
+import { InvitationState } from './store/invitation';
 import { SearchRentState, SearchSaleState, SearchTypeState } from './store/search-form';
 import { SearchResultsState } from './store/search-results';
 
@@ -24,7 +25,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     importProvidersFrom(
       NgxsModule.forRoot(
-        [ SearchTypeState, SearchRentState, SearchSaleState, SearchResultsState ],
+        [ SearchTypeState, SearchRentState, SearchSaleState, SearchResultsState, InvitationState ],
         {
           developmentMode: !environment.production,
           selectorOptions: {
@@ -34,7 +35,7 @@ export const appConfig: ApplicationConfig = {
         },
       ),
       NgxsStoragePluginModule.forRoot({
-        key: [ 'searchType', 'searchRent', 'searchSale', 'searchResults' ],
+        key: [ 'searchType', 'searchRent', 'searchSale', 'searchResults', 'invitation' ],
         storage: StorageOption.LocalStorage,
       }),
       NgxsReduxDevtoolsPluginModule.forRoot(),

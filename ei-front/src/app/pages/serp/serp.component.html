@@ -8,10 +8,10 @@
       class="ei-paginator"
       showFirstLastButtons="true"
       (page)="handlePageEvent($event)"
-      [length]="totalResults | async"
-      [pageSize]="limit | async"
+      [length]="totalResults$ | async"
+      [pageSize]="limit$ | async"
       [pageSizeOptions]="pageSizeOptions"
-      [disabled]="(searchStatus | async) === 'PENDING'"
+      [disabled]="(searchStatus$ | async) === 'PENDING'"
       [pageIndex]="pageIndex"
       aria-label="Select page"
     ></mat-paginator>
@@ -25,7 +25,7 @@
     </button>
   </ei-bottom-control-panel>
 
-  @if ((searchStatus | async) === 'PENDING') {
+  @if ((searchStatus$ | async) === 'PENDING') {
     <div class="loading">
       <mat-progress-spinner
         class="progress-spinner"

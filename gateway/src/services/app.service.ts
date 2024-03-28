@@ -32,10 +32,16 @@ import {
 
 @Injectable()
 export class AppService {
+  private cacheStore = new Map<string, { data: any; timeout: NodeJS.Timeout }>();
+
   constructor(
     @Inject(LOGGER) private readonly logger: LoggerService,
     private readonly dbAccessService: DbAccessService,
   ) {
+  }
+
+  private getInvitationCacheKey(rawToken: string): string {
+    return `invitation:${rawToken}`;
   }
 
   public checkHealth(): IResponse<{ alive: boolean }> {
@@ -275,6 +281,43 @@ export class AppService {
         data: {
           deleted: false,
           token: rawToken,
+        },
+        errors: [ e.message ],
+      };
+    }
+  }
+
+  public async validateInvitation(rawToken: string): Promise<IResponse<{ valid: boolean }>> {
+    try {
+      const cacheKey = this.getInvitationCacheKey(rawToken);
+      const cached = this.cacheStore.get(cacheKey);
+
+      if (cached) {
+        return cached.data;
+      }
+
+      const valid = await this.dbAccessService.validateInvitation(rawToken);
+      const response = {
+        status: HttpStatus.OK,
+        data: {
+          valid,
+        },
+      };
+
+      if (valid) {
+        const timeout = setTimeout(() => {
+          this.cacheStore.delete(cacheKey);
+        }, 24 * 60 * 60 * 1000);
+
+        this.cacheStore.set(cacheKey, { data: response, timeout });
+      }
+
+      return response;
+    } catch (e) {
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        data: {
+          valid: false,
         },
         errors: [ e.message ],
       };

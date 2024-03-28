@@ -16,12 +16,13 @@ export class SearchService {
   ) {
   }
 
-  public search(queryString: string): Observable<IResponse<{
+  public search(queryString: string, headers?: { [header: string]: string | string[] }): Observable<IResponse<{
     result: IRentResidentialId[] | ISaleResidentialId[];
     total: number;
   }>> {
     return this.http.get<IResponse<{result: IRentResidentialId[] | ISaleResidentialId[]; total: number}>>(
       `${environment.origin}/api/v1/search${queryString}`,
+      { headers: headers ?? {}},
     );
   }
 }

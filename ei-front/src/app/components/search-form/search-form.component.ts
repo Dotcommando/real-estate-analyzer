@@ -292,7 +292,6 @@ export class SearchFormComponent implements OnInit, AfterViewInit {
     return formSource$
       .pipe(
         debounce(() => interval(400)),
-        tap((data) => console.log(data)),
         takeUntilDestroyed(this.destroyRef),
       );
   }

@@ -5,8 +5,10 @@
 }
 
 .content-container {
+  display: flex;
   flex: 1;
   overflow: auto;
+  margin: 0 auto;
 }
 
 .spacer {

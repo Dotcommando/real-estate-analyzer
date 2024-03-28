@@ -92,3 +92,12 @@ p {
   padding: 20px;
   margin: 0 auto;
 }
+
+.small-centered-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 600px;
+  padding: 20px;
+  margin: auto;
+}

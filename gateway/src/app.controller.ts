@@ -2,7 +2,15 @@ import { Body, Controller, Delete, Get, Post, Query, UseGuards } from '@nestjs/c
 
 import { configDotenv } from 'dotenv';
 
-import { AdsDto, CreateInvitationDto, DeleteInvitationDto, DistrictsDto, SearchQueryDto, StatsDto } from './dto';
+import {
+  AdsDto,
+  CreateInvitationDto,
+  DeleteInvitationDto,
+  DistrictsDto,
+  SearchQueryDto,
+  StatsDto,
+  ValidateInvitationDto,
+} from './dto';
 import { EnvironmentGuard, InvitationGuard } from './guards';
 import { queryAdsToAds, queryGetDistricts, queryStatsToStats } from './mappers';
 import { AppService } from './services';
@@ -90,5 +98,12 @@ export class AppController {
     @Body() deleteInvitationDto: DeleteInvitationDto,
   ): Promise<IResponse<{ deleted: boolean; token: string }>> {
     return this.appService.deleteInvitation(deleteInvitationDto.rawToken);
+  }
+
+  @Post('/validate-invitation')
+  async validateInvitation(
+    @Body() validateInvitationDto: ValidateInvitationDto,
+  ): Promise<IResponse<{ valid: boolean }>> {
+    return this.appService.validateInvitation(validateInvitationDto.rawToken);
   }
 }

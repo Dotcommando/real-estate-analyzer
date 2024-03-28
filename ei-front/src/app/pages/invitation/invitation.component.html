@@ -1,0 +1,18 @@
+<div class="small-centered-form">
+  <mat-form-field>
+    <mat-label>Invitation code</mat-label>
+    <input
+      matInput
+      type="text"
+      [formControl]="invitationField"
+    >
+  </mat-form-field>
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="addInvitation()"
+    [disabled]="isAddInvitationDisabled | async"
+  >
+    Get Access <mat-icon>add</mat-icon>
+  </button>
+</div>
