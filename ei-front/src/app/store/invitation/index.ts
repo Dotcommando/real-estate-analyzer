@@ -30,6 +30,10 @@ export class ValidateInvitationFail {
   static readonly type = '[Invitation] Validate Invitation Failed';
 }
 
+export class ResetInvitation {
+  static readonly type = '[Invitation] Reset Invitation';
+}
+
 @State<IInvitationState>({
   name: 'invitation',
   defaults: initialState,
@@ -64,6 +68,11 @@ export class InvitationState {
   @Action(ValidateInvitationFail)
   public validateInvitationFail(ctx: StateContext<IInvitationState>): void {
     ctx.patchState({ status: 'FAILED' });
+  }
+
+  @Action(ResetInvitation)
+  public resetInvitation(ctx: StateContext<IInvitationState>): void {
+    ctx.patchState({ status: 'IDLE' });
   }
 }
 

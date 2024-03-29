@@ -11,12 +11,24 @@ import { Router } from '@angular/router';
 
 import { Select, Store } from '@ngxs/store';
 
-import { catchError, debounce, distinctUntilChanged, filter, interval, map, NEVER, Observable, skip, tap } from 'rxjs';
+import {
+  catchError,
+  debounce,
+  distinctUntilChanged,
+  filter,
+  interval,
+  map,
+  NEVER,
+  Observable,
+  skip,
+  tap,
+} from 'rxjs';
 
 import { InvitationService } from '../../services';
 import {
   AddInvitationToken,
   InvitationState,
+  ResetInvitation,
   ValidateInvitation,
   ValidateInvitationFail,
   ValidateInvitationSuccess,
@@ -25,6 +37,7 @@ import { IResponse } from '../../types';
 
 
 const snackBarDurationMs = 3000;
+const snackBarDurationSuccessMs = 2200;
 
 @Component({
   selector: 'ei-invitation',
@@ -47,10 +60,15 @@ export class InvitationComponent implements OnInit {
   @Select(InvitationState.invitationToken) invitationToken!: Observable<string | null>;
   @Select(InvitationState.invitationRequestStatus) requestStatus!: Observable<'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED'>;
   public invitationField = new FormControl();
-  public isAddInvitationDisabled = this.requestStatus
+  public isAddInvitationDisabled$ = this.requestStatus
     .pipe(
       distinctUntilChanged(),
       map((value: 'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED') => value === 'PENDING' || value === 'SUCCESS'),
+    );
+  public removalButtonIsVisible$ = this.requestStatus
+    .pipe(
+      distinctUntilChanged(),
+      map((value: 'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED') => value === 'SUCCESS'),
     );
   private router: Router = inject(Router);
   private destroyRef: DestroyRef = inject(DestroyRef);
@@ -67,16 +85,18 @@ export class InvitationComponent implements OnInit {
     this.requestStatus
       .pipe(
         skip(1),
+        debounce(() => interval(40)),
+        distinctUntilChanged(),
         tap((value: 'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED') => {
           this.snackBar.open(value === 'SUCCESS'
             ? 'Invitation code accepted. Welcome!'
             : 'Invalid invitation code. Please try again.',
           'Close',
-          { duration: snackBarDurationMs },
+          { duration: value === 'SUCCESS' ? snackBarDurationSuccessMs : snackBarDurationMs },
           );
         }),
         filter((value: 'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED') => value === 'SUCCESS'),
-        debounce(() => interval(snackBarDurationMs)),
+        debounce(() => interval(snackBarDurationSuccessMs)),
         tap(() => this.router.navigateByUrl('/search')),
         takeUntilDestroyed(this.destroyRef),
       )
@@ -112,5 +132,10 @@ export class InvitationComponent implements OnInit {
         }),
       )
       .subscribe();
+  }
+
+  public removeInvitation(): void {
+    this.store.dispatch(new AddInvitationToken(null));
+    this.store.dispatch(new ResetInvitation());
   }
 }
