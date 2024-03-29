@@ -13,6 +13,8 @@ services:
       - "${FRONTEND_BFF_PORT}:${FRONTEND_BFF_PORT}"
     env_file:
       - .env
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=4096
     container_name: ei-front
     networks:
       - common-net
