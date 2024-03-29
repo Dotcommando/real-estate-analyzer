@@ -21,3 +21,37 @@
   &:hover { color: #fff; }
   &:active { color: #fff; }
 }
+
+.sidenav-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 0;
+  margin: 0 auto auto auto;
+  padding: 12px 20px;
+}
+
+.sidenav h3 {
+  margin: 4px 0 12px 0;
+}
+
+.sidenav-close-button {
+  position: absolute;
+  right: 0;
+  top: 8px;
+}
+
+::ng-deep {
+  .light-theme .sidenav a {
+    &:link { color: var(--mdc-filled-text-field-caret-color); }
+    &:visited { color: var(--mdc-filled-text-field-caret-color); }
+    &:hover { color: var(--mdc-filled-text-field-caret-color); }
+    &:active { color: var(--mdc-filled-text-field-caret-color); }
+  }
+
+  .dark-theme .sidenav a {
+    &:link { color: #fff; }
+    &:visited { color: #fff; }
+    &:hover { color: #fff; }
+    &:active { color: #fff; }
+  }
+}
