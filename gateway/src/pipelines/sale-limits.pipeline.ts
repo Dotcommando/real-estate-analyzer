@@ -111,6 +111,8 @@ export const saleLimitsPipeline: PipelineStage[] = [
             _id: null,
             minPrice: { $min: '$price' },
             maxPrice: { $max: '$price' },
+            minPriceSqm: { $min: '$price-sqm' },
+            maxPriceSqm: { $max: '$price-sqm' },
             minPropertyArea: { $min: '$property-area' },
             maxPropertyArea: { $max: '$property-area' },
           },
@@ -119,6 +121,7 @@ export const saleLimitsPipeline: PipelineStage[] = [
           $project: {
             _id: 0,
             priceRange: { min: '$minPrice', max: '$maxPrice' },
+            priceSqmRange: { min: '$minPriceSqm', max: '$maxPriceSqm' },
             propertyAreaRange: { min: '$minPropertyArea', max: '$maxPropertyArea' },
           },
         },

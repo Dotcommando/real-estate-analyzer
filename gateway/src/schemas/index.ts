@@ -4,6 +4,7 @@ export * from './analysis-type-deviations.schema';
 export * from './city-stats.schema';
 export * from './coords.schema';
 export * from './district-stats.schema';
+export * from './invitations.schema';
 export * from './price-deviation.schema';
 export * from './rent-apartments-flats.schema';
 export * from './rent-commercials.schema';

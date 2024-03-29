@@ -1,0 +1,15 @@
+<div class="search-page">
+  <ei-search-form>
+  </ei-search-form>
+  <ei-bottom-control-panel>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="onSearchButtonClick()"
+      [disabled]="isSearchDisabled"
+    >
+      Search <mat-icon>search</mat-icon>
+    </button>
+  </ei-bottom-control-panel>
+</div>
+<ei-cookie-consent-dialog></ei-cookie-consent-dialog>

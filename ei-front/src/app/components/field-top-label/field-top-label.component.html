@@ -1,0 +1,11 @@
+<div class="field-top-label-wrapper" [ngClass]="{ 'field-top-label-focused': focused }">
+  <span class="left-top-corner"></span>
+  @if (!label) {
+    <span class="top-border"></span>
+  } @else {
+    <span class="top-border"></span>
+    <span class="field-top-label-text">{{ label }}</span>
+    <span class="top-border"></span>
+  }
+  <span class="right-top-corner"></span>
+</div>

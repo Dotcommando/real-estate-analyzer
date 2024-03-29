@@ -4,7 +4,7 @@ import { cache, CacheType } from 'cache-decorator';
 
 import { DbAccessService } from './db-access.service';
 
-import { LOGGER } from '../constants';
+import { LOGGER, PAGINATION_MAX_LIMIT } from '../constants';
 import { SearchQueryDto } from '../dto';
 import {
   mapToGetRentResidentialQueryMapper,
@@ -32,10 +32,16 @@ import {
 
 @Injectable()
 export class AppService {
+  private cacheStore = new Map<string, { data: any; timeout: NodeJS.Timeout }>();
+
   constructor(
     @Inject(LOGGER) private readonly logger: LoggerService,
     private readonly dbAccessService: DbAccessService,
   ) {
+  }
+
+  private getInvitationCacheKey(rawToken: string): string {
+    return `invitation:${rawToken}`;
   }
 
   public checkHealth(): IResponse<{ alive: boolean }> {
@@ -210,9 +216,11 @@ export class AppService {
   }>> {
     const mappedQuery: IGetRentResidentialQuery = mapToGetRentResidentialQueryMapper(query);
     const mapperSort: IGetRentResidentialSort = mapToGetRentResidentialSortMapper(query, { price: 1 });
+    const offset = Math.max(query.offset, 0);
+    const limit = Math.min(query.limit, PAGINATION_MAX_LIMIT);
     const result = query.type === 'rent'
-      ? await this.dbAccessService.getRentResidential(mappedQuery, mapperSort)
-      : await this.dbAccessService.getSaleResidential(mappedQuery, mapperSort);
+      ? await this.dbAccessService.getRentResidential(mappedQuery, mapperSort, offset, limit)
+      : await this.dbAccessService.getSaleResidential(mappedQuery, mapperSort, offset, limit);
 
     return {
       status: HttpStatus.OK,
@@ -221,5 +229,98 @@ export class AppService {
         total: result.total ?? 0,
       },
     };
+  }
+
+  public async createInvitation(rawToken: string, description: string): Promise<IResponse<{ created: boolean; token: string }>> {
+    try {
+      const alreadyExist: boolean = await this.dbAccessService.validateInvitation(rawToken);
+
+      if (alreadyExist) {
+        return {
+          status: HttpStatus.CONFLICT,
+          data: {
+            created: false,
+            token: rawToken,
+          },
+          errors: [ `Token '${rawToken}' already exists` ],
+        };
+      }
+
+      const tokenCreationResponse: { created: boolean; token: string } = await this.dbAccessService.createInvitation(rawToken, description);
+
+      return {
+        status: HttpStatus.CREATED,
+        data: {
+          created: tokenCreationResponse.created,
+          token: tokenCreationResponse.token,
+        },
+      };
+    } catch (e) {
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        data: {
+          created: false,
+          token: rawToken,
+        },
+        errors: [ e.message ],
+      };
+    }
+  }
+
+  public async deleteInvitation(rawToken: string): Promise<IResponse<{ deleted: boolean; token: string }>> {
+    try {
+      const removalResponse = await this.dbAccessService.deleteInvitation(rawToken);
+
+      return {
+        status: HttpStatus.ACCEPTED,
+        data: removalResponse,
+      };
+    } catch (e) {
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        data: {
+          deleted: false,
+          token: rawToken,
+        },
+        errors: [ e.message ],
+      };
+    }
+  }
+
+  public async validateInvitation(rawToken: string): Promise<IResponse<{ valid: boolean }>> {
+    try {
+      const cacheKey = this.getInvitationCacheKey(rawToken);
+      const cached = this.cacheStore.get(cacheKey);
+
+      if (cached) {
+        return cached.data;
+      }
+
+      const valid = await this.dbAccessService.validateInvitation(rawToken);
+      const response = {
+        status: HttpStatus.OK,
+        data: {
+          valid,
+        },
+      };
+
+      if (valid) {
+        const timeout = setTimeout(() => {
+          this.cacheStore.delete(cacheKey);
+        }, 24 * 60 * 60 * 1000);
+
+        this.cacheStore.set(cacheKey, { data: response, timeout });
+      }
+
+      return response;
+    } catch (e) {
+      return {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        data: {
+          valid: false,
+        },
+        errors: [ e.message ],
+      };
+    }
   }
 }

@@ -1,8 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
+import { createHash } from 'crypto';
 import { Model, PipelineStage } from 'mongoose';
-import { IRentApartmentsFlatsDoc, IRentHousesDoc, ISaleApartmentsFlatsDoc, ISaleHousesDoc } from 'src/schemas';
+import {
+  IInvitationModel,
+  IRentApartmentsFlatsDoc,
+  IRentHousesDoc,
+  ISaleApartmentsFlatsDoc,
+  ISaleHousesDoc,
+} from 'src/schemas';
 import { IGetDistrictsResult } from 'src/types/get-districts.interface';
 import { getLastDate, persistPipeline } from 'src/utils';
 
@@ -14,6 +21,7 @@ import {
   EMPTY_SEARCH_RESULT,
   NESTED_RANGE_FIELDS,
   NoStatisticsDataReason,
+  PAGINATION_MAX_LIMIT,
   RANGE_FIELDS,
 } from '../constants';
 import {
@@ -41,6 +49,7 @@ import {
   IGetRentResidentialSort,
   IGetSaleResidentialQuery,
   IGetSaleResidentialSort,
+  IInvitationDoc,
   IRentLimits,
   IRentResidential,
   IRentResidentialId,
@@ -49,6 +58,10 @@ import {
   ISaleResidentialId,
 } from '../types';
 
+
+const specialFields = [ 'priceDeviations', 'bedrooms', 'bathrooms', 'offset', 'limit' ];
+const simpleTypes = [ 'boolean', 'number', 'string' ];
+const rangeFields = [ ...RANGE_FIELDS, ...NESTED_RANGE_FIELDS ];
 
 @Injectable()
 export class DbAccessService {
@@ -67,6 +80,7 @@ export class DbAccessService {
     @InjectModel('RentHouses') private readonly rentHousesModel: Model<IRentHousesDoc>,
     @InjectModel('RentResidentials') private readonly rentResidentialsModel: Model<IRentResidential>,
     @InjectModel('SaleResidentials') private readonly saleResidentialsModel: Model<ISaleResidential>,
+    @InjectModel('Invitations') private readonly invitationsModel: IInvitationModel,
   ) {
   }
 
@@ -284,7 +298,7 @@ export class DbAccessService {
     exceptions: string[],
   ): { [key: string]: unknown } {
     if (!(field in filter)) {
-      return filter as { [key: string]: unknown };
+      return {} as { [key: string]: unknown };
     }
 
     const result = {};
@@ -349,11 +363,10 @@ export class DbAccessService {
     filter: IGetRentResidentialQuery | IGetSaleResidentialQuery,
     sort: IGetRentResidentialSort | IGetSaleResidentialSort,
     offset: number = 0,
-    limit: number = 25,
+    limit: number = PAGINATION_MAX_LIMIT,
   ): PipelineStage[] {
     const $match = { $and: []};
     const dateFields = [ 'publish_date', 'ad_last_updated', 'updated_at' ];
-    const rangeFields = [ ...RANGE_FIELDS, ...NESTED_RANGE_FIELDS ];
     const nestedConditions = this.processNestedFields(filter, 'priceDeviations', [ '$lte', '$lt', '$eq', '$gt', '$gte' ]);
 
     // persistPipeline(nestedConditions);
@@ -362,28 +375,61 @@ export class DbAccessService {
       $match.$and.push({ [key]: value });
     });
 
+    const addOrConditionsForField = (field: string, values: string[]) => {
+      const conditions = [];
+
+      values
+        .filter((val => /\d{1,2}\+?/.test(val)))
+        .forEach((value: string) => {
+          if (value.endsWith('+')) {
+            const number = parseInt(value.slice(0, -1), 10);
+
+            conditions.push({ [field]: { $gte: number }});
+          } else {
+            const number = parseInt(value, 10);
+
+            if (!isNaN(number)) {
+              conditions.push({ [field]: number });
+            }
+          }
+        });
+
+      if (conditions.length > 0) {
+        $match.$and.push({ $or: conditions });
+      }
+    };
+
+    [ 'bedrooms', 'bathrooms' ].forEach(field => {
+      if (filter[field]) {
+        addOrConditionsForField(field, filter[field]);
+      }
+    });
+
     for (const key in filter) {
-      if (key !== 'priceDeviations') {
-        if (rangeFields.includes(key) && filter[key]) {
-          const rangeConditions = {};
+      if (specialFields.includes(key)) {
+        continue;
+      }
 
-          for (const rangeKey in filter[key]) {
-            const value = filter[key][rangeKey];
+      if (rangeFields.includes(key) && filter[key]) {
+        const rangeConditions = {};
 
-            if (!value) continue;
+        for (const rangeKey in filter[key]) {
+          const value = filter[key][rangeKey];
 
-            const mongoRangeKey = `$${rangeKey.replace(/\$/g, '')}`;
+          if (!value) continue;
 
-            rangeConditions[mongoRangeKey] = dateFields.includes(key) ? new Date(value) : value;
-          }
-          if (Object.keys(rangeConditions).length > 0) {
-            $match.$and.push({ [key]: rangeConditions });
-          }
-        } else if (Array.isArray(filter[key])) {
-          $match.$and.push({ [key]: { $in: filter[key] }});
-        } else {
-          $match.$and.push({ [key]: filter[key] });
+          const mongoRangeKey = `$${rangeKey.replace(/\$/g, '')}`;
+
+          rangeConditions[mongoRangeKey] = dateFields.includes(key) ? new Date(value) : value;
         }
+
+        if (Object.keys(rangeConditions).length > 0) {
+          $match.$and.push({ [key]: rangeConditions });
+        }
+      } else if (Array.isArray(filter[key])) {
+        $match.$and.push({ [key]: { $in: filter[key] }});
+      } else if (simpleTypes.includes(typeof filter[key])) {
+        $match.$and.push({ [key]: filter[key] });
       }
     }
 
@@ -418,7 +464,7 @@ export class DbAccessService {
     filter: IGetRentResidentialQuery,
     sort: IGetRentResidentialSort,
     offset: number = 0,
-    limit: number = 25,
+    limit: number = PAGINATION_MAX_LIMIT,
   ): Promise<{ data: IRentResidentialId[]; total: number }> {
     // persistPipeline(this.getResidentialPipelineBuilder(filter, sort, offset, limit));
 
@@ -437,7 +483,7 @@ export class DbAccessService {
     filter: IGetSaleResidentialQuery,
     sort: IGetSaleResidentialSort,
     offset: number = 0,
-    limit: number = 25,
+    limit: number = PAGINATION_MAX_LIMIT,
   ): Promise<{ data: ISaleResidentialId[]; total: number }> {
     // persistPipeline(this.getResidentialPipelineBuilder(filter, sort, offset, limit));
 
@@ -484,5 +530,40 @@ export class DbAccessService {
     }
 
     return data;
+  }
+
+  private generateToken(data: string): string {
+    return createHash('sha256').update(data).digest('hex');
+  }
+
+  async createInvitation(rawToken: string, description: string): Promise<{ created: boolean; token: string; error?: Error }> {
+    const token = this.generateToken(rawToken);
+    const invitation = new this.invitationsModel({
+      token,
+      description,
+    });
+
+    await invitation.save();
+
+    return {
+      created: true,
+      token: rawToken,
+    };
+  }
+
+  async validateInvitation(rawToken: string): Promise<boolean> {
+    const invitation: IInvitationDoc | null = await this.invitationsModel.findByValidToken(rawToken);
+
+    return Boolean(invitation);
+  }
+
+  async deleteInvitation(rawToken: string): Promise<{ deleted: boolean; token: string }> {
+    const token = this.generateToken(rawToken);
+    const deletionResult = await this.invitationsModel.deleteOne({ token });
+
+    return {
+      deleted: deletionResult.deletedCount === 1,
+      token: rawToken,
+    };
   }
 }

@@ -282,44 +282,20 @@ export class GetRentResidentialQueryDto {
     furnishing?: Furnishing[];
 
     @IsOptional()
-    @IsNumber({}, { message: "'bedrooms[$lte]' must be a valid number" })
-    'bedrooms[$lte]'?: number;
+    @MaybeArray()
+    @IsArray({ message: 'Field bedrooms must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('BEDROOMS_ARRAY_MAX_SIZE', 5))
+    @IsString({ each: true, message: 'Each bedrooms must be a string' })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 128), { each: true, message: `Maximum length of each bedrooms is ${getIntFromEnv('STRING_MAX_LENGTH', 128)} characters` })
+    bedrooms?: string[];
 
     @IsOptional()
-    @IsNumber({}, { message: "'bedrooms[$lt]' must be a valid number" })
-    'bedrooms[$lt]'?: number;
-
-    @IsOptional()
-    @IsNumber({}, { message: "'bedrooms[$eq]' must be a valid number" })
-    'bedrooms[$eq]'?: number;
-
-    @IsOptional()
-    @IsNumber({}, { message: "'bedrooms[$gt]' must be a valid number" })
-    'bedrooms[$gt]'?: number;
-
-    @IsOptional()
-    @IsNumber({}, { message: "'bedrooms[$gte]' must be a valid number" })
-    'bedrooms[$gte]'?: number;
-
-    @IsOptional()
-    @IsNumber({}, { message: "'bathrooms[$lte]' must be a valid number" })
-    'bathrooms[$lte]'?: number;
-
-    @IsOptional()
-    @IsNumber({}, { message: "'bathrooms[$lt]' must be a valid number" })
-    'bathrooms[$lt]'?: number;
-
-    @IsOptional()
-    @IsNumber({}, { message: "'bathrooms[$eq]' must be a valid number" })
-    'bathrooms[$eq]'?: number;
-
-    @IsOptional()
-    @IsNumber({}, { message: "'bathrooms[$gt]' must be a valid number" })
-    'bathrooms[$gt]'?: number;
-
-    @IsOptional()
-    @IsNumber({}, { message: "'bathrooms[$gte]' must be a valid number" })
-    'bathrooms[$gte]'?: number;
+    @MaybeArray()
+    @IsArray({ message: 'Field bathrooms must contain an array' })
+    @ArrayMaxSize(getIntFromEnv('BATHROOMS_ARRAY_MAX_SIZE', 5))
+    @IsString({ each: true, message: 'Each bathrooms must be a string' })
+    @MaxLength(getIntFromEnv('STRING_MAX_LENGTH', 128), { each: true, message: `Maximum length of each bathrooms is ${getIntFromEnv('STRING_MAX_LENGTH', 128)} characters` })
+    bathrooms?: string[];
 
     @IsOptional()
     @MaybeArray()

@@ -1,0 +1,26 @@
+<div class="page-content">
+  <mat-card class="cookie-consent">
+    <mat-card-header class="card-header">
+      <h1>Cookie Consent</h1>
+    </mat-card-header>
+    <mat-card-content>
+      <p>Currently, the site does not store any of your personal information in cookies, localStorage, sessionStorage, indexedDB, or any other local storage.</p>
+
+      <h2>LocalStorage using</h2>
+      <p>The site stores your search filter settings (keys &laquo;searchType&raquo;, &laquo;searchRent&raquo;, &laquo;searchSale&raquo;) and the results of your last search query (key &laquo;searchResults&raquo;) in localStorage. Key &laquo;invitation&raquo; keeps invitation code and status of its validation request. These data are stored until you clear your browser's cache or delete them selectively via the Developer Panel (<kbd>cmd + opt + I</kbd> for MacOS and <kbd>F12</kbd> for Windows, Application -> Local storage).</p>
+
+      <h2>Cookies using</h2>
+      <p>In cookies, the site stores your selected site theme (key &laquo;{{ CookieNames.UserTheme }}&raquo;, storage duration - 1 year) and the fact that you have accepted this cookie consent (keys &laquo;{{ CookieNames.CookieConsentAccepted }}&raquo; and &laquo;{{ CookieNames.CookieConsentAcceptanceDate }}&raquo;, storage duration is also - 1 year). If we change this agreement, the keys &laquo;{{ CookieNames.CookieConsentAccepted }}&raquo; and &laquo;{{ CookieNames.CookieConsentAcceptanceDate }}&raquo; will be reset, and we will notify you that you need to review the cookie consent again.</p>
+      <mat-divider></mat-divider>
+    </mat-card-content>
+    <mat-card-actions class="actions">
+      <button
+        mat-raised-button
+        color="primary"
+        (click)="onAgreeButtonClick()"
+      >
+        OK, I agree
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

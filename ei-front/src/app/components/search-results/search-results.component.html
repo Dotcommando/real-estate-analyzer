@@ -1,0 +1,18 @@
+<div class="search-results" id="search-results">
+  <h1>{{ (total$ | async) !== 0
+      ? 'Found results: ' + (total$ | async)
+      : (searchStatus$ | async) === 'SUCCESS'
+        ? 'No results were found for your request :('
+        : 'An error occurred :('
+    }}
+  </h1>
+  @if (ads$ | async) {
+    @for (ad of ads$ | async; track ad._id; let idx = $index) {
+      <app-search-result-card
+        class="sr-card"
+        [orderNumber]="((offset$ | async) ?? 0) + 1 + idx"
+        [adData]="ad"
+      ></app-search-result-card>
+    }
+  }
+</div>

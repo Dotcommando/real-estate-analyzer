@@ -1,0 +1,22 @@
+.error {
+  padding: 16px 20px 8px 20px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.error-status {
+  font-size: 20px;
+  line-height: 32px;
+  margin: 0 0 16px 0;
+}
+
+.error-message {
+  display: block;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding: 8px 20px;
+}

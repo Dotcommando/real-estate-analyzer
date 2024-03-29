@@ -1,6 +1,8 @@
 export const ARRAY_FIELDS = [
   'url',
   'ad_id',
+  'bathrooms',
+  'bedrooms',
   'online-viewing',
   'source',
   'city',

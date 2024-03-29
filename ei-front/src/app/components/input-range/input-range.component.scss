@@ -1,0 +1,50 @@
+::ng-deep {
+  .input-range-fields {
+    .mdc-text-field {
+      padding: 0 8px;
+    }
+
+    .mat-mdc-form-field-hint-wrapper {
+      padding: 0;
+    }
+  }
+}
+
+.input-range-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-range-fields {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+
+  input[type=number] {
+    appearance: textfield;
+    -moz-appearance: textfield;
+    -webkit-appearance: textfield;
+  }
+
+  input[type=number]::-webkit-inner-spin-button {
+    display: none;
+  }
+}
+
+.input-range-field {
+  flex: 1 0 0;
+}
+
+.delimiter {
+  display: flex;
+  align-items: center;
+  padding: 0 8px 18px 8px;
+}
+
+.mat-mdc-form-field {
+  width: 80px;
+}
+
+mat-form-field {
+  width: 100%;
+}

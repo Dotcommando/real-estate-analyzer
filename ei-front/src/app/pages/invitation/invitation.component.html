@@ -1,0 +1,32 @@
+<div class="small-centered-form">
+  <mat-form-field>
+    <mat-label>Invitation code</mat-label>
+    <input
+      matInput
+      type="text"
+      [formControl]="invitationField"
+    >
+  </mat-form-field>
+
+  <button
+    mat-raised-button
+    color="primary"
+    class="add-button"
+    (click)="addInvitation()"
+    [disabled]="isAddInvitationDisabled$ | async"
+  >
+    Get Access <mat-icon>add</mat-icon>
+  </button>
+
+  <div class="removal-button-place">
+    @if (removalButtonIsVisible$ | async) {
+      <button
+        mat-raised-button
+        class="removal-button"
+        (click)="removeInvitation()"
+      >
+        Remove Token <mat-icon>delete</mat-icon>
+      </button>
+    }
+  </div>
+</div>

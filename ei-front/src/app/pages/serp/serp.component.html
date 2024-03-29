@@ -1,0 +1,39 @@
+<div class="serp-page">
+  <ei-search-form></ei-search-form>
+  <ei-search-results
+    (dataLoaded)="scrollToResults()"
+  ></ei-search-results>
+  <ei-bottom-control-panel>
+    <mat-paginator
+      class="ei-paginator"
+      showFirstLastButtons="true"
+      (page)="handlePageEvent($event)"
+      [length]="totalResults$ | async"
+      [pageSize]="limit$ | async"
+      [pageSizeOptions]="pageSizeOptions"
+      [disabled]="(searchStatus$ | async) === 'PENDING'"
+      [pageIndex]="pageIndex"
+      aria-label="Select page"
+    ></mat-paginator>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="onSearchButtonClick()"
+      [disabled]="isSearchDisabled"
+    >
+      Search <mat-icon>search</mat-icon>
+    </button>
+  </ei-bottom-control-panel>
+
+  @if ((searchStatus$ | async) === 'PENDING') {
+    <div class="loading">
+      <mat-progress-spinner
+        class="progress-spinner"
+        color="primary"
+        mode="indeterminate"
+      >
+      </mat-progress-spinner>
+    </div>
+  }
+</div>
+<ei-cookie-consent-dialog></ei-cookie-consent-dialog>

@@ -1,0 +1,41 @@
+<div class="multi-autocomplete-wrapper">
+  <mat-form-field appearance="fill">
+      <mat-chip-grid #chipGrid [attr.aria-label]="label">
+        @if (focused) {
+          <ng-container>
+          @for (item of selectedItems; track item.value) {
+            <mat-chip-row
+              removable
+              (removed)="remove(item)"
+              (click)="remove(item)"
+            >
+              {{ item.name }}
+              <button matChipRemove [attr.aria-label]="'Remove'">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip-row>
+          }
+          </ng-container>
+        }
+      </mat-chip-grid>
+    <input
+      placeholder="{{ inputInnerText }}"
+      #inputElement
+      [formControl]="inputControl"
+      [matAutocomplete]="auto"
+      [matChipInputFor]="chipGrid"
+      [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+      (matChipInputTokenEnd)="add($event)"
+      (focus)="onInputFocus()"
+      (blur)="onInputBlur()"
+    />
+    @if (focused && isMaxSelectedItemsReached) {
+      <mat-hint class="max-items-reached">You've reached the&nbsp;maximum number of&nbsp;selected options: {{ maxSelectedItems }}.</mat-hint>
+    }
+  </mat-form-field>
+  <mat-autocomplete #auto="matAutocomplete" (optionSelected)="selected($event)">
+    @for (option of autocompleteOptions; track option.value) {
+      <mat-option [value]="option">{{ option.name }}</mat-option>
+    }
+  </mat-autocomplete>
+</div>

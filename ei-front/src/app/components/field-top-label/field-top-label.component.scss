@@ -1,0 +1,95 @@
+@use '@angular/material' as mat;
+@import '../../../styles.scss';
+@include mat.core();
+
+:host {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1 1 0;
+}
+
+.field-top-label-wrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 1 1 0;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.left-top-corner {
+  display: flex;
+  flex: 1 1 0;
+}
+
+.right-top-corner {
+  display: flex;
+  flex: 1 1 0;
+}
+
+.top-border {
+  display: flex;
+  flex: 1 1 0;
+}
+
+::ng-deep {
+  .dark-theme .left-top-corner {
+    margin: 9px 0 2px 9px;
+    border-top: solid 1px mat.get-color-from-palette($bluegrey-accent, 600);
+    border-left: solid 1px mat.get-color-from-palette($bluegrey-accent, 600);
+    border-top-left-radius: 4px;
+  }
+
+  .dark-theme .right-top-corner {
+    margin: 9px 9px 2px 0;
+    border-top: solid 1px mat.get-color-from-palette($bluegrey-accent, 600);
+    border-right: solid 1px mat.get-color-from-palette($bluegrey-accent, 600);
+    border-top-right-radius: 4px;
+  }
+
+  .light-theme .left-top-corner {
+    margin: 9px 0 2px 9px;
+    border-top: solid 1px mat.get-color-from-palette($amber-accent, 200);
+    border-left: solid 1px mat.get-color-from-palette($amber-accent, 200);
+    border-top-left-radius: 4px;
+  }
+
+  .light-theme .right-top-corner {
+    margin: 9px 9px 2px 0;
+    border-top: solid 1px mat.get-color-from-palette($amber-accent, 200);
+    border-right: solid 1px mat.get-color-from-palette($amber-accent, 200);
+    border-top-right-radius: 4px;
+  }
+
+  .dark-theme .field-top-label-text {
+    margin: 0 4px;
+  }
+
+  .light-theme .field-top-label-text {
+    margin: 0 4px;
+  }
+
+  .dark-theme .top-border {
+    margin: 9px 0 2px 0;
+    border-top: solid 1px mat.get-color-from-palette($bluegrey-accent, 600);
+  }
+
+  .light-theme .top-border {
+    margin: 9px 0 2px 0;
+    border-top: solid 1px mat.get-color-from-palette($amber-accent, 200);
+  }
+
+  .dark-theme .field-top-label-text,
+  .light-theme .field-top-label-text {
+    color: mat.get-color-from-palette($bluegrey-accent, A200);
+  }
+
+  .dark-theme .field-top-label-focused .field-top-label-text {
+    color: mat.get-color-from-palette($pink-primary, 500);
+  }
+
+  .light-theme .field-top-label-focused .field-top-label-text {
+    color: mat.get-color-from-palette($deeppurple-primary, 500);
+  }
+}

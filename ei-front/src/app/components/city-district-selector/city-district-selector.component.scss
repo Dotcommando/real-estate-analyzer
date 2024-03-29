@@ -1,0 +1,44 @@
+.city-district-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.city-districts-wrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  flex: 1 1 0;
+}
+
+.select-input {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 0;
+
+  & > * {
+    flex: 1 0 0;
+  }
+}
+
+.city-input {
+  align-self: stretch;
+}
+
+@media (min-width: 568px) {
+  .city-districts-wrapper {
+    flex-direction: row;
+    gap: 20px;
+  }
+
+  .city-input {
+    max-width: 180px;
+    align-self: flex-start;
+  }
+}
+
+@media (min-width: 1024px) {
+  .city-input {
+    max-width: 140px;
+  }
+}

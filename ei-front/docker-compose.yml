@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+
+  ei-front:
+    image: node:20-alpine
+    working_dir: /ei-front
+    command: sh -c "npm i && npm run build && npm run serve:ssr:ei-front"
+    volumes:
+      - .:/ei-front
+    hostname: localhost
+    ports:
+      - "${FRONTEND_BFF_PORT}:${FRONTEND_BFF_PORT}"
+    env_file:
+      - .env
+    environment:
+      - NODE_OPTIONS=--max-old-space-size=4096
+    container_name: ei-front
+    networks:
+      - common-net
+
+networks:
+  common-net:
+    name: parser-network-1
+    external: true

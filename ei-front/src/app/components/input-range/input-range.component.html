@@ -1,0 +1,31 @@
+<div class="input-range-wrapper">
+  <div class="input-range-label">
+    <ei-field-top-label
+      [label]="label"
+      [focused]="isFocused"
+    ></ei-field-top-label>
+  </div>
+  <div class="input-range-fields">
+    <mat-form-field appearance="fill" class="input-range-field">
+      <mat-label>From</mat-label>
+      <input matInput
+             type="number"
+             [formControl]="form.controls['min'] | formControl"
+             (focus)="onFocus()"
+             (blur)="onBlur()"
+      >
+      <mat-hint class="min-value">Min: {{ range.min !== MinusInfinity ? (range.min | formatNumber:'ru-RU') : '-' }}</mat-hint>
+    </mat-form-field>
+    <span class="delimiter">&mdash;</span>
+    <mat-form-field appearance="fill" class="input-range-field">
+      <mat-label>To</mat-label>
+      <input matInput
+             type="number"
+             [formControl]="form.controls['max'] | formControl"
+             (focus)="onFocus()"
+             (blur)="onBlur()"
+      >
+      <mat-hint class="max-value">Max: {{ range.max !== Infinity ? (range.max | formatNumber:'ru-RU') : '-' }}</mat-hint>
+    </mat-form-field>
+  </div>
+</div>

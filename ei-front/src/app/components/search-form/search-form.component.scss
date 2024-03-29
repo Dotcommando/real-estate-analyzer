@@ -1,0 +1,248 @@
+@use '@angular/material' as mat;
+@import '../../../styles.scss';
+@include mat.core();
+
+::ng-deep {
+  .estate-type .mat-mdc-form-field {
+    width: 100%;
+  }
+
+  .search-form .mat-expansion-panel-header-description {
+    display: none;
+  }
+
+  .bathrooms mat-button-toggle-group,
+  .bedrooms mat-button-toggle-group {
+    justify-content: stretch;
+
+    mat-button-toggle {
+      flex: 1 0 0;
+    }
+  }
+}
+
+.main-filters {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  & > * {
+    display: inline-block;
+  }
+}
+
+.estate-type {
+  align-self: stretch;
+}
+
+.city-districts {
+  align-self: stretch;
+}
+
+.bedrooms {
+  display: flex;
+  margin: 0 auto 22px auto;
+}
+
+.bathrooms {
+  display: flex;
+  margin: 0 auto 22px auto;
+}
+
+.input-range {
+  align-self: stretch;
+}
+
+@media (min-width: 360px) {
+
+}
+
+@media (min-width: 414px) {
+  .input-range {
+    width: 100%;
+    max-width: 414px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (min-width: 568px) {
+  .main-filters {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .main-filters > * {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .estate-type {
+    min-width: 100%;
+    margin: 0 auto;
+    align-self: flex-start;
+  }
+
+  .city-districts {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .main-filters {
+    gap: 20px;
+  }
+
+  .estate-type {
+    min-width: 100%;
+  }
+
+  .input-range {
+    max-width: 356px;
+  }
+
+  .bedrooms {
+    margin: 0 auto auto auto;
+  }
+
+  .bathrooms {
+    margin: 0 auto auto auto;
+  }
+}
+
+@media (min-width: 810px) {
+  .estate-type {
+    min-width: 330px;
+    margin: 0;
+  }
+
+  .input-range {
+    max-width: 270px;
+  }
+
+  .bedrooms {
+    min-width: 240px;
+  }
+
+  .bathrooms {
+    min-width: 166px;
+  }
+
+  .filter-set-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+    gap: 18px;
+
+    & > * {
+      flex: 1 1 0;
+    }
+  }
+
+  .median-mean-ranges-accordion {
+    .input-range {
+      max-width: 380px;
+    }
+
+    .mat-expansion-panel-header-description {
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .filter-set-wrapper {
+      justify-content: center;
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  .city-districts {
+    width: auto;
+  }
+
+  .bedrooms {
+    min-width: 340px;
+  }
+
+  .bathrooms {
+    min-width: 240px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .estate-type {
+    min-width: 390px;
+  }
+
+  .bedrooms {
+    min-width: unset;
+  }
+
+  .bathrooms {
+    min-width: unset;
+  }
+
+  .city-districts {
+    min-width: 430px;
+  }
+
+  .input-range {
+    max-width: 401px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .search-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .search-form {
+    min-height: 400px;
+    margin: 0 auto auto auto;
+    padding: 20px;
+  }
+
+  .mat-mdc-tab-group {
+    max-width: 99.99%;
+  }
+
+  ::ng-deep .search-wrapper .mat-mdc-tab-body-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--vertical-panel-gap);
+    padding: 0 0 4px 0;
+  }
+
+  .main-filters .input-range {
+    max-width: 380px;
+  }
+
+  .estate-type {
+    display: flex;
+    flex-direction: column;
+    max-height: 98px;
+
+    & > * {
+      flex: 1 1 0;
+    }
+  }
+}
+
+@media (min-width: 1752px) {
+  .estate-type {
+    min-width: unset;
+    max-width: 300px;
+  }
+
+  .main-filters .input-range {
+    max-width: 280px;
+  }
+}
+
+@media (min-width: 1920px) {
+  .search-form {
+    width: 1880px;
+  }
+}
