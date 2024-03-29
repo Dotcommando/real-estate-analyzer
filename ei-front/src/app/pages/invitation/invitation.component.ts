@@ -126,6 +126,7 @@ export class InvitationComponent implements OnInit {
           }
         }),
         catchError(() => {
+          this.store.dispatch(new ValidateInvitationFail());
           this.snackBar.open('An error occurred while validating the invitation code. Please try again later.', 'Close', { duration: snackBarDurationMs });
 
           return NEVER;
