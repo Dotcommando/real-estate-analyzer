@@ -21,7 +21,7 @@ import {
   ValidatorFn,
 } from '@angular/forms';
 import { MatButton } from '@angular/material/button';
-import { MatButtonToggle, MatButtonToggleGroup } from '@angular/material/button-toggle';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
@@ -67,6 +67,7 @@ enum SearchTypeTab {
     MatExpansionModule,
     MatCardModule,
     MatTabsModule,
+    MatButtonToggleModule,
     ReactiveFormsModule,
     InputRangeComponent,
     MatIconModule,
@@ -76,8 +77,6 @@ enum SearchTypeTab {
     MatOption,
     MultiAutocompleteComponent,
     CityDistrictSelectorComponent,
-    MatButtonToggleGroup,
-    MatButtonToggle,
     FieldTopLabelComponent,
     MatOptgroup,
     MatButton,

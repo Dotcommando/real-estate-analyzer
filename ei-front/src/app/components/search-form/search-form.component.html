@@ -46,13 +46,19 @@
                 <mat-button-toggle-group
                   multiple
                   aria-label="Bedrooms"
+                  hideSingleSelectionIndicator="true"
+                  hideMultipleSelectionIndicator="true"
                   [formControl]="searchRentForm.controls.bedrooms"
                 >
                   @for (bedroomNumber of rentLimits.limits.bedrooms; track $index) {
                     @if (bedroomNumber <= 4) {
-                      <mat-button-toggle value="{{ bedroomNumber }}">{{ bedroomNumber }}</mat-button-toggle>
+                      <mat-button-toggle
+                        value="{{ bedroomNumber }}"
+                      >{{ bedroomNumber }}</mat-button-toggle>
                     } @else if (bedroomNumber === 5) {
-                      <mat-button-toggle value="{{ bedroomNumber }}+">{{ bedroomNumber }}+</mat-button-toggle>
+                      <mat-button-toggle
+                        value="{{ bedroomNumber }}+"
+                      >{{ bedroomNumber }}+</mat-button-toggle>
                     }
                   }
                 </mat-button-toggle-group>
@@ -64,13 +70,20 @@
                 <mat-button-toggle-group
                   multiple
                   aria-label="Bathrooms"
+                  hideSingleSelectionIndicator="true"
+                  hideMultipleSelectionIndicator="true"
                   [formControl]="searchRentForm.controls.bathrooms"
                 >
                   @for (bathroomNumber of rentLimits.limits.bathrooms; track $index) {
                     @if (bathroomNumber <= 3) {
-                      <mat-button-toggle value="{{ bathroomNumber }}">{{ bathroomNumber }}</mat-button-toggle>
+                      <mat-button-toggle
+
+                        value="{{ bathroomNumber }}"
+                      >{{ bathroomNumber }}</mat-button-toggle>
                     } @else if (bathroomNumber === 4) {
-                      <mat-button-toggle value="{{ bathroomNumber }}+">{{ bathroomNumber }}+</mat-button-toggle>
+                      <mat-button-toggle
+                        value="{{ bathroomNumber }}+"
+                      >{{ bathroomNumber }}+</mat-button-toggle>
                     }
                   }
                 </mat-button-toggle-group>
