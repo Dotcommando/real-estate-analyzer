@@ -11,6 +11,7 @@ export * from './country.enum';
 export * from './default-ports.const';
 export * from './empty-search-result';
 export * from './energy-efficiency.enum';
+export * from './floor.enum';
 export * from './furnishing.enum';
 export * from './logger.const';
 export * from './minimal-start-date.const';
