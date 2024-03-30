@@ -8,6 +8,7 @@ export * from './city-name-max-length.const';
 export * from './city-name-min-length.const';
 export * from './condition.enum';
 export * from './country.enum';
+export * from './default-ports.const';
 export * from './empty-search-result';
 export * from './energy-efficiency.enum';
 export * from './furnishing.enum';

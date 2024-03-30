@@ -9,6 +9,7 @@ import fastifyCsrf from 'fastify-csrf';
 import * as morgan from 'morgan';
 
 import { AppModule } from './app.module';
+import { DEFAULT_PORTS } from './constants';
 import { HttpCommonExceptionFilter } from './filters';
 import { StatusInterceptor } from './interceptors';
 
@@ -28,7 +29,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new StatusInterceptor());
   app.setGlobalPrefix('api/v1');
   app.enableCors({
-    origin: `${process.env.ORIGIN_PROTOCOL}://${process.env.ORIGIN_HOST}${process.env.ORIGIN_PORT && process.env.ORIGIN_PORT !== '80' ? ':' + process.env.ORIGIN_PORT : ''}`,
+    origin: `${process.env.ORIGIN_PROTOCOL}://${process.env.ORIGIN_HOST}${process.env.ORIGIN_PORT && !DEFAULT_PORTS.includes(process.env.ORIGIN_PORT) ? ':' + process.env.ORIGIN_PORT : ''}`,
   });
 
   app.register(fastifyCookie);
