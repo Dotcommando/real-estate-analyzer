@@ -18,9 +18,6 @@ dotenv.config();
 
 const GATEWAY_HOST = process.env['GATEWAY_HOST'];
 const GATEWAY_PORT = getIntFromEnv('GATEWAY_PORT', 3332);
-const ORIGIN_PROTOCOL = process.env['ORIGIN_PROTOCOL'];
-const ORIGIN_HOST = process.env['ORIGIN_HOST'];
-const ORIGIN_PORT = getIntFromEnv('ORIGIN_PORT', 80);
 const FRONTEND_BFF_HOST = process.env['FRONTEND_BFF_HOST'];
 const FRONTEND_BFF_PORT = getIntFromEnv('FRONTEND_BFF_PORT', 4000);
 const API_PREFIX: string = process.env['API_PREFIX'] ?? '/api/v1';
