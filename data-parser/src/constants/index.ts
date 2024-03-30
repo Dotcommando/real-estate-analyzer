@@ -1,3 +1,4 @@
+export * from './ad-processing-status.enum';
 export * from './air-conditioning.enum';
 export * from './apartments-flats-type.enum';
 export * from './commercial-type.enum';
