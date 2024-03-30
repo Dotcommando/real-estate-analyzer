@@ -6,7 +6,10 @@
   <mat-card-content class="card-content">
     <img class="card-image" mat-card-image src="/assets/300x200.svg" alt="Property">
     <div class="text-content">
-      <p>Source: {{ adData.source }}</p>
+      <p>
+        <span class="key">Source:</span>&nbsp;<span class="value">{{ adData.source }}</span>.
+        <span class="key">Published:</span>&nbsp;<span class="value">{{ adData.ad_last_updated | date: 'dd/MM/yyyy' }}</span>.
+      </p>
       <p>{{ adData.description | slice:0:400 }} @if (adData.description.length > 400) { ... }</p>
     </div>
     <div class="primary-info">

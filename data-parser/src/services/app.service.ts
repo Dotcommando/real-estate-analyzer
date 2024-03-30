@@ -6,14 +6,14 @@ import { Cron } from '@nestjs/schedule';
 import { config } from 'dotenv';
 import { lastValueFrom, timeout } from 'rxjs';
 
-import { AdProcessingStatus, DbAccessService } from './db-access.service';
+import { DbAccessService } from './db-access.service';
 import { DbUrlRelationService } from './db-url-relation.service';
 
 import {
   AdPageParserAbstract,
   PaginationParserAbstract,
 } from '../classes';
-import { LOGGER, UrlTypes, WebScraperMessages } from '../constants';
+import { AdProcessingStatus, LOGGER, UrlTypes, WebScraperMessages } from '../constants';
 import { ParserFactory, ProxyFactory } from '../factories';
 import {
   IAdDBOperationResult,
@@ -315,6 +315,13 @@ export class AppService implements OnModuleInit {
     try {
       const adParser: AdPageParserAbstract<IRealEstate> = this.parserFactory.createAdPageParser(dataToParse, task.url, task.collection);
       const parsedAdPage: Partial<IRealEstate> = adParser.getPageData();
+
+      if (parsedAdPage.expired) {
+        this.logger.log(`${dateInHumanReadableFormat(new Date(), 'DD.MM.YYYY HH:mm:ss')} Saving result to DB: \x1b[33m${task.url.replace(this.sourceUrl, '')}\x1b[0m ${this.getStatusColor(AdProcessingStatus.NO_CHANGES)}${AdProcessingStatus.EXPIRED_REJECTED}\x1b[0m`);
+
+        return;
+      }
+
       const typeCastedPageData: Partial<IRealEstate> = this.dbAccessService.typecastingFields(parsedAdPage);
       const saveAdResult: IAdDBOperationResult = await this.dbAccessService.saveNewAnnouncement(task.collection, typeCastedPageData);
 

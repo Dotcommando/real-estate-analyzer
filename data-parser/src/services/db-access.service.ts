@@ -5,10 +5,12 @@ import { ModuleRef } from '@nestjs/core';
 import { Model } from 'mongoose';
 
 import {
+  AdProcessingStatus,
   AirConditioning,
   AirConditioningArray,
   Condition,
   ConditionArray,
+  DAY_MS,
   EnergyEfficiency,
   EnergyEfficiencyArray,
   Furnishing,
@@ -31,15 +33,6 @@ import {
 import { IAdDBOperationResult, IRealEstate, IRealEstateDoc } from '../types';
 import { castToNumber, parseInteger, roundDate, setDefaultStandardValue } from '../utils';
 
-
-export enum AdProcessingStatus {
-  SAVED = 'saved',
-  AD_FOUND = 'ad_found',
-  AD_NOT_FOUND = 'ad_not_found',
-  ACTIVE_DATE_ADDED = 'active_date_added',
-  NO_CHANGES = 'no_changes',
-  ERROR = 'error',
-}
 
 @Injectable()
 export class DbAccessService {
@@ -189,6 +182,11 @@ export class DbAccessService {
             .includes(roundedDateAsString)
         ) {
           existingAnnouncement.active_dates.push(roundedDate);
+          changed = true;
+        }
+
+        if (announcementData['publish_date'] instanceof Date && Math.abs(announcementData['publish_date'].getTime() - existingAnnouncement['publish_date'].getTime()) > DAY_MS) {
+          existingAnnouncement['ad_last_updated'] = announcementData['publish_date'];
           changed = true;
         }
 
