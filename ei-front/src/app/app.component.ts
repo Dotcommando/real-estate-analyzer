@@ -7,7 +7,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterLink, RouterOutlet } from '@angular/router';
 
-import { ThemeService } from './services';
+import { CookieConsentService, ThemeService } from './services';
 
 
 @Component({
@@ -32,10 +32,12 @@ export class AppComponent implements OnInit {
 
   constructor(
     private themeService: ThemeService,
+    private cookieConsentService: CookieConsentService,
   ) {
   }
 
   public ngOnInit(): void {
+    this.cookieConsentService.checkAndShowConsent();
   }
 
   public toggleTheme(): void {

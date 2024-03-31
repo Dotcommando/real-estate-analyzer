@@ -1,0 +1,52 @@
+:host {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.cookie-consent-snackbar {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 0;
+
+  .content {
+    text-align: center;
+    flex: 1 0 0;
+    margin: 0 0 16px 0;
+  }
+
+  .action {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+::ng-deep {
+  .light-theme .cookie-consent-snackbar a {
+    &:link { color: var(--mdc-filled-text-field-container-color); }
+    &:visited { color: var(--mdc-filled-text-field-container-color); }
+    &:hover { color: var(--mdc-filled-text-field-container-color); }
+    &:active { color: var(--mdc-filled-text-field-container-color); }
+  }
+
+  .dark-theme .cookie-consent-snackbar a {
+    &:link { color: var(--mdc-filled-text-field-caret-color); }
+    &:visited { color: var(--mdc-filled-text-field-caret-color); }
+    &:hover { color: var(--mdc-filled-text-field-caret-color); }
+    &:active { color: var(--mdc-filled-text-field-caret-color); }
+  }
+}
+
+@media (min-width: 600px) {
+  .cookie-consent-snackbar {
+    .content {
+      text-align: left;
+    }
+
+    .action {
+      justify-content: flex-end;
+    }
+  }
+}

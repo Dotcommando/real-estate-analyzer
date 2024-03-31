@@ -30,7 +30,18 @@
       <button mat-icon-button aria-label="Estate Index Menu" (click)="sidenav.toggle()">
         <mat-icon>menu</mat-icon>
       </button>
-      <a routerLink="/" class="site-name">Estate Index</a>
+      <span class="logo">
+        <a routerLink="/" class="site-name">Estate Index</a>
+        <sup class="product-version">α</sup>
+      </span>
+      <span class="spacer"></span>
+      <span class="header-title">
+        <span class="cyprus">Cyprus</span>
+        &nbsp;<span class="real">Real</span>
+        &nbsp;<span class="estate">Estate</span>
+        &nbsp;<span class="search">Search</span>
+        &nbsp;<span class="engine">Engine</span>
+      </span>
       <span class="spacer"></span>
 
       <button mat-icon-button (click)="toggleTheme()" [attr.aria-label]="(currentTheme$ | async) === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'">

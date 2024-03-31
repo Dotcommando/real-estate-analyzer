@@ -190,6 +190,12 @@
   .input-range {
     max-width: 401px;
   }
+
+  ::ng-deep {
+    .search-form .mat-expansion-panel-header-description {
+      display: flex;
+    }
+  }
 }
 
 @media (min-width: 1440px) {

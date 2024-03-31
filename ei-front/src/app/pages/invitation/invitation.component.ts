@@ -7,6 +7,7 @@ import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatIcon } from '@angular/material/icon';
 import { MatInput } from '@angular/material/input';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 
 import { Select, Store } from '@ngxs/store';
@@ -24,6 +25,7 @@ import {
   tap,
 } from 'rxjs';
 
+import { AbstractSeoFriendlyPageComponent } from '../../components/abstract-seo-friendly-page';
 import { InvitationService } from '../../services';
 import {
   AddInvitationToken,
@@ -56,7 +58,7 @@ const snackBarDurationSuccessMs = 2200;
   styleUrl: './invitation.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class InvitationComponent implements OnInit {
+export class InvitationComponent extends AbstractSeoFriendlyPageComponent implements OnInit {
   @Select(InvitationState.invitationToken) invitationToken!: Observable<string | null>;
   @Select(InvitationState.invitationRequestStatus) requestStatus!: Observable<'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED'>;
   public invitationField = new FormControl();
@@ -74,14 +76,25 @@ export class InvitationComponent implements OnInit {
   private destroyRef: DestroyRef = inject(DestroyRef);
 
   constructor(
+    meta: Meta,
+    title: Title,
     private store: Store,
     private snackBar: MatSnackBar,
     private invitationService: InvitationService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {
+    super(meta, title);
+
+    this.metaTags = [
+      { name: 'description', content: 'Invitation Page for Cyprus Real Estate Search Engine' },
+    ];
+
+    this.titleTagContent = 'Invitation Page. Please, add invitation page to have an access for Search Engine';
   }
 
   public ngOnInit(): void {
+    this.initMeta();
+
     this.requestStatus
       .pipe(
         skip(1),
