@@ -57,6 +57,7 @@ export interface IRentResidentialContent<T_id = string> {
   subcategory: string;
   activeDays: number;
   'price-sqm': number;
+  photo: string[];
   updated_at: Date;
   ad_last_updated: Date;
 }

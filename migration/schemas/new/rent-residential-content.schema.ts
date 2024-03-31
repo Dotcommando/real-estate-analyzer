@@ -178,6 +178,10 @@ export const RentResidentialContentSchema = new Schema<IRentResidentialContent<O
       required: [ true, 'Price of a square meter is required' ],
       set: value => isNaN(value) || value === Infinity || value === -Infinity ? 0 : value,
     },
+    photo: {
+      type: [ String ],
+      default: [],
+    },
     ad_last_updated: {
       type: Schema.Types.Date,
       required: [ true, 'Last updated date is required' ],

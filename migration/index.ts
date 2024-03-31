@@ -20,7 +20,7 @@ try {
   collections = JSON.parse(process.env.MONGO_COLLECTIONS);
 
   mongoose.connect(DSN)
-    .then(migration)
+    // .then(migration)
     .then(() => process.exit(0));
 } catch (err) {
   console.error(err);
