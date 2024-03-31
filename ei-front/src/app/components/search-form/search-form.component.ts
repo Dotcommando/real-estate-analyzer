@@ -159,6 +159,7 @@ export class SearchFormComponent implements OnInit, AfterViewInit {
   public saleLimits!: ISaleLimits;
 
   public activeTabIndex: number = SearchTypeTab.rent;
+  public maxTypeItems = 5;
   public maxDistrictItems = 5;
 
   public rentTypeFocused = false;

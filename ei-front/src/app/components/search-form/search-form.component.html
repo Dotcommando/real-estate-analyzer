@@ -32,7 +32,10 @@
                     @for (category of rentLimits.categories; track $index) {
                       <mat-optgroup [label]="category.category">
                         @for (subcategory of category.subcategories; track $index) {
-                          <mat-option [value]="subcategory">{{ subcategory }}</mat-option>
+                          <mat-option
+                            [value]="subcategory"
+                            [disabled]="searchRentForm.controls.subcategory.value?.length >= maxTypeItems && !searchRentForm.controls.subcategory.value.includes(subcategory)"
+                          >{{ subcategory }}</mat-option>
                         }
                       </mat-optgroup>
                     }
@@ -386,7 +389,10 @@
                     @for (category of saleLimits.categories; track $index) {
                       <mat-optgroup [label]="category.category">
                         @for (subcategory of category.subcategories; track $index) {
-                          <mat-option [value]="subcategory">{{ subcategory }}</mat-option>
+                          <mat-option
+                            [value]="subcategory"
+                            [disabled]="searchSaleForm.controls.subcategory.value?.length >= maxTypeItems && !searchSaleForm.controls.subcategory.value.includes(subcategory)"
+                          >{{ subcategory }}</mat-option>
                         }
                       </mat-optgroup>
                     }

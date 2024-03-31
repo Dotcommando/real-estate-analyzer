@@ -18,6 +18,7 @@ import { MatIcon } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Meta, Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 
 import { Select, Store } from '@ngxs/store';
@@ -36,8 +37,8 @@ import {
 } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
+import { AbstractSeoFriendlyPageComponent } from '../../components/abstract-seo-friendly-page';
 import { BottomControlPanelComponent } from '../../components/bottom-control-panel/bottom-control-panel.component';
-import { CookieConsentDialogComponent } from '../../components/cookie-consent-dialog/cookie-consent-dialog.component';
 import { ErrorSnackBarComponent } from '../../components/error-snack-bar/error-snack-bar.component';
 import { SearchFormComponent } from '../../components/search-form/search-form.component';
 import { SearchService } from '../../components/search-results/search.service';
@@ -59,7 +60,6 @@ import { IRentResidentialId, IResponse, ISaleResidentialId } from '../../types';
   selector: 'ei-serp',
   standalone: true,
   imports: [
-    CookieConsentDialogComponent,
     MatPaginatorModule,
     SearchFormComponent,
     SearchResultsComponent,
@@ -73,7 +73,7 @@ import { IRentResidentialId, IResponse, ISaleResidentialId } from '../../types';
   styleUrl: './serp.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SerpComponent implements OnInit, AfterViewInit {
+export class SerpComponent extends AbstractSeoFriendlyPageComponent implements OnInit, AfterViewInit {
   @ViewChild(SearchFormComponent) searchFormComponent!: SearchFormComponent;
   @Select(SearchResultsState.searchStatus) searchStatus$!: Observable<'IDLE' | 'PENDING' | 'SUCCESS' | 'FAILED'>;
   @Select(SearchResultsState.totalResults) totalResults$!: Observable<number>;
@@ -90,6 +90,8 @@ export class SerpComponent implements OnInit, AfterViewInit {
   private destroyRef: DestroyRef = inject(DestroyRef);
 
   constructor(
+    meta: Meta,
+    title: Title,
     private readonly store: Store,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
@@ -97,9 +99,18 @@ export class SerpComponent implements OnInit, AfterViewInit {
     private readonly searchService: SearchService,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {
+    super(meta, title);
+
+    this.metaTags = [
+      { name: 'description', content: 'Search Results Page for Cyprus Real Estate Search Engine' },
+    ];
+
+    this.titleTagContent = 'Search Results Page. Cyprus Real Estate';
   }
 
   public ngOnInit(): void {
+    this.initMeta();
+
     this.route.queryParamMap
       .pipe(
         map((paramMap: ParamMap): [ ParamMap, ISearchState ] => [ paramMap, deserializeToSearchState(paramMap) ]),
