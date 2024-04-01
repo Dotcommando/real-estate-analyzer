@@ -1,29 +1,28 @@
 import { ObjectId } from 'mongodb';
-import * as mongoose from 'mongoose';
 import { Model, Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
 import {
   AirConditioning,
   AirConditioningArray,
   CategoriesArray,
+  CommercialType,
+  CommercialTypeArray,
   EnergyEfficiency,
   EnergyEfficiencyArray,
-  FloorArray,
   Furnishing,
   FurnishingArray,
   ParkingArray,
-  Pets,
-  PetsArray,
   PoolType,
   PoolTypeArray,
   StandardSet,
   StandardSetArray,
 } from '../../constants';
-import { IResidentialContent } from '../../types/new/residential-content.interface';
+import { ICommercialContent } from '../../types/new/commercial-content.interface';
 import { CoordsSchema } from '../coords.schema';
 
 
-export const RentResidentialContentSchema = new Schema<IResidentialContent<ObjectId>, Model<IResidentialContent<ObjectId>>>(
+export const RentCommercialContentSchema = new Schema<ICommercialContent<ObjectId>, Model<ICommercialContent<ObjectId>>>(
   {
     ad: Schema.Types.ObjectId,
     title: {
@@ -53,19 +52,12 @@ export const RentResidentialContentSchema = new Schema<IResidentialContent<Objec
       default: 'EUR',
     },
     'postal-code': Number,
-    'registration-number': String,
-    'registration-block': String,
     'energy-efficiency': {
       type: String,
       enum: EnergyEfficiencyArray,
       default: EnergyEfficiency.NA,
     },
     'construction-year': String,
-    floor: {
-      type: String,
-      enum: FloorArray,
-      default: null,
-    },
     'parking-places': Number,
     'area': {
       type: Number,
@@ -93,11 +85,6 @@ export const RentResidentialContentSchema = new Schema<IResidentialContent<Objec
       type: String,
       enum: AirConditioningArray,
       default: AirConditioning.No,
-    },
-    pets: {
-      type: String,
-      enum: PetsArray,
-      default: Pets.NotAllowed,
     },
     alarm: {
       type: String,
@@ -167,7 +154,8 @@ export const RentResidentialContentSchema = new Schema<IResidentialContent<Objec
     },
     subcategory: {
       type: String,
-      default: '',
+      enum: CommercialTypeArray,
+      default: CommercialType.Other,
     },
     activeDays: {
       type: Number,
@@ -194,8 +182,7 @@ export const RentResidentialContentSchema = new Schema<IResidentialContent<Objec
       type: String,
       required: [ true, 'Document version is required' ],
     },
-  },
-  { collection: 'rentresidentialcontents' },
+  }, { collection: 'rentcommercialcontents' },
 );
 
-export const RentResidentialContentModel = mongoose.model<IResidentialContent<ObjectId>, Model<IResidentialContent<ObjectId>>>('RentResidentialContents', RentResidentialContentSchema);
+export const RentCommercialContentModel = mongoose.model<ICommercialContent<ObjectId>, Model<ICommercialContent<ObjectId>>>('RentCommercialContents', RentCommercialContentSchema);

@@ -3,10 +3,10 @@ import * as mongoose from 'mongoose';
 import { Model, Schema } from 'mongoose';
 
 import { SourceArray } from '../../constants';
-import { IRentResidentialAd } from '../../types/new/rent-residential-ad.interface';
+import { IResidentialAd } from '../../types/new/residential-ad.interface';
 
 
-export const RentResidentialAdSchema = new Schema<IRentResidentialAd<ObjectId, ObjectId>, Model<IRentResidentialAd<ObjectId, ObjectId>>>(
+export const RentResidentialAdSchema = new Schema<IResidentialAd<ObjectId, ObjectId>, Model<IResidentialAd<ObjectId, ObjectId>>>(
   {
     ad_id: {
       type: String,
@@ -33,8 +33,12 @@ export const RentResidentialAdSchema = new Schema<IRentResidentialAd<ObjectId, O
       type: [ Schema.Types.ObjectId ],
       default: [],
     },
+    version: {
+      type: String,
+      required: [ true, 'Document version is required' ],
+    },
   },
   { collection: 'rentresidentialads' },
 );
 
-export const RentResidentialAdModel = mongoose.model<IRentResidentialAd<ObjectId, ObjectId>, Model<IRentResidentialAd<ObjectId, ObjectId>>>('RentResidentialAds', RentResidentialAdSchema);
+export const RentResidentialAdModel = mongoose.model<IResidentialAd<ObjectId, ObjectId>, Model<IResidentialAd<ObjectId, ObjectId>>>('RentResidentialAds', RentResidentialAdSchema);

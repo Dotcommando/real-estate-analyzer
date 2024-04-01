@@ -5,6 +5,7 @@ export * from './analysis-type.enum';
 export * from './categories.enum';
 export * from './city-name-max-length.const';
 export * from './city-name-min-length.const';
+export * from './commercial-type.enum';
 export * from './condition.enum';
 export * from './country.enum';
 export * from './energy-efficiency.enum';
