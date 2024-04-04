@@ -89,7 +89,7 @@ export class InvitationComponent extends AbstractSeoFriendlyPageComponent implem
       { name: 'description', content: 'Invitation Page for Cyprus Real Estate Search Engine' },
     ];
 
-    this.titleTagContent = 'Invitation Page. Please, add invitation page to have an access for Search Engine';
+    this.titleTagContent = 'Invitation Page. Please, add your invitation to have an access for Search Engine';
   }
 
   public ngOnInit(): void {
