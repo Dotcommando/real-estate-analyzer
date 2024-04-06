@@ -2,11 +2,11 @@ import { ObjectId } from 'mongodb';
 import * as mongoose from 'mongoose';
 import { Model, Schema } from 'mongoose';
 
-import { SourceArray } from '../../constants';
-import { IResidentialAd } from '../../types/new/residential-ad.interface';
+import { CategoriesArray, SourceArray } from '../../constants';
+import { IAd } from '../../types/new';
 
 
-export const RentResidentialAdSchema = new Schema<IResidentialAd<ObjectId, ObjectId>, Model<IResidentialAd<ObjectId, ObjectId>>>(
+export const RentAdSchema = new Schema<IAd<ObjectId, ObjectId>, Model<IAd<ObjectId, ObjectId>>>(
   {
     ad_id: {
       type: String,
@@ -29,6 +29,15 @@ export const RentResidentialAdSchema = new Schema<IResidentialAd<ObjectId, Objec
       type: Schema.Types.Date,
       required: [ true, 'Date of update is required' ],
     },
+    category: {
+      type: String,
+      enum: CategoriesArray,
+      required: [ true, 'Category required, technically it is a collection where the document from' ],
+    },
+    subcategory: {
+      type: String,
+      default: '',
+    },
     content: {
       type: [ Schema.Types.ObjectId ],
       default: [],
@@ -38,7 +47,7 @@ export const RentResidentialAdSchema = new Schema<IResidentialAd<ObjectId, Objec
       required: [ true, 'Document version is required' ],
     },
   },
-  { collection: 'rentresidentialads' },
+  { collection: 'rentads' },
 );
 
-export const RentResidentialAdModel = mongoose.model<IResidentialAd<ObjectId, ObjectId>, Model<IResidentialAd<ObjectId, ObjectId>>>('RentResidentialAds', RentResidentialAdSchema);
+export const RentAdModel = mongoose.model<IAd<ObjectId, ObjectId>, Model<IAd<ObjectId, ObjectId>>>('RentAds', RentAdSchema);

@@ -1,25 +1,28 @@
 import { ObjectId } from 'mongodb';
+import * as mongoose from 'mongoose';
 import { Model, Schema } from 'mongoose';
-import mongoose from 'mongoose';
 
 import {
   AirConditioning,
   AirConditioningArray,
   EnergyEfficiency,
   EnergyEfficiencyArray,
+  FloorArray,
   Furnishing,
   FurnishingArray,
   ParkingArray,
+  Pets,
+  PetsArray,
   PoolType,
   PoolTypeArray,
   StandardSet,
   StandardSetArray,
 } from '../../constants';
-import { ICommercialContent } from '../../types/new';
+import { IResidentialContent } from '../../types/new';
 import { CoordsSchema } from '../coords.schema';
 
 
-export const RentCommercialContentSchema = new Schema<ICommercialContent<ObjectId>, Model<ICommercialContent<ObjectId>>>(
+export const SaleResidentialContentSchema = new Schema<IResidentialContent<ObjectId>, Model<IResidentialContent<ObjectId>>>(
   {
     ad: Schema.Types.ObjectId,
     title: {
@@ -49,12 +52,19 @@ export const RentCommercialContentSchema = new Schema<ICommercialContent<ObjectI
       default: 'EUR',
     },
     'postal-code': Number,
+    'registration-number': String,
+    'registration-block': String,
     'energy-efficiency': {
       type: String,
       enum: EnergyEfficiencyArray,
       default: EnergyEfficiency.NA,
     },
     'construction-year': String,
+    floor: {
+      type: String,
+      enum: FloorArray,
+      default: null,
+    },
     'parking-places': Number,
     'area': {
       type: Number,
@@ -82,6 +92,11 @@ export const RentCommercialContentSchema = new Schema<ICommercialContent<ObjectI
       type: String,
       enum: AirConditioningArray,
       default: AirConditioning.No,
+    },
+    pets: {
+      type: String,
+      enum: PetsArray,
+      default: Pets.NotAllowed,
     },
     alarm: {
       type: String,
@@ -169,7 +184,8 @@ export const RentCommercialContentSchema = new Schema<ICommercialContent<ObjectI
       type: String,
       required: [ true, 'Document version is required' ],
     },
-  }, { collection: 'rentcommercialcontents' },
+  },
+  { collection: 'saleresidentialcontents' },
 );
 
-export const RentCommercialContentModel = mongoose.model<ICommercialContent<ObjectId>, Model<ICommercialContent<ObjectId>>>('RentCommercialContents', RentCommercialContentSchema);
+export const SaleResidentialContentModel = mongoose.model<IResidentialContent<ObjectId>, Model<IResidentialContent<ObjectId>>>('SaleResidentialContents', SaleResidentialContentSchema);

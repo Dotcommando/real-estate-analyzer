@@ -5,7 +5,6 @@ import { Model, Schema } from 'mongoose';
 import {
   AirConditioning,
   AirConditioningArray,
-  CategoriesArray,
   EnergyEfficiency,
   EnergyEfficiencyArray,
   FloorArray,
@@ -19,7 +18,7 @@ import {
   StandardSet,
   StandardSetArray,
 } from '../../constants';
-import { IResidentialContent } from '../../types/new/residential-content.interface';
+import { IResidentialContent } from '../../types/new';
 import { CoordsSchema } from '../coords.schema';
 
 
@@ -160,18 +159,9 @@ export const RentResidentialContentSchema = new Schema<IResidentialContent<Objec
       default: 'm²',
       required: [ true, 'Plot Area Unit is required' ],
     },
-    category: {
-      type: String,
-      enum: CategoriesArray,
-      required: [ true, 'Category required, technically it is a collection where the document from' ],
-    },
-    subcategory: {
-      type: String,
-      default: '',
-    },
-    activeDays: {
-      type: Number,
-      default: 0,
+    active_dates: {
+      type: [ Schema.Types.Date ] as unknown as Date[],
+      required: [ true, 'Active dates are required' ],
     },
     'price-sqm': {
       type: Number,

@@ -1,6 +1,5 @@
 import {
   AirConditioning,
-  Categories,
   EnergyEfficiency,
   Floor,
   Furnishing,
@@ -53,9 +52,7 @@ export interface IResidentialContent<T_id = string> {
   storage: StandardSet;
   parking: Parking;
   coords: ICoords;
-  category: Categories;
-  subcategory: string;
-  activeDays: number;
+  active_dates: Date[];
   'price-sqm': number;
   photo: string[];
   updated_at: Date;

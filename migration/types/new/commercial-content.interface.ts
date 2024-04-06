@@ -1,7 +1,5 @@
 import {
   AirConditioning,
-  Categories,
-  CommercialType,
   EnergyEfficiency,
   Furnishing,
   Parking,
@@ -45,9 +43,7 @@ export interface ICommercialContent<T_id = string> {
   storage: StandardSet;
   parking: Parking;
   coords: ICoords;
-  category: Categories.Commercial;
-  subcategory: CommercialType;
-  activeDays: number;
+  active_dates: Date[];
   'price-sqm': number;
   photo: string[];
   updated_at: Date;

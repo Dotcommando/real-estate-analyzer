@@ -19,7 +19,7 @@ import { ICommercialContent } from '../../types/new';
 import { CoordsSchema } from '../coords.schema';
 
 
-export const RentCommercialContentSchema = new Schema<ICommercialContent<ObjectId>, Model<ICommercialContent<ObjectId>>>(
+export const SaleCommercialContentSchema = new Schema<ICommercialContent<ObjectId>, Model<ICommercialContent<ObjectId>>>(
   {
     ad: Schema.Types.ObjectId,
     title: {
@@ -169,7 +169,7 @@ export const RentCommercialContentSchema = new Schema<ICommercialContent<ObjectI
       type: String,
       required: [ true, 'Document version is required' ],
     },
-  }, { collection: 'rentcommercialcontents' },
+  }, { collection: 'salecommercialcontents' },
 );
 
-export const RentCommercialContentModel = mongoose.model<ICommercialContent<ObjectId>, Model<ICommercialContent<ObjectId>>>('RentCommercialContents', RentCommercialContentSchema);
+export const SaleCommercialContentModel = mongoose.model<ICommercialContent<ObjectId>, Model<ICommercialContent<ObjectId>>>('SaleCommercialContents', SaleCommercialContentSchema);
