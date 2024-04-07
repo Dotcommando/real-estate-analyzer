@@ -10,6 +10,16 @@ import {
   SaleHousesModel,
   SalePlotsModel,
 } from '../schemas';
+import {
+  RentAdModel,
+  RentCommercialContentModel,
+  RentPlotContentModel,
+  RentResidentialContentModel,
+  SaleAdModel,
+  SaleCommercialContentModel,
+  SalePlotContentModel,
+  SaleResidentialContentModel,
+} from '../schemas/new';
 
 
 export function getModelByCollectionName(collectionName: string): Model<unknown> {
@@ -43,6 +53,30 @@ export function getModelByCollectionName(collectionName: string): Model<unknown>
 
     case 'saleplots':
       return SalePlotsModel;
+
+    case 'rentads':
+      return RentAdModel;
+
+    case 'saleads':
+      return SaleAdModel;
+
+    case 'rentcommercialcontents':
+      return RentCommercialContentModel;
+
+    case 'rentplotcontents':
+      return RentPlotContentModel;
+
+    case 'rentresidentialcontents':
+      return RentResidentialContentModel;
+
+    case 'salecommercialcontents':
+      return SaleCommercialContentModel;
+
+    case 'saleplotcontents':
+      return SalePlotContentModel;
+
+    case 'saleresidentialcontents':
+      return SaleResidentialContentModel;
 
     default:
       throw new Error(`Model for ${collectionName} is not defined.`);
