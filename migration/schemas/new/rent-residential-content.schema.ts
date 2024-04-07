@@ -7,6 +7,7 @@ import {
   AirConditioningArray,
   EnergyEfficiency,
   EnergyEfficiencyArray,
+  Floor,
   FloorArray,
   Furnishing,
   FurnishingArray,
@@ -63,7 +64,10 @@ export const RentResidentialContentSchema = new Schema<IResidentialContent<Objec
     floor: {
       type: String,
       enum: FloorArray,
-      default: null,
+      default: Floor.NA,
+      set: function(value) {
+        return FloorArray.includes(value) ? value : Floor.NA;
+      },
     },
     'parking-places': Number,
     'area': {

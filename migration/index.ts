@@ -25,11 +25,9 @@ import {
   RentAdModel,
   RentCommercialContentModel,
   RentPlotContentModel,
-  RentResidentialContentModel,
   SaleAdModel,
   SaleCommercialContentModel,
   SalePlotContentModel,
-  SaleResidentialContentModel,
 } from './schemas/new';
 import { IAsyncArrayIterator } from './types';
 import { debugError, debugLog, getArrayIterator, getBatchIterator, getModelByCollectionName } from './utils';
@@ -134,16 +132,14 @@ async function migration() {
         if (collectionName === 'rentapartmentsflats' || collectionName === 'renthouses') {
           processRentResidentials(
             doc as IRentApartmentsFlatsDoc | IRentHousesDoc,
-            adCollectionModel as typeof RentAdModel,
-            contentCollectionModel as typeof RentResidentialContentModel,
+            collectionName,
             bulkAdOps,
             bulkContentOps,
           );
         } else if (collectionName === 'saleapartmentsflats' || collectionName === 'salehouses') {
           processSaleResidentials(
             doc as ISaleApartmentsFlatsDoc | ISaleHousesDoc,
-            adCollectionModel as typeof SaleAdModel,
-            contentCollectionModel as typeof SaleResidentialContentModel,
+            collectionName,
             bulkAdOps,
             bulkContentOps,
           );

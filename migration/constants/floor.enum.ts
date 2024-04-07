@@ -8,6 +8,7 @@ export enum Floor {
   Sixth = '6th',
   Seventh = '7th',
   EighthAndHigher = '8th and above',
+  NA = 'N/A',
 }
 
 export const FloorArray = Object.values(Floor);

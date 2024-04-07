@@ -5,7 +5,7 @@ import { IResidentialContent } from './residential-content.interface';
 import { Categories, CommercialType, Source } from '../../constants';
 
 
-export interface IAd<T_id = string, TContent = IResidentialContent<T_id> | ICommercialContent<T_id> | IPlotContent<T_id>> {
+export interface IAd<T_id = string, TContent extends { _id: T_id } = IResidentialContent<T_id> | ICommercialContent<T_id> | IPlotContent<T_id>> {
   _id: T_id;
   ad_id: string;
   url: string;
@@ -14,6 +14,6 @@ export interface IAd<T_id = string, TContent = IResidentialContent<T_id> | IComm
   ad_last_updated: Date;
   category: Categories;
   subcategory: string | CommercialType; // Ex 'plot-type' for plots
-  content: TContent[];
+  content: TContent['_id'][];
   version: string;
 }
